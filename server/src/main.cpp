@@ -1,5 +1,6 @@
 /*------------------------------------- Standard definitions -------------------------------------*/
 
+#include <iostream>
 #include <unistd.h>
 #include <cstdio>
 #include <cstdlib>
@@ -11,7 +12,7 @@
 using namespace std;
 
 /* Const definitions */
-#define PORT "58001"
+#define PORT "58039"
 #define MSG_MAX_SIZE 240
 
 /* If condition is false displays msg and interrupts execution */
@@ -19,55 +20,51 @@ using namespace std;
 
 /*-------------------------------------- Server global vars --------------------------------------*/
 
-int fd,  /* Holds server socket file descriptor */
+int
+    fd,  /* Holds server socket file descriptor */
     errcode;  /* Holds current error */
+struct addrinfo
+    hints,  /* Used to request info from DNS to get our "endpoint" */
+    *res;  /* Stores result from getaddrinfo and uses it to setup our socket */
+
 ssize_t n;  /* Holds number of bytes read/sent or -1 in case of error */
 socklen_t addrlen;  /* Holds size of message sent from sender */
-struct addrinfo hints,  /* Used to request info from DNS to get "endpoint" */
-                *res;  /* Stores result from getaddrinfo and uses it to setup our socket */
 struct sockaddr_in addr;  /* Describes internet socket address. Holds sender info */
 char buffer[MSG_MAX_SIZE];  /* Holds current message received in this socket */
 
+bool isVerbose = false;  /* Is true if the server is set to verbose mode */
+
 /*----------------------------------------- Functions --------------------------------------------*/
 
+/**
+ * Receives message sent from user and decides based on the first 3 chars which action to take.
+ *
+ * @param msg message sent by user
+ */
 void selector(char* msg) {
 
-    char token[3];
+    char cmd[3];  /* Holds command that is going to be executed */
+    sscanf(msg, "%s", cmd);  /* Fetches requested command */
 
-    /* Reads first 3 letters. scanf stops on first space */
-    scanf("%s", token);
+    cout << "CMD: " << cmd << endl;
 
-    if (strcmp(token, "REG") == 0) {
+    if (strcmp(cmd, "REG") == 0) {  /* Registers user */
 
-    } else if (strcmp(token, "RRG") == 0) {
+        cout << "Veio aqui!" << endl;
 
-    } else if (strcmp(token, "UNR") == 0) {
+    } else if (strcmp(cmd, "UNR") == 0) {  /* Unregisters user */
 
-    } else if (strcmp(token, "RUN") == 0) {
+    } else if (strcmp(cmd, "LOG") == 0) {  /* Signs in user */
 
-    } else if (strcmp(token, "LOG") == 0) {
+    } else if (strcmp(cmd, "OUT") == 0) {  /* Logout user */
 
-    } else if (strcmp(token, "RLO") == 0) {
+    } else if (strcmp(cmd, "GLS") == 0) {  /* Requested list of existing groups */
 
-    } else if (strcmp(token, "OUT") == 0) {
+    } else if (strcmp(cmd, "GSR") == 0) {  /* Join group */
 
-    } else if (strcmp(token, "ROU") == 0) {
+    } else if (strcmp(cmd, "GUR") == 0) {  /* Unsubscribe to group */
 
-    } else if (strcmp(token, "GLS") == 0) {
-
-    } else if (strcmp(token, "RGL") == 0) {
-
-    } else if (strcmp(token, "GSR") == 0) {
-
-    } else if (strcmp(token, "GUR") == 0) {
-
-    } else if (strcmp(token, "RGU") == 0) {
-
-    } else if (strcmp(token, "GLM") == 0) {
-
-    } else if (strcmp(token, "RGM") == 0) {
-
-    } else if (strcmp(token, "RGS") == 0) {
+    } else if (strcmp(cmd, "GLM") == 0) {  /* Get list of user's groups */
 
     } else {
         // reply ERR
@@ -77,7 +74,7 @@ void selector(char* msg) {
 
 
 /**
- * Main program loop
+ * Setups server loop.
  *
  * @param argc number of arguments passed
  * @param argv array of arguments
@@ -85,7 +82,7 @@ void selector(char* msg) {
  */
 int main(int argc, char const *argv[]) {
 
-    /* Creates udp socket in internet */
+    /* Creates udp socket for internet */
 	fd = socket(AF_INET, SOCK_DGRAM, 0);
     assert_(fd != -1, "Could not create socket")
 
@@ -107,7 +104,8 @@ int main(int argc, char const *argv[]) {
 	while (true) {
 
 	    /* Receives message from client */
-		addrlen = sizeof(addr);
+        bzero(&addr, sizeof(struct sockaddr_in));
+        addrlen = sizeof(addr);
 		n = recvfrom(fd, buffer, MSG_MAX_SIZE, 0, (struct sockaddr*) &addr, &addrlen);
         assert_(n != -1, "Failed to receive message")
 
@@ -117,8 +115,14 @@ int main(int argc, char const *argv[]) {
         /* Returns confirmation to client */
 		write(1, "received: ", 10); write(1, buffer, n);
 		n = sendto(fd, buffer, n, 0, (struct sockaddr*) &addr, addrlen);
-        assert_(n != -1, "Could not send message")
+        assert_(n != -1, "Failed to send message")
 
 	}
+
+	/* Closes sockets */
+    freeaddrinfo(res);
+    close(fd);
+
+    return EXIT_SUCCESS;
 
 }

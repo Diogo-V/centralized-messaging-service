@@ -3,4 +3,14 @@ project(Projeto_RC_39_v2)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(Server_UDP server/src/main.cpp server/src/user.cpp server/src/user.h)
+add_executable(Server_UDP
+        server/src/main.cpp
+        server/src/models/user.cpp
+        server/src/models/user.h
+        server/src/models/message.cpp
+        server/src/models/message.h
+        server/src/models/group.cpp
+        server/src/models/group.h
+)
+add_executable(Server_UDP_main server/src/main.cpp)
+add_executable(Client client/src/main.cpp)
