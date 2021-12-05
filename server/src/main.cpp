@@ -1,15 +1,15 @@
 #include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <iostream>
-#include <string>		// Necessário para usar strings
-using namespace std;
+#include <cstring>
 
+using namespace std;
 
 #define PORT "58001"
 #define MAX_INPUT_SIZE 256
@@ -33,34 +33,26 @@ void parser(char* msg) {
 	char name_1[MAX_INPUT_SIZE];
 	string token = fgets(msg, 3, stdin);
 
-	switch(token) {
-		case 'REG':
-		
-			registration(name_1, name_2);
-
-
-	}
-
 }
 
 
 int main(int argc, char const *argv[]) {
 	
 	fd = socket(AF_INET, SOCK_DGRAM, 0);
-	if (fd==-1) exit(1);
+	if (fd == -1) exit(1);
 
 	memset(&hints, 0, sizeof hints);
 	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_DGRAM;
 	hints.ai_flags = AI_PASSIVE;
 
-	errcode = getaddrinfo(NULL, PORT, &hints, &res);
+	errcode = getaddrinfo(nullptr, PORT, &hints, &res);
 	if (errcode != 0) exit(1);
 
-	n=bind(fd, res->ai_addr, res->ai_addrlen);
-	if (n==-1) exit(1);
+	n = bind(fd, res->ai_addr, res->ai_addrlen);
+	if (n == -1) exit(1);
 
-	while(1) {
+	while(true) {
 
 		addrlen = sizeof(addr);
 		n = recvfrom(fd, buffer, 128, 0, (struct sockaddr*) &addr, &addrlen);
