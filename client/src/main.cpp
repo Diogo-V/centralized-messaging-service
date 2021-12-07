@@ -91,8 +91,8 @@ void init_socket(int argc, char const *argv[]) {
 
     /* Goes over all the flags and setups port and ip address */
     for (int i = 1; i < argc; i += 2) {
-        if (strcmp(argv[i], "-p") == 0) { std::string s(argv[i + 1]); ds_port = s; }
-        else if (strcmp(argv[i], "-n") == 0) { std::string s(argv[i + 1]); ds_ip = s; }
+        if (strcmp(argv[i], "-p") == 0) { string s(argv[i + 1]); ds_port = s; }
+        else if (strcmp(argv[i], "-n") == 0) { string s(argv[i + 1]); ds_ip = s; }
     }
 
     /* Creates udp socket for internet */
@@ -124,9 +124,9 @@ int main(int argc, char const *argv[]) {
     init_socket(argc, argv);
 
     /* Gets the command that the user input */
-    std::cin.getline (buffer, MSG_MAX_SIZE);
+    cin.getline (buffer, MSG_MAX_SIZE);
 
-    do {
+    while (strcmp(buffer, EXIT_CMD) != 0) {
 
         /* TODO: Verify if message has correct formatting */
 
@@ -141,7 +141,7 @@ int main(int argc, char const *argv[]) {
         /* Gets the new command that the user input. This replaces the previous command */
         cin.getline(buffer, MSG_MAX_SIZE);
 
-    } while (strcmp(buffer, EXIT_CMD) == 0);
+    }
 
     /* Sends message to server */
     n = sendto(fd, "Hello server!!!\n",16, 0, res->ai_addr, res->ai_addrlen);
