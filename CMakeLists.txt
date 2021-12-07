@@ -11,6 +11,6 @@ add_executable(Server_UDP
         server/src/models/message.h
         server/src/models/group.cpp
         server/src/models/group.h
-)
+        server/src/api.cpp server/src/api.h)
 add_executable(Server_UDP_main server/src/main.cpp)
 add_executable(Client client/src/main.cpp)

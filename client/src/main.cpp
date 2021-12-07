@@ -73,8 +73,26 @@ void selector(const string& cmd, string msg) {
  * @param msg message that the user input
  * @return message that the server will recognize
  */
-char* parser(char* msg) {
+char* parser(string msg) {
     // to be done
+}
+
+
+/**
+ * Verifies if a message that the user input is valid. Also populates "req" with the request that is
+ * going to be sent to the server.
+ *
+ * @param msg input from user
+ * @param req server request
+ * @return bool values
+ */
+bool preprocessing(const string& msg, string* req) {
+
+    /* Verifies if the user input a valid */
+    if (msg == "reg") {
+
+    }
+
 }
 
 
@@ -128,7 +146,14 @@ int main(int argc, char const *argv[]) {
 
     while (strcmp(buffer, EXIT_CMD) != 0) {
 
-        /* TODO: Verify if message has correct formatting */
+        string req{};  /* Holds the request message that is going to be sent to the server */
+
+        /* Verify if message has correct formatting. If not, displays error to user and continues */
+        /* Also populates "req" with a valid request */
+        if (! preprocessing(buffer, &req)) {
+            cout << "Incorrect message format!" << endl;
+            continue;
+        }
 
         /* TODO: Format message for it to be recognized by the server */
 
@@ -150,7 +175,7 @@ int main(int argc, char const *argv[]) {
     /* Gets server response and processes it */
     bzero(&addr, sizeof(struct sockaddr_in));
     addrlen = sizeof(addr);
-    n = recvfrom(fd, buffer, 128, 0, (struct sockaddr*) &addr, &addrlen);
+    n = recvfrom(fd, buffer, MSG_MAX_SIZE, 0, (struct sockaddr*) &addr, &addrlen);
     assert_(n != -1, "Failed to receive message")
 
     write(1, "echo: ", 6);
