@@ -28,6 +28,7 @@ string Group::getName(){
 
 /**
  * @brief Gets group's id
+ *
  * @return group's id
  */
 int Group::getGroupId() {
