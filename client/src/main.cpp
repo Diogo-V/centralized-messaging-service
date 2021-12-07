@@ -13,8 +13,9 @@ using namespace std;
 
 /* Const definitions */
 #define PORT "58039"
-#define LOCAL_IP "192.168.1.66"
+#define LOCAL_IP "localhost"
 #define MSG_MAX_SIZE 240
+#define EXIT_CMD "exit"
 
 /* If condition is false displays msg and interrupts execution */
 #define assert_(cond, msg) if(! (cond)) { fprintf(stderr, msg); exit(EXIT_FAILURE); }
@@ -67,6 +68,17 @@ void selector(const string& cmd, string msg) {
 
 
 /**
+ * Parses message from user and returns a new one that the server will accept.
+ *
+ * @param msg message that the user input
+ * @return message that the server will recognize
+ */
+char* parser(char* msg) {
+    // to be done
+}
+
+
+/**
  * Setups our socket "fd". Uses our main function's arguments to process flags.
  *
  * @param argc number of arguments passed to main function
@@ -111,11 +123,29 @@ int main(int argc, char const *argv[]) {
     /* Initializes and setups fd to be a valid socket */
     init_socket(argc, argv);
 
+    /* Gets the command that the user input */
+    std::cin.getline (buffer, MSG_MAX_SIZE);
+
+    do {
+
+        /* TODO: Verify if message has correct formatting */
+
+        /* TODO: Format message for it to be recognized by the server */
+
+        /* TODO: Send message to server */
+
+        /* TODO: Get answer from server */
+
+        /* TODO: Based on the message sent by the server, display a message to the user */
+
+        /* Gets the new command that the user input. This replaces the previous command */
+        cin.getline(buffer, MSG_MAX_SIZE);
+
+    } while (strcmp(buffer, EXIT_CMD) == 0);
+
     /* Sends message to server */
     n = sendto(fd, "Hello server!!!\n",16, 0, res->ai_addr, res->ai_addrlen);
     assert_(n != -1, "Failed to send message")
-
-    // TODO: create a loop to send messages to server
 
     /* Gets server response and processes it */
     bzero(&addr, sizeof(struct sockaddr_in));

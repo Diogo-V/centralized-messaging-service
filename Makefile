@@ -2,8 +2,8 @@ CC = g++
 debug_flags = -O3 -Wall -std=c++11 -g -lm
 flags = -O3 -Wall -std=c++11 -lm
 
-port = 58039  # Port in which our server if going to be running
-ip = 120.0.0.1
+port = 58011  # Port in which our server if going to be running
+ip = tejo.tecnico.ulisboa.pt
 
 # Compiles udp server
 su: server/src/main.cpp
@@ -17,9 +17,13 @@ c: client/src/main.cpp
 rsu: su
 	./server/bin/main
 
-# Runs client
+# Runs client with input ip and port
 rc: c
 	./client/bin/main -p $(port) -n $(ip)
+
+# Runs client with local configurations
+rcl: c
+	./client/bin/main
 
 # Cleans everything
 clean:
