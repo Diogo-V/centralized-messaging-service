@@ -8,6 +8,8 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <cstring>
+#include <vector>
+#include <sstream>
 
 using namespace std;
 
@@ -19,6 +21,9 @@ using namespace std;
 
 /* If condition is false displays msg and interrupts execution */
 #define assert_(cond, msg) if(! (cond)) { fprintf(stderr, msg); exit(EXIT_FAILURE); }
+
+/* If condition if false displays msg and returns with false bool value */
+#define validate_(cond, msg) do { if (! (cond)) { fprintf(stderr, msg); return false; } } while(0);
 
 /*-------------------------------------- Server global vars --------------------------------------*/
 
@@ -68,14 +73,24 @@ void selector(const string& cmd, string msg) {
 
 
 /**
- * Parses message from user and returns a new one that the server will accept.
+ * Transforms a string with spaces in a vector with substring tokenized by the spaces.
  *
- * @param msg message that the user input
- * @return message that the server will recognize
+ * @param str string which is going to be separated
+ * @param out vector with substrings
  */
-char* parser(string msg) {
-    // to be done
+void split(string const &str, vector<string> &out) {
+    stringstream ss(str); string s; const char delim = (const char)* " ";
+    while (getline(ss, s, delim)) out.push_back(s);
 }
+
+
+/**
+ * Verifies if input string translates to a number.
+ *
+ * @param line string to be validated
+ * @return boolean value
+ */
+bool isNumber(const string& line) { char* p; strtod(line.c_str(), &p); return *p == 0; }
 
 
 /**
@@ -83,15 +98,56 @@ char* parser(string msg) {
  * going to be sent to the server.
  *
  * @param msg input from user
- * @param req server request
+ * @param out server request
  * @return bool values
  */
-bool preprocessing(const string& msg, string* req) {
+bool preprocessing(const string& msg, string& out) {
 
-    /* Verifies if the user input a valid */
-    if (msg == "reg") {
+    vector<string> inputs;  /* Holds a list of strings with the inputs from our user */
+    split(msg, inputs);  /* Splits msg by the spaces and returns an array with everything */
+
+    /* Verifies if the user requested a valid command */
+    if (inputs[0] == "reg") {
+
+        /* Verifies if the user input a valid command */
+        validate_(inputs.size() == 3, "User did not input user ID and/or password")
+        validate_(inputs[1].size() == 5, "User ID should have 5 numbers")
+        validate_(isNumber(inputs[1]), "User ID is not a number")
+
+        /* TODO: corrigir o loop infinito das macros */
+
+        /* Transforms user input into a valid command to be sent to the server */
+        out = "REG " + inputs[1] + " " + inputs[2] + "\n";
+
+        return true;  /* Since everything was ok, we return true */
+
+    } else if (inputs[0] == "unr" || inputs[0] == "unregister") {
+
+        /* Verifies if the user input a valid command */
+        validate_(inputs.size() == 3, "User did not input user ID and/or password")
+        validate_(inputs[1].size() == 5, "User ID should have 5 numbers")
+        validate_(isNumber(inputs[1]), "User ID is not a number")
+
+        /* Transforms user input into a valid command to be sent to the server */
+        out = "UNR " + inputs[1] + " " + inputs[2] + "\n";
+
+        return true;  /* Since everything was ok, we return true */
+
+    } else if (inputs[0] == "login") {
+
+        /* Verifies if the user input a valid command */
+        validate_(inputs.size() == 3, "User did not input user ID and/or password")
+        validate_(inputs[1].size() == 5, "User ID should have 5 numbers")
+        validate_(isNumber(inputs[1]), "User ID is not a number")
+
+        /* Transforms user input into a valid command to be sent to the server */
+        out = "LOG " + inputs[1] + " " + inputs[2] + "\n";
+
+        return true;  /* Since everything was ok, we return true */
 
     }
+
+    return false;  /* Since no command was chosen, the user did not input a valid command */
 
 }
 
@@ -142,7 +198,7 @@ int main(int argc, char const *argv[]) {
     init_socket(argc, argv);
 
     /* Gets the command that the user input */
-    cin.getline (buffer, MSG_MAX_SIZE);
+    cin.getline(buffer, MSG_MAX_SIZE);
 
     while (strcmp(buffer, EXIT_CMD) != 0) {
 
@@ -150,12 +206,10 @@ int main(int argc, char const *argv[]) {
 
         /* Verify if message has correct formatting. If not, displays error to user and continues */
         /* Also populates "req" with a valid request */
-        if (! preprocessing(buffer, &req)) {
+        if (! preprocessing(buffer, req)) {
             cout << "Incorrect message format!" << endl;
             continue;
         }
-
-        /* TODO: Format message for it to be recognized by the server */
 
         /* TODO: Send message to server */
 
@@ -169,8 +223,8 @@ int main(int argc, char const *argv[]) {
     }
 
     /* Sends message to server */
-    n = sendto(fd, "Hello server!!!\n",16, 0, res->ai_addr, res->ai_addrlen);
-    assert_(n != -1, "Failed to send message")
+    /* n = sendto(fd, "REG server!!!\n",14, 0, res->ai_addr, res->ai_addrlen);
+    assert_(n != -1, "Failed to send message")*/
 
     /* Gets server response and processes it */
     bzero(&addr, sizeof(struct sockaddr_in));

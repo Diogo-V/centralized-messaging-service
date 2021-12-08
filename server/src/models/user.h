@@ -2,16 +2,17 @@
 #define PROJETO_RC_39_V2_USER_H
 
 #include "group.h"
-#include <string>
+#include <cstring>
+#include <unordered_map>
 
-
-using namespace std;
 
 /**
  * @brief Represents a User.
  */
 class User {
+
     private:
+
         /**
          * @brief User's id
          */
@@ -33,6 +34,7 @@ class User {
         int _gid;
 
     public:
+
         /**
          * @brief User constructor
          *

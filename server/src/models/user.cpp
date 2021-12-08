@@ -1,6 +1,8 @@
 #include "user.h"
 
+
 using namespace std;
+
 
 /**
  * @brief User constructor
@@ -14,6 +16,7 @@ User::User(int id, string password){
     _gid = 0;
 }
 
+
 /**
  * @brief Gets user id
  *
@@ -22,6 +25,7 @@ User::User(int id, string password){
 int User::getUserId(){
     return _id;
 }
+
 
 /**
  * @brief gets users active group id
@@ -32,6 +36,7 @@ int User::getUserGid() {
     return _gid;
 }
 
+
 /**
  * @brief Gets user password
  *
@@ -40,6 +45,7 @@ int User::getUserGid() {
 string User::getUserPassword(){
     return _password;
 }
+
 
 /**
  *@brief Gets user's group
@@ -50,6 +56,7 @@ unordered_map<int, Group*> User::getUserGroups(){
     return _groups;
 }
 
+
 /**
  * @brief Changes user's active group
  * @param id group's id
@@ -57,6 +64,7 @@ unordered_map<int, Group*> User::getUserGroups(){
 void User::setUserGid(int id) {
     _gid = id;
 }
+
 
 /**
  * @brief add group to user's group list
@@ -68,6 +76,7 @@ void User::addGroup(int gId, Group* group){
     _groups.insert({gId, group});
 }
 
+
 /**
  * @brief remove group from user's group list
  *
@@ -76,4 +85,3 @@ void User::addGroup(int gId, Group* group){
 void User::removeGroup(int gId){
     _groups.erase(gId);
 }
-

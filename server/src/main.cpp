@@ -14,6 +14,8 @@ using namespace std;
 /* Const definitions */
 #define PORT "58039"
 #define MSG_MAX_SIZE 240
+#define CMD_MAX_SIZE 3
+#define PASS_MAX_SIZE 8
 
 /* If condition is false displays msg and interrupts execution */
 #define assert_(cond, msg) if(! (cond)) { fprintf(stderr, msg); exit(EXIT_FAILURE); }
@@ -41,12 +43,11 @@ bool isVerbose = false;  /* Is true if the server is set to verbose mode */
  *
  * @param msg message sent by user
  */
-void selector(char* msg) {
+string selector(char* msg, unordered_map<int, User>* users, unordered_map<int, Group>* groups) {
 
-    char cmd[3];  /* Holds command that is going to be executed */
-    sscanf(msg, "%s", cmd);  /* Fetches requested command */
-
-    cout << "CMD: " << cmd << endl;
+    vector<string> inputs;  /* Holds a list of strings with the inputs from our user */
+    split(msg, inputs);  /* Splits msg by the spaces and returns an array with everything*/
+    string status;
 
     if (strcmp(cmd, "REG") == 0) {  /* Registers user */
 
@@ -67,11 +68,10 @@ void selector(char* msg) {
     } else if (strcmp(cmd, "GLM") == 0) {  /* Get list of user's groups */
 
     } else {
-        // reply ERR
+        return "ERR";
     }
 
 }
-
 
 
 /**

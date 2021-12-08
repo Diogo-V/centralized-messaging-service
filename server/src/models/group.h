@@ -1,17 +1,19 @@
 #ifndef PROJETO_RC_39_V2_GROUP_H
 #define PROJETO_RC_39_V2_GROUP_H
+
 #include "user.h"
 #include "message.h"
 #include <list>
 #include <unordered_map>
 
-using namespace std;
 
 /**
  * @brief Represents a Group.
  */
-class Group{
+class Group {
+
     private:
+
         /**
          * @brief group's id
          */
@@ -38,6 +40,7 @@ class Group{
         list<Message> _messages;
 
     public:
+
         /**
          * @brief Group Constructor
          *
@@ -103,7 +106,7 @@ class Group{
          */
         list<Message> retrieveMessages(int mid);
 
-
 };
+
 
 #endif //PROJETO_RC_39_V2_GROUP_H

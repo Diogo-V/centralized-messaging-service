@@ -1,7 +1,9 @@
 #include "group.h"
 #include "user.h"
 
+
 using namespace std;
+
 
 /**
  * @brief Group constructor
@@ -17,6 +19,7 @@ Group::Group(int id, string name, User* user){
     // message
 }
 
+
 /**
  * @brief get group's name
  *
@@ -25,6 +28,7 @@ Group::Group(int id, string name, User* user){
 string Group::getName(){
     return _name;
 }
+
 
 /**
  * @brief Gets group's id
@@ -35,6 +39,7 @@ int Group::getGroupId() {
     return _id;
 }
 
+
 /**
  * @brief Get group's users
  *
@@ -43,6 +48,7 @@ int Group::getGroupId() {
 unordered_map<int, User*> Group::getUsers(){
     return _users;
 }
+
 
 /**
  * @brief Get group's message identifier counter
@@ -53,12 +59,14 @@ int Group::getMid(){
     return _mid;
 }
 
+
 /**
  * @brief increments group's message identifier counter
  */
 void Group::incrementMid(){
     _mid ++;
 }
+
 
 /**
  * @brief add user to this group
@@ -68,6 +76,7 @@ void Group::subscribeUser(User* user){
     _users.insert({user->getUserId(), user});
 }
 
+
 /**
  * @brief removes user from this group
  * @param userId
@@ -75,6 +84,7 @@ void Group::subscribeUser(User* user){
 void Group::unsubscribeUser(int userId){
     _users.erase(userId);
 }
+
 
 /**
  * @brief post new message to this group
@@ -84,6 +94,12 @@ void Group::unsubscribeUser(int userId){
 void Group::postMessage(Message m){
         _messages.push_back(m);
 }
+
+
+list<Message> Group::retrieveMessages(int mid) {
+    return list<Message>();
+}
+
 
 void Group::retrieveMessage(int id){
     //TODO:

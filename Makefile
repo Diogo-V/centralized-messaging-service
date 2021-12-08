@@ -5,9 +5,11 @@ flags = -O3 -Wall -std=c++11 -lm
 port = 58011  # Port in which our server if going to be running
 ip = tejo.tecnico.ulisboa.pt
 
+server_compile = ./server/src/*.cpp ./server/src/*.h ./server/src/models/*.cpp ./server/src/models/*.h
+
 # Compiles udp server
 su: server/src/main.cpp
-	$(CC) $(flags) -o ./server/bin/main ./server/src/main.cpp
+	$(CC) $(flags) -o ./server/bin/main $(server_compile)
 
 # Compiles client
 c: client/src/main.cpp
