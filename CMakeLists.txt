@@ -3,7 +3,7 @@ project(Projeto_RC_39_v2)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(Server_UDP
+add_executable(Server_UD
         server/src/main.cpp
         server/src/models/user.cpp
         server/src/models/user.h

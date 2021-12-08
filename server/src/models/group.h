@@ -4,6 +4,7 @@
 #include "user.h"
 #include "message.h"
 #include <list>
+#include <cstring>
 #include <unordered_map>
 
 
@@ -17,7 +18,7 @@ class Group {
         /**
          * @brief group's id
          */
-        int _id;
+        string _id;
 
         /**
          * @brief group's name
@@ -32,7 +33,7 @@ class Group {
         /**
          * @brief hashmap of users subscribed to this group
          */
-        unordered_map<int, User*> _users;
+        unordered_map<string, User*> _users;
 
         /**
          * @brief Group's message
@@ -47,7 +48,7 @@ class Group {
          * @param name
          * @param user
          */
-        Group(int id, string name, User* user);
+        Group(string id, string name, User* user);
 
         /**
         * @brief Get group's name
@@ -61,14 +62,14 @@ class Group {
          *
          * @return group's id
          */
-        int getGroupId();
+        string getGroupId();
 
         /**
         * @brief Get group's users
         *
         * @return users as an unordered map
         */
-        unordered_map<int, User*> getUsers();
+        unordered_map<string, User*> getUsers();
 
         /**
         * @brief Get group's message identifier counter
@@ -93,7 +94,7 @@ class Group {
 
          * @param userId
          */
-        void unsubscribeUser(int userId);
+        void unsubscribeUser(string userId);
 
         /**
          * @brief post new message

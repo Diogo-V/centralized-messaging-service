@@ -11,7 +11,7 @@ using namespace std;
  * @param name
  * @param user
  */
-Group::Group(int id, string name, User* user){
+Group::Group(string id, string name, User* user){
     _id = id;
     _name = name;
     _mid = 1;
@@ -35,7 +35,7 @@ string Group::getName(){
  *
  * @return group's id
  */
-int Group::getGroupId() {
+string Group::getGroupId() {
     return _id;
 }
 
@@ -45,7 +45,7 @@ int Group::getGroupId() {
  *
  * @return users as an unordered map
  */
-unordered_map<int, User*> Group::getUsers(){
+unordered_map<string, User*> Group::getUsers(){
     return _users;
 }
 
@@ -81,7 +81,7 @@ void Group::subscribeUser(User* user){
  * @brief removes user from this group
  * @param userId
  */
-void Group::unsubscribeUser(int userId){
+void Group::unsubscribeUser(string userId){
     _users.erase(userId);
 }
 

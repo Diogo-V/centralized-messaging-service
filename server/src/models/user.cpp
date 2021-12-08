@@ -10,10 +10,9 @@ using namespace std;
  * @param id
  * @param password
  */
-User::User(int id, string password){
+User::User(string id, string password){
     _id = id;
     _password = password;
-    _gid = 0;
 }
 
 
@@ -22,7 +21,7 @@ User::User(int id, string password){
  *
  * @return user id as integer
  */
-int User::getUserId(){
+string User::getUserId(){
     return _id;
 }
 
@@ -32,7 +31,7 @@ int User::getUserId(){
  *
  * @return group id
  */
-int User::getUserGid() {
+string User::getUserGid() {
     return _gid;
 }
 
@@ -52,7 +51,7 @@ string User::getUserPassword(){
  *
  * @return group as unordered map
  */
-unordered_map<int, Group*> User::getUserGroups(){
+unordered_map<string, Group*> User::getUserGroups(){
     return _groups;
 }
 
@@ -61,7 +60,7 @@ unordered_map<int, Group*> User::getUserGroups(){
  * @brief Changes user's active group
  * @param id group's id
  */
-void User::setUserGid(int id) {
+void User::setUserGid(string id) {
     _gid = id;
 }
 
@@ -72,7 +71,7 @@ void User::setUserGid(int id) {
  * @param gId group's Id
  * @param group group's pointer
  */
-void User::addGroup(int gId, Group* group){
+void User::addGroup(string gId, Group* group){
     _groups.insert({gId, group});
 }
 
@@ -82,6 +81,6 @@ void User::addGroup(int gId, Group* group){
  *
  * @param gId group's Id
  */
-void User::removeGroup(int gId){
+void User::removeGroup(string gId){
     _groups.erase(gId);
 }

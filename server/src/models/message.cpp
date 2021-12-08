@@ -2,12 +2,12 @@
 
 using namespace std;
 
-Message::Message(int id, string text){
+Message::Message(string id, string text){
     _id = id;
     _text = text;
 }
 
-int Message::getMessageId(){
+string Message::getMessageId(){
     return _id;
 };
 

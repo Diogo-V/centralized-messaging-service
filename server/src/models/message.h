@@ -12,7 +12,7 @@ class Message{
         /**
          * @brief message's id
          */
-        int _id;
+        string _id;
 
         /**
          * brief message's text
@@ -23,9 +23,9 @@ class Message{
 
     public:
         //TODO: comentar
-        Message(int id, string text);
+        Message(string id, string text);
 
-        int getMessageId();
+        string getMessageId();
 
         string getMessageText();
 

@@ -16,7 +16,7 @@ class User {
         /**
          * @brief User's id
          */
-        int _id;
+        string _id;
 
         /**
          * @brief User's password
@@ -26,12 +26,12 @@ class User {
         /**
          * @brief User's group
          */
-        unordered_map<int, Group*> _groups;
+        unordered_map<string, Group*> _groups;
 
         /*
          * @brief holds the current active group
          */
-        int _gid;
+        string _gid;
 
     public:
 
@@ -41,19 +41,19 @@ class User {
          * @param id
          * @param password
          */
-        User(int id, string password);
+        User(string id, string password);
 
         /**
          * @brief Gets user id
          *
          * @return user id as integer
          */
-        int getUserId();
+        string getUserId();
 
         /*
          * @brief Gets user's active group id
          */
-        int getUserGid();
+        string getUserGid();
 
         /**
         * @brief Gets user password
@@ -67,14 +67,14 @@ class User {
         *
         * @return group as unordered map
         */
-        unordered_map<int, Group*> getUserGroups();
+        unordered_map<string, Group*> getUserGroups();
 
         /**
          * @brief Changes active group id
          *
          * @param id new group's id
          */
-        void setUserGid(int id);
+        void setUserGid(string id);
 
         /**
         * @brief add group to user's group list
@@ -82,14 +82,14 @@ class User {
         * @param gId group's Id
         * @param group group's pointer
         */
-        void addGroup(int gId, Group* group);
+        void addGroup(string gId, Group* group);
 
         /**
         * @brief remove group from user's group list
         *
         * @param gId group's Id
         */
-        void removeGroup(int gId);
+        void removeGroup(string gId);
 
 }
 

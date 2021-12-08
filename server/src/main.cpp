@@ -1,5 +1,10 @@
 /*------------------------------------- Standard definitions -------------------------------------*/
 
+#include "models/user.h"
+#include "models/group.h"
+#include "models/message.h"
+#include "api.h"
+
 #include <iostream>
 #include <unistd.h>
 #include <cstdio>
@@ -8,6 +13,9 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <cstring>
+#include <vector>
+#include <sstream>
+
 
 using namespace std;
 
@@ -33,10 +41,23 @@ ssize_t n;  /* Holds number of bytes read/sent or -1 in case of error */
 socklen_t addrlen;  /* Holds size of message sent from sender */
 struct sockaddr_in addr;  /* Describes internet socket address. Holds sender info */
 char buffer[MSG_MAX_SIZE];  /* Holds current message received in this socket */
+char response[MSG_MAX_SIZE];  /* Holds current message sent from this socket */
 
 bool isVerbose = false;  /* Is true if the server is set to verbose mode */
 
 /*----------------------------------------- Functions --------------------------------------------*/
+
+/**
+ * Transforms a string with spaces in a vector with substring tokenized by the spaces.
+ *
+ * @param str string which is going to be separated
+ * @param out vector with substrings
+ */
+void split(string const &str, vector<string> &out) {
+    stringstream ss(str); string s; const char delim = (const char)* " ";
+    while (getline(ss, s, delim)) out.push_back(s);
+}
+
 
 /**
  * Receives message sent from user and decides based on the first 3 chars which action to take.
@@ -49,23 +70,53 @@ string selector(char* msg, unordered_map<int, User>* users, unordered_map<int, G
     split(msg, inputs);  /* Splits msg by the spaces and returns an array with everything*/
     string status;
 
-    if (strcmp(cmd, "REG") == 0) {  /* Registers user */
+    if (inputs[0] == "REG") {  /* Registers user */
+        /* receives status from call function*/
+        cout << "REG!" << endl;
 
-        cout << "Veio aqui!" << endl;
+        return "REG" + status;
 
-    } else if (strcmp(cmd, "UNR") == 0) {  /* Unregisters user */
+    } else if (inputs[0] == "UNR") {  /* Unregisters user */
+        /* receives status from call function*/
+        cout << "UNR" << endl;
 
-    } else if (strcmp(cmd, "LOG") == 0) {  /* Signs in user */
+        return "UNR" + status;
 
-    } else if (strcmp(cmd, "OUT") == 0) {  /* Logout user */
+    } else if (inputs[0] == "LOG") {  /* Signs in user */
+        /* receives status from call function*/
+        cout << "LOG" << endl;
 
-    } else if (strcmp(cmd, "GLS") == 0) {  /* Requested list of existing groups */
+        return "LOG" + status;
 
-    } else if (strcmp(cmd, "GSR") == 0) {  /* Join group */
+    } else if (inputs[0] == "OUT") {  /* Logout user */
+        /* receives status from call function*/
+        cout << "OUT" << endl;
 
-    } else if (strcmp(cmd, "GUR") == 0) {  /* Unsubscribe to group */
+        return "OUT" + status;
 
-    } else if (strcmp(cmd, "GLM") == 0) {  /* Get list of user's groups */
+    } else if (inputs[0] == "GLS") {  /* Requested list of existing groups */
+        /* receives status from call function*/
+        cout << "GLS" << endl;
+
+        return "GLS" + status;
+
+    } else if (inputs[0] == "GSR") {  /* Join group */
+        /* receives status from call function*/
+        cout << "GSR" << endl;
+
+        return "GSR" + status;
+
+    } else if (inputs[0] == "GUR") {  /* Unsubscribe to group */
+        /* receives status from call function*/
+        cout << "GUR" << endl;
+
+        return "GUR" + status;
+
+    } else if (inputs[0] == "GLM") {  /* Get list of user's groups */
+        /* receives status from call function*/
+        cout << "GLM" << endl;
+
+        return "GLM" + status;
 
     } else {
         return "ERR";
@@ -82,8 +133,13 @@ string selector(char* msg, unordered_map<int, User>* users, unordered_map<int, G
  * @return 0 if success and 1 if error
  */
 int main(int argc, char const *argv[]) {
+    /* Holds all users in our server*/
+    unordered_map<string, User> users;
 
-    /* Creates udp socket for internet */
+    /* Holds all groups in our server*/
+    unordered_map<string, Group> groups;
+
+    /* Creates udp soGroup for internet */
 	fd = socket(AF_INET, SOCK_DGRAM, 0);
     assert_(fd != -1, "Could not create socket")
 
@@ -111,11 +167,9 @@ int main(int argc, char const *argv[]) {
         assert_(n != -1, "Failed to receive message")
 
         /* Process client's message and decides what to do with it based on the passed code */
-        selector(buffer);
+        response = selector(buffer, &users, &groups).c_str();
 
-        /* Returns confirmation to client */
-		write(1, "received: ", 10); write(1, buffer, n);
-		n = sendto(fd, buffer, n, 0, (struct sockaddr*) &addr, addrlen);
+		n = sendto(fd, response, n, 0, (struct sockaddr*) &addr, addrlen);
         assert_(n != -1, "Failed to send message")
 
 	}

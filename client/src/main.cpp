@@ -49,24 +49,53 @@ char buffer[MSG_MAX_SIZE];  /* Holds current message received in this socket */
  */
 void selector(const string& cmd, string msg) {
 
-    if (strcmp(cmd.c_str(), "RRG") == 0) {  /* Receives status from REG (register user) */
+    if ( strcmp(cmd.c_str(), "RRG") == 0)  {  /* Receives status from REG (register user) */
+        if (msg == "OK") cout << "User registered successfully" << endl;
+        else if (msg == "DUP") cerr << "Failed. User has already registered" << endl;
+        else if (msg == "NOK") cerr << "Failed. Too many users already registered " << endl;
+        else cerr << "Invalid status" << endl;
 
-    } else if (strcmp(cmd.c_str(), "RUN") == 0) {  /* Receives status from UNR (unregister user) */
+    } else if( strcmp(cmd.c_str(), "RUN") == 0) { /* Receives status from UNR (unregister user) */
+        if (msg == "OK") cout << "User unregistered successfully" << endl;
+        else if (msg == "NOK") cerr << "Failed. Invalid user id or incorrect password." << endl;
+        else cerr << "Invalid status" << endl;
 
     } else if (strcmp(cmd.c_str(), "RLO") == 0) {  /* Receives status from LOG (login user) */
+        if (msg == "OK") cout << "User logged in successfully" << endl;
+        else if (msg == "NOK") cerr << "Failed. Invalid user id or incorrect password." << endl;
+        else cerr << "Invalid status" << endl;
 
     } else if (strcmp(cmd.c_str(), "ROU") == 0) {  /* Receives status from OUT (logout user) */
+        if (msg == "OK") cout << "User logged out successfully" << endl;
+        else if (msg == "NOK") cerr << "Failed. Invalid user id or incorrect password." << endl;
+        else cerr << "Invalid status" << endl;
 
     } else if (strcmp(cmd.c_str(), "RGL") == 0) {  /* Receives status from GLS (list of groups) */
+        //TODO: recebe grupos
 
     } else if (strcmp(cmd.c_str(), "RGS") == 0) {  /* Receives status from GSR (join group) */
+        if (msg == "OK") cout << "User subscribed successfully." << endl;
+        else if (msg == "NEW") cout << "New group created. User subscribed successfully." << endl;
+        else if (msg == "E_USR") cerr << "Failed. Invalid user id." << endl;
+        else if (msg == "E_GRP") cerr << "Failed. Invalid group id." << endl;
+        else if (msg == "E_GNAME") cerr << "Failed. Invalid group name." << endl;
+        else if (msg == "E_FULL") cerr << "Failed. Couldn't create new group." << endl;
+        else if (msg == "NOK") cerr << "Failed. Unkown reasons." << endl;
+        else cerr << "Invalid status" << endl;
 
     } else if (strcmp(cmd.c_str(), "RGU") == 0) {  /* Receives status from GUR (unsub group) */
+        if (msg == "OK") cout << "User unsubscribed successfully" << endl;
+        else if (msg == "E_USR") cerr << "Failed. Invalid user id.";
+        else if (msg == "E_GRP") cerr << "Failed. Invalid group id." << endl;
+        else if (msg == "NOK") cerr << "Failed. Unkown reason." << endl;
+        else cerr << "Invalid status" << endl;
 
     } else if (strcmp(cmd.c_str(), "RGM") == 0) {  /* Receives status from GLM (lst usr groups) */
+        //TODO: mostra grupos que está subscrito
+        // else cerr << "Invalid status" << endl;
 
     } else {
-        // reply ERR
+        cerr << "ERR" << endl;
     }
 
 }
@@ -211,11 +240,20 @@ int main(int argc, char const *argv[]) {
             continue;
         }
 
-        /* TODO: Send message to server */
+        /* Sends message to server */
+        n = sendto(fd, req.c_str(), req.length(), 0, res->ai_addr, res->ai_addrlen);
+        assert_(n != -1, "Failed to send message")
 
-        /* TODO: Get answer from server */
+        /* Gets server response and processes it */
+        bzero(&addr, sizeof(struct sockaddr_in));
+        addrlen = sizeof(addr);
+        n = recvfrom(fd, buffer, MSG_MAX_SIZE, 0, (struct sockaddr*) &addr, &addrlen);
+        assert_(n != -1, "Failed to receive message")
 
-        /* TODO: Based on the message sent by the server, display a message to the user */
+        /* Based on the message sent by the server, display a message to the user */
+        //selector(buffer);
+        write(1, "echo: ", 6);
+        write(1, buffer, n);
 
         /* Gets the new command that the user input. This replaces the previous command */
         cin.getline(buffer, MSG_MAX_SIZE);
@@ -227,13 +265,12 @@ int main(int argc, char const *argv[]) {
     assert_(n != -1, "Failed to send message")*/
 
     /* Gets server response and processes it */
-    bzero(&addr, sizeof(struct sockaddr_in));
+    /*bzero(&addr, sizeof(struct sockaddr_in));
     addrlen = sizeof(addr);
     n = recvfrom(fd, buffer, MSG_MAX_SIZE, 0, (struct sockaddr*) &addr, &addrlen);
-    assert_(n != -1, "Failed to receive message")
+    assert_(n != -1, "Failed to receive message")*/
 
-    write(1, "echo: ", 6);
-    write(1, buffer, n);
+
 
     /* Closes client socket */
     freeaddrinfo(res);
