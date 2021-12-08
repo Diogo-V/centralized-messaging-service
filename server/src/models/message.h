@@ -1,5 +1,6 @@
 #ifndef PROJETO_RC_39_V2_MESSAGE_H
 #define PROJETO_RC_39_V2_MESSAGE_H
+
 #include <string>
 
 using namespace std;
@@ -23,7 +24,7 @@ class Message{
 
     public:
         //TODO: comentar
-        Message(string id, string text);
+        explicit Message(string id, string text);
 
         string getMessageId();
 

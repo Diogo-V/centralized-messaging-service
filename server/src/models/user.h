@@ -1,9 +1,12 @@
 #ifndef PROJETO_RC_39_V2_USER_H
 #define PROJETO_RC_39_V2_USER_H
 
-#include "group.h"
-#include <cstring>
 #include <unordered_map>
+#include <string>
+#include <list>
+
+
+using namespace std;
 
 
 /**
@@ -26,7 +29,7 @@ class User {
         /**
          * @brief User's group
          */
-        unordered_map<string, Group*> _groups;
+         list<string> _group_ids;
 
         /*
          * @brief holds the current active group
@@ -41,7 +44,7 @@ class User {
          * @param id
          * @param password
          */
-        User(string id, string password);
+        explicit User(string id, string password);
 
         /**
          * @brief Gets user id
@@ -67,7 +70,7 @@ class User {
         *
         * @return group as unordered map
         */
-        unordered_map<string, Group*> getUserGroups();
+        list<string> getUserGroups();
 
         /**
          * @brief Changes active group id
@@ -79,10 +82,9 @@ class User {
         /**
         * @brief add group to user's group list
         *
-        * @param gId group's Id
         * @param group group's pointer
         */
-        void addGroup(string gId, Group* group);
+        void addGroup(string gId);
 
         /**
         * @brief remove group from user's group list
@@ -91,7 +93,7 @@ class User {
         */
         void removeGroup(string gId);
 
-}
+};
 
 
 #endif //PROJETO_RC_39_V2_USER_H

@@ -2,11 +2,9 @@
 #define PROJETO_RC_39_V2_API_H
 
 #include "models/user.h"
-#include <unordered_map>
-#include <cstring>
 
 using namespace std;
 
-string register(unordered_map<int, User>* users, int uid, string pass);
+string register_user(unordered_map<int, User>* users, string uid, string pass);
 
 #endif //PROJETO_RC_39_V2_API_H

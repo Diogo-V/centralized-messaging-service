@@ -51,8 +51,8 @@ string User::getUserPassword(){
  *
  * @return group as unordered map
  */
-unordered_map<string, Group*> User::getUserGroups(){
-    return _groups;
+list<string> User::getUserGroups(){
+    return _group_ids;
 }
 
 
@@ -69,10 +69,9 @@ void User::setUserGid(string id) {
  * @brief add group to user's group list
  *
  * @param gId group's Id
- * @param group group's pointer
  */
-void User::addGroup(string gId, Group* group){
-    _groups.insert({gId, group});
+void User::addGroup(string gId){
+    _group_ids.push_back(gId);
 }
 
 
@@ -82,5 +81,5 @@ void User::addGroup(string gId, Group* group){
  * @param gId group's Id
  */
 void User::removeGroup(string gId){
-    _groups.erase(gId);
+    _group_ids.remove(gId);
 }

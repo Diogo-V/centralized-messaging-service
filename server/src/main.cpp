@@ -3,7 +3,6 @@
 #include "models/user.h"
 #include "models/group.h"
 #include "models/message.h"
-#include "api.h"
 
 #include <iostream>
 #include <unistd.h>
@@ -41,7 +40,6 @@ ssize_t n;  /* Holds number of bytes read/sent or -1 in case of error */
 socklen_t addrlen;  /* Holds size of message sent from sender */
 struct sockaddr_in addr;  /* Describes internet socket address. Holds sender info */
 char buffer[MSG_MAX_SIZE];  /* Holds current message received in this socket */
-char response[MSG_MAX_SIZE];  /* Holds current message sent from this socket */
 
 bool isVerbose = false;  /* Is true if the server is set to verbose mode */
 
@@ -64,7 +62,7 @@ void split(string const &str, vector<string> &out) {
  *
  * @param msg message sent by user
  */
-string selector(char* msg, unordered_map<int, User>* users, unordered_map<int, Group>* groups) {
+string selector(char* msg, unordered_map<string, User>* users, unordered_map<string, Group>* groups) {
 
     vector<string> inputs;  /* Holds a list of strings with the inputs from our user */
     split(msg, inputs);  /* Splits msg by the spaces and returns an array with everything*/
@@ -133,11 +131,12 @@ string selector(char* msg, unordered_map<int, User>* users, unordered_map<int, G
  * @return 0 if success and 1 if error
  */
 int main(int argc, char const *argv[]) {
+
     /* Holds all users in our server*/
-    unordered_map<string, User> users;
+    unordered_map<string, User> users = {};
 
     /* Holds all groups in our server*/
-    unordered_map<string, Group> groups;
+    unordered_map<string, Group> groups = {};
 
     /* Creates udp soGroup for internet */
 	fd = socket(AF_INET, SOCK_DGRAM, 0);
@@ -167,9 +166,9 @@ int main(int argc, char const *argv[]) {
         assert_(n != -1, "Failed to receive message")
 
         /* Process client's message and decides what to do with it based on the passed code */
-        response = selector(buffer, &users, &groups).c_str();
+        string response = selector(buffer, &users, &groups).c_str();
 
-		n = sendto(fd, response, n, 0, (struct sockaddr*) &addr, addrlen);
+		n = sendto(fd, response.c_str(), n, 0, (struct sockaddr*) &addr, addrlen);
         assert_(n != -1, "Failed to send message")
 
 	}

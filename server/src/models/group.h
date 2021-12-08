@@ -1,11 +1,9 @@
 #ifndef PROJETO_RC_39_V2_GROUP_H
 #define PROJETO_RC_39_V2_GROUP_H
 
-#include "user.h"
 #include "message.h"
+#include "user.h"
 #include <list>
-#include <cstring>
-#include <unordered_map>
 
 
 /**
@@ -48,7 +46,7 @@ class Group {
          * @param name
          * @param user
          */
-        Group(string id, string name, User* user);
+        explicit Group(string id, string name);
 
         /**
         * @brief Get group's name

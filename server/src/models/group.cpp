@@ -1,6 +1,4 @@
 #include "group.h"
-#include "user.h"
-
 
 using namespace std;
 
@@ -11,11 +9,10 @@ using namespace std;
  * @param name
  * @param user
  */
-Group::Group(string id, string name, User* user){
+Group::Group(string id, string name){
     _id = id;
     _name = name;
     _mid = 1;
-    _users.insert({user->getUserId(), user});
     // message
 }
 
@@ -97,10 +94,7 @@ void Group::postMessage(Message m){
 
 
 list<Message> Group::retrieveMessages(int mid) {
-    return list<Message>();
+    return {};
 }
 
 
-void Group::retrieveMessage(int id){
-    //TODO:
-}

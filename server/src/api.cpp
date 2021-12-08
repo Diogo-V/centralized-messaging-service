@@ -1,5 +1,7 @@
 #include "api.h"
 
+#include <utility>
+
 /**
  * @brief Registers user
  *
@@ -9,19 +11,17 @@
  *
  * @return status message
  */
-string register(unordered_map<string, User>* users, string uid, string pass){
-    User user;
+string register_user(unordered_map<string, User>* users, string uid, string pass){
 
-    if (uid==00000) { /* verifies if user id is not 00000 */
+    if (uid == "00000") { /* verifies if user id is not 00000 */
         return "NOK";
     }
-    else if(umap.find(uid) == umap.end()){ /* verifies if user isn't already registered */
+    else if(users->find(uid) == users->end()){ /* verifies if user isn't already registered */
         return "DUP";
     }
     else{ /* registers user */
-        user.id=uid;
-        user.password=pass;
-        users.insert(make_pair(uid, user));
+        User user(uid, pass);
+        users->insert(make_pair(uid, user));
         return "OK";
     }
 }
