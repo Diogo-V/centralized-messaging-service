@@ -1,16 +1,12 @@
 #ifndef PROJETO_RC_39_V2_API_H
 #define PROJETO_RC_39_V2_API_H
 
-#include <string>
-
+#include "models/user.h"
+#include <unordered_map>
+#include <cstring>
 
 using namespace std;
 
-/**
- * @brief Registers a User.
- */
-int register(char* command){
-
-}
+string register(unordered_map<int, User>* users, int uid, string pass);
 
 #endif //PROJETO_RC_39_V2_API_H
