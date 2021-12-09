@@ -55,6 +55,10 @@ list<string> User::getUserGroups(){
     return _group_ids;
 }
 
+//TODO:comentar isto!
+bool User::getUserStatus() {
+    return _status;
+}
 
 /**
  * @brief Changes user's active group

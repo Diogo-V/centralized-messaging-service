@@ -49,13 +49,29 @@ User user;  /* Holds current user */
 
 /*----------------------------------------- Functions --------------------------------------------*/
 
+
+/*
+* Transforms a string with spaces in a vector with substring tokenized by the spaces.
+*
+* @param str string which is going to be separated
+* @param out vector with substrings
+*/
+void split(string const &str, vector<string> &out) {
+    stringstream ss(str); string s; const char delim = (const char)* " ";
+    while (getline(ss, s, delim)) out.push_back(s);
+}
+
+
 /**
  * Receives message sent from server and decides based on the first 3 chars which action to take.
  *
  * @param cmd requested command
  * @param msg rest of the message without the command
  */
-void selector(const string& cmd, string msg) {
+void selector(const string& msg) {
+
+    vector<string> outputs;  /* Holds a list of strings with the outputs from our server */
+    split(msg, outputs);  /* Splits msg by the spaces and returns an array with everything */
 
     if(outputs[0] == "RRG")  {  /* Receives status from REG (register user) */
         if (outputs[1] == "OK") cout << "User registered successfully" << endl;
@@ -68,37 +84,37 @@ void selector(const string& cmd, string msg) {
         else if (outputs[1] == "NOK") cerr << "Failed. Invalid user id or incorrect password." << endl;
         else cerr << "Invalid status" << endl;
 
-    } else if (strcmp(cmd.c_str(), "RLO") == 0) {  /* Receives status from LOG (login user) */
-        if (msg == "OK") cout << "User logged in successfully" << endl;
-        else if (msg == "NOK") cerr << "Failed. Invalid user id or incorrect password." << endl;
+    } else if (outputs[0] == "RLO") {  /* Receives status from LOG (login user) */
+        if (outputs[1] == "OK") { cout << "User logged in successfully" << endl; user.is_logged = true; }
+        else if (outputs[1] == "NOK") cerr << "Failed. Invalid user id or incorrect password." << endl;
         else cerr << "Invalid status" << endl;
 
-    } else if (strcmp(cmd.c_str(), "ROU") == 0) {  /* Receives status from OUT (logout user) */
-        if (msg == "OK") cout << "User logged out successfully" << endl;
-        else if (msg == "NOK") cerr << "Failed. Invalid user id or incorrect password." << endl;
+    } else if (outputs[0] == "ROU") {  /* Receives status from OUT (logout user) */
+        if (outputs[1] == "OK") { cout << "User logged out successfully" << endl; user.is_logged = false; }
+        else if (outputs[1] == "NOK") cerr << "Failed. Invalid user id or incorrect password." << endl;
         else cerr << "Invalid status" << endl;
 
-    } else if (strcmp(cmd.c_str(), "RGL") == 0) {  /* Receives status from GLS (list of groups) */
+    } else if (outputs[0] == "RGL") {  /* Receives status from GLS (list of groups) */
         //TODO: recebe grupos
 
-    } else if (strcmp(cmd.c_str(), "RGS") == 0) {  /* Receives status from GSR (join group) */
-        if (msg == "OK") cout << "User subscribed successfully." << endl;
-        else if (msg == "NEW") cout << "New group created. User subscribed successfully." << endl;
-        else if (msg == "E_USR") cerr << "Failed. Invalid user id." << endl;
-        else if (msg == "E_GRP") cerr << "Failed. Invalid group id." << endl;
-        else if (msg == "E_GNAME") cerr << "Failed. Invalid group name." << endl;
-        else if (msg == "E_FULL") cerr << "Failed. Couldn't create new group." << endl;
-        else if (msg == "NOK") cerr << "Failed. Unkown reasons." << endl;
+    } else if (outputs[0] == "RGS") {  /* Receives status from GSR (join group) */
+        if (outputs[1] == "OK") cout << "User subscribed successfully." << endl;
+        else if (outputs[1] == "NEW") cout << "New group created. User subscribed successfully." << endl;
+        else if (outputs[1] == "E_USR") cerr << "Failed. Invalid user id." << endl;
+        else if (outputs[1] == "E_GRP") cerr << "Failed. Invalid group id." << endl;
+        else if (outputs[1] == "E_GNAME") cerr << "Failed. Invalid group name." << endl;
+        else if (outputs[1] == "E_FULL") cerr << "Failed. Couldn't create new group." << endl;
+        else if (outputs[1] == "NOK") cerr << "Failed. Unkown reasons." << endl;
         else cerr << "Invalid status" << endl;
 
-    } else if (strcmp(cmd.c_str(), "RGU") == 0) {  /* Receives status from GUR (unsub group) */
-        if (msg == "OK") cout << "User unsubscribed successfully" << endl;
-        else if (msg == "E_USR") cerr << "Failed. Invalid user id.";
-        else if (msg == "E_GRP") cerr << "Failed. Invalid group id." << endl;
-        else if (msg == "NOK") cerr << "Failed. Unkown reason." << endl;
+    } else if (outputs[0] == "RGU") {  /* Receives status from GUR (unsub group) */
+        if (outputs[1] == "OK") cout << "User unsubscribed successfully" << endl;
+        else if (outputs[1] == "E_USR") cerr << "Failed. Invalid user id.";
+        else if (outputs[1] == "E_GRP") cerr << "Failed. Invalid group id." << endl;
+        else if (outputs[1] == "NOK") cerr << "Failed. Unkown reason." << endl;
         else cerr << "Invalid status" << endl;
 
-    } else if (strcmp(cmd.c_str(), "RGM") == 0) {  /* Receives status from GLM (lst usr groups) */
+    } else if (outputs[0] == "RGM") {  /* Receives status from GLM (lst usr groups) */
         //TODO: mostra grupos que está subscrito
         // else cerr << "Invalid status" << endl;
 
@@ -106,18 +122,6 @@ void selector(const string& cmd, string msg) {
         cerr << "ERR" << endl;
     }
 
-}
-
-
-/**
- * Transforms a string with spaces in a vector with substring tokenized by the spaces.
- *
- * @param str string which is going to be separated
- * @param out vector with substrings
- */
-void split(string const &str, vector<string> &out) {
-    stringstream ss(str); string s; const char delim = (const char)* " ";
-    while (getline(ss, s, delim)) out.push_back(s);
 }
 
 
@@ -316,17 +320,6 @@ int main(int argc, char const *argv[]) {
         cin.getline(buffer, MSG_MAX_SIZE);
 
     }
-
-    /* Sends message to server */
-    /* n = sendto(fd, "REG server!!!\n",14, 0, res->ai_addr, res->ai_addrlen);
-    assert_(n != -1, "Failed to send message")*/
-
-    /* Gets server response and processes it */
-    /*bzero(&addr, sizeof(struct sockaddr_in));
-    addrlen = sizeof(addr);
-    n = recvfrom(fd, buffer, MSG_MAX_SIZE, 0, (struct sockaddr*) &addr, &addrlen);
-    assert_(n != -1, "Failed to receive message")*/
-
 
 
     /* Closes client socket */

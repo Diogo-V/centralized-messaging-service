@@ -36,6 +36,11 @@ class User {
          */
         string _gid;
 
+        /**
+         * @brief holds the current status of the users (logged in or not)
+         */
+        bool _status;
+
     public:
 
         /**
@@ -71,6 +76,12 @@ class User {
         * @return group as unordered map
         */
         list<string> getUserGroups();
+
+        /**
+         * @brief Get's user status (logged in or not)
+         * @return status as bool
+         */
+        bool getUserStatus();
 
         /**
          * @brief Changes active group id
