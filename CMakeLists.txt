@@ -15,4 +15,4 @@ add_executable(Server_UD
         server/src/api.h
 )
 
-add_executable(Client client/src/main.cpp)
+add_executable(Client client/src/main.cpp client/src/models/user.cpp client/src/models/user.h)

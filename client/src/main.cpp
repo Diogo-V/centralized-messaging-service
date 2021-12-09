@@ -39,6 +39,14 @@ socklen_t addrlen;  /* Holds size of message sent from sender */
 struct sockaddr_in addr;  /* Describes internet socket address. Holds sender info */
 char buffer[MSG_MAX_SIZE];  /* Holds current message received in this socket */
 
+typedef struct user {  /* Represents current client's user */
+    string uid;
+    bool is_logged;
+    user() { uid = ""; is_logged = false; }
+} User;
+
+User user;  /* Holds current user */
+
 /*----------------------------------------- Functions --------------------------------------------*/
 
 /**
@@ -49,15 +57,15 @@ char buffer[MSG_MAX_SIZE];  /* Holds current message received in this socket */
  */
 void selector(const string& cmd, string msg) {
 
-    if ( strcmp(cmd.c_str(), "RRG") == 0)  {  /* Receives status from REG (register user) */
-        if (msg == "OK") cout << "User registered successfully" << endl;
-        else if (msg == "DUP") cerr << "Failed. User has already registered" << endl;
-        else if (msg == "NOK") cerr << "Failed. Too many users already registered " << endl;
+    if(outputs[0] == "RRG")  {  /* Receives status from REG (register user) */
+        if (outputs[1] == "OK") cout << "User registered successfully" << endl;
+        else if (outputs[1] == "DUP") cerr << "Failed. User has already registered" << endl;
+        else if (outputs[1] == "NOK") cerr << "Failed. Too many users already registered " << endl;
         else cerr << "Invalid status" << endl;
 
-    } else if( strcmp(cmd.c_str(), "RUN") == 0) { /* Receives status from UNR (unregister user) */
-        if (msg == "OK") cout << "User unregistered successfully" << endl;
-        else if (msg == "NOK") cerr << "Failed. Invalid user id or incorrect password." << endl;
+    } else if (outputs[0] == "RUN") { /* Receives status from UNR (unregister user) */
+        if (outputs[1] == "OK") cout << "User unregistered successfully" << endl;
+        else if (outputs[1] == "NOK") cerr << "Failed. Invalid user id or incorrect password." << endl;
         else cerr << "Invalid status" << endl;
 
     } else if (strcmp(cmd.c_str(), "RLO") == 0) {  /* Receives status from LOG (login user) */
@@ -164,13 +172,63 @@ bool preprocessing(const string& msg, string& out) {
 
     } else if (inputs[0] == "login") {
 
-        /* Verifies if the user input a valid command */
+        /* Verifies if the user input a valid command and that this command can be issued */
         validate_(inputs.size() == 3, "User did not input user ID and/or password")
         validate_(inputs[1].size() == 5, "User ID should have 5 numbers")
         validate_(isNumber(inputs[1]), "User ID is not a number")
+        validate_(!user.is_logged, "Client is already logged in")
 
         /* Transforms user input into a valid command to be sent to the server */
         out = "LOG " + inputs[1] + " " + inputs[2] + "\n";
+
+        user.uid = inputs[1];  /* Sets user's uid */
+
+        return true;  /* Since everything was ok, we return true */
+
+    } else if (inputs[0] == "logout") {
+
+        /* TODO: implement login functionality */
+
+        return true;  /* Since everything was ok, we return true */
+
+    } else if (inputs[0] == "groups" || inputs[0] == "gl") {
+
+        /* Transforms user input into a valid command to be sent to the server */
+        out = "GLS\n";
+
+        return true;  /* Since everything was ok, we return true */
+
+    } else if (inputs[0] == "subscribe" || inputs[0] == "s") {
+
+        /* Verifies if the user input a valid command and that this command can be issued */
+        validate_(inputs.size() == 3, "User did not input group ID and/or group name")
+        validate_(isNumber(inputs[1]), "Group ID is not a number")
+        validate_(user.is_logged, "Client is not logged in")
+
+        /* Transforms user input into a valid command to be sent to the server */
+        out = "GSR " + user.uid + " " + inputs[1] + " " + inputs[2] + "\n";
+
+        return true;  /* Since everything was ok, we return true */
+
+    } else if (inputs[0] == "unsubscribe" || inputs[0] == "u") {
+
+        /* Verifies if the user input a valid command and that this command can be issued */
+        validate_(inputs.size() == 2, "User did not input group ID")
+        validate_(isNumber(inputs[1]), "Group ID is not a number")
+        validate_(user.is_logged, "Client is not logged in")
+
+        /* Transforms user input into a valid command to be sent to the server */
+        out = "GUR " + user.uid + "\n";
+
+        return true;  /* Since everything was ok, we return true */
+
+    } else if (inputs[0] == "my_groups" || inputs[0] == "mgl") {
+
+        /* Verifies if the user input a valid command and that this command can be issued */
+        validate_(user.is_logged, "Client is not logged in")
+
+        /* Transforms user input into a valid command to be sent to the server */
+        out = "GLM " + user.uid + " " + inputs[1] + "\n";
 
         return true;  /* Since everything was ok, we return true */
 
@@ -251,9 +309,8 @@ int main(int argc, char const *argv[]) {
         assert_(n != -1, "Failed to receive message")
 
         /* Based on the message sent by the server, display a message to the user */
-        //selector(buffer);
-        write(1, "echo: ", 6);
-        write(1, buffer, n);
+        selector(buffer);
+        write(1, "Server mandou a mensagem com sucesso\n", 30);
 
         /* Gets the new command that the user input. This replaces the previous command */
         cin.getline(buffer, MSG_MAX_SIZE);
