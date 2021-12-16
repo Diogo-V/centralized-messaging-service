@@ -91,6 +91,11 @@ class User {
         void setUserGid(string id);
 
         /**
+         * @brief Changes user's status  (logged in or not)
+         */
+        void setUserStatus();
+
+        /**
         * @brief add group to user's group list
         *
         * @param group group's pointer

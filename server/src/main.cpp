@@ -9,6 +9,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <sys/socket.h>
+#include <signal.h>
 #include <netinet/in.h>
 #include <netdb.h>
 #include <cstring>
@@ -122,6 +123,9 @@ string selector(char* msg, unordered_map<string, User>* users, unordered_map<str
 
 }
 
+void termination_handler(){}
+
+
 
 /**
  * Setups server loop.
@@ -132,10 +136,17 @@ string selector(char* msg, unordered_map<string, User>* users, unordered_map<str
  */
 int main(int argc, char const *argv[]) {
 
-    /* Holds all users in our server*/
+    /*
+    struct sigaction new_action;
+    new_action.sa_handler = termination_handler; // set callback function
+    sigemptyset(&new_action.sa_mask);
+    new_action.sa_flags = 0;
+    sigaction(SIGINT, &new_action, NULL)*/
+
+    /* Holds all users in our server. Key is user's id*/
     unordered_map<string, User> users = {};
 
-    /* Holds all groups in our server*/
+    /* Holds all groups in our server. Key is group's id */
     unordered_map<string, Group> groups = {};
 
     /* Creates udp soGroup for internet */

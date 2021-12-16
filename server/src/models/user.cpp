@@ -56,6 +56,10 @@ list<string> User::getUserGroups(){
 }
 
 //TODO:comentar isto!
+/**
+ * @brief gets user status (true if logged in, false otherwise)
+ * @return status as bool
+ */
 bool User::getUserStatus() {
     return _status;
 }
@@ -66,6 +70,13 @@ bool User::getUserStatus() {
  */
 void User::setUserGid(string id) {
     _gid = id;
+}
+
+/**
+ * @brief Changes user's status  (logged in or not)
+ */
+void User::setUserStatus() {
+    _status = !_status;
 }
 
 
@@ -87,3 +98,4 @@ void User::addGroup(string gId){
 void User::removeGroup(string gId){
     _group_ids.remove(gId);
 }
+

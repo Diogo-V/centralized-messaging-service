@@ -60,7 +60,7 @@ string unregister_user(unordered_map<string, User>* users, string uid, string pa
  * @param users structure that holds all users in the server
  * @param uid user id
  * @param pass user password
- * @return
+ * @return status message
  */
 string login_user(unordered_map<string, User>* users, string uid, string pass) {
 
@@ -71,6 +71,11 @@ string login_user(unordered_map<string, User>* users, string uid, string pass) {
             return "NOK";
     }
 
+    /* verifies if user is already logged in*/
+    else if (it->second.getUserStatus()){
+        return "NOK";
+    }
+
     /*verifies is password is equal*/
     else if (it->second.getUserPassword() != pass){
         return "NOK";
@@ -78,9 +83,14 @@ string login_user(unordered_map<string, User>* users, string uid, string pass) {
 
     /* user logged in*/
     else{
+        /* set user status to true*/
+        it->second.setUserStatus();
         return "OK";
     }
+
 }
+
+// TODO: fazer logged out
 
 string list_groups(unordered_map<string, Group>* groups){
     char* list;
