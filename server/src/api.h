@@ -1,7 +1,10 @@
 #ifndef PROJETO_RC_39_V2_API_H
 #define PROJETO_RC_39_V2_API_H
 
+#include <cstring>
 #include "models/user.h"
+#include "models/group.h"
+
 #define USER_LIMIT 99999
 
 using namespace std;

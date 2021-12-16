@@ -82,4 +82,16 @@ string login_user(unordered_map<string, User>* users, string uid, string pass) {
     }
 }
 
-string list_groups();
+string list_groups(unordered_map<string, Group>* groups){
+    char* list;
+    unordered_map<string, Group>:: iterator itr;
+
+    for (itr = groups.begin(); itr != groups.end(); itr++){
+        strcat(list, itr.first);
+        strcat(list, " \\ ");
+        strcat(list, itr.second.getName());
+        strcat(list, "\n");
+    }
+
+    return list;
+};
