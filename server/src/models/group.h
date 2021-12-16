@@ -26,7 +26,7 @@ class Group {
         /**
          * @brief message identifier counter
          */
-        int _mid;
+        uint32_t _mid;
 
         /**
          * @brief hashmap of users subscribed to this group
@@ -74,7 +74,7 @@ class Group {
         *
         * @return message identifier counter
         */
-        int getMid();
+        uint32_t getMid();
 
         /**
         * @brief increments group's message identifier counter
@@ -101,9 +101,9 @@ class Group {
         void postMessage(Message m);
 
         /**
-         * @brief retrieves messages wtih mid values higher than mid
+         * @brief retrieves messages with mid values higher than mid
          */
-        list<Message> retrieveMessages(int mid);
+        list<Message> retrieveMessages(uint32_t mid);
 
 };
 

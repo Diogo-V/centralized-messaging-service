@@ -23,7 +23,7 @@ using namespace std;
 #define assert_(cond, msg) if(! (cond)) { fprintf(stderr, msg); exit(EXIT_FAILURE); }
 
 /* If condition if false displays msg and returns with false bool value */
-#define validate_(cond, msg) do { if (! (cond)) { fprintf(stderr, msg); return false; } } while(0);
+#define validate_(cond, msg) do { if (! (cond)) { cerr << (msg) << endl; return false; } } while(0);
 
 /*-------------------------------------- Server global vars --------------------------------------*/
 
@@ -41,9 +41,11 @@ char buffer[MSG_MAX_SIZE];  /* Holds current message received in this socket */
 
 typedef struct user {  /* Represents current client's user */
     string uid;
+    string pass;
     bool is_logged;
-    user() { uid = ""; is_logged = false; }
-} User;
+    string selected_group;
+    user() { uid = ""; pass = ""; is_logged = false; selected_group = ""; }
+} *User;
 
 User user;  /* Holds current user */
 
@@ -51,11 +53,11 @@ User user;  /* Holds current user */
 
 
 /*
-* Transforms a string with spaces in a vector with substring tokenized by the spaces.
-*
-* @param str string which is going to be separated
-* @param out vector with substrings
-*/
+ * Transforms a string with spaces in a vector with substring tokenized by the spaces.
+ *
+ * @param str string which is going to be separated
+ * @param out vector with substrings
+ */
 void split(string const &str, vector<string> &out) {
     stringstream ss(str); string s; const char delim = (const char)* " ";
     while (getline(ss, s, delim)) out.push_back(s);
@@ -85,12 +87,15 @@ void selector(const string& msg) {
         else cerr << "Invalid status" << endl;
 
     } else if (outputs[0] == "RLO") {  /* Receives status from LOG (login user) */
-        if (outputs[1] == "OK") { cout << "User logged in successfully" << endl; user.is_logged = true; }
+        if (outputs[1] == "OK") { cout << "User logged in successfully" << endl; user->is_logged = true; }
         else if (outputs[1] == "NOK") cerr << "Failed. Invalid user id or incorrect password." << endl;
         else cerr << "Invalid status" << endl;
 
     } else if (outputs[0] == "ROU") {  /* Receives status from OUT (logout user) */
-        if (outputs[1] == "OK") { cout << "User logged out successfully" << endl; user.is_logged = false; }
+        if (outputs[1] == "OK") {
+            cout << "User logged out successfully" << endl;
+            user->is_logged = false; user->uid = ""; user->pass = ""; user->selected_group = "";
+        }
         else if (outputs[1] == "NOK") cerr << "Failed. Invalid user id or incorrect password." << endl;
         else cerr << "Invalid status" << endl;
 
@@ -155,8 +160,6 @@ bool preprocessing(const string& msg, string& out) {
         validate_(inputs[1].size() == 5, "User ID should have 5 numbers")
         validate_(isNumber(inputs[1]), "User ID is not a number")
 
-        /* TODO: corrigir o loop infinito das macros */
-
         /* Transforms user input into a valid command to be sent to the server */
         out = "REG " + inputs[1] + " " + inputs[2] + "\n";
 
@@ -180,18 +183,23 @@ bool preprocessing(const string& msg, string& out) {
         validate_(inputs.size() == 3, "User did not input user ID and/or password")
         validate_(inputs[1].size() == 5, "User ID should have 5 numbers")
         validate_(isNumber(inputs[1]), "User ID is not a number")
-        validate_(!user.is_logged, "Client is already logged in")
+        validate_(!user->is_logged, "Client is already logged in")
 
         /* Transforms user input into a valid command to be sent to the server */
         out = "LOG " + inputs[1] + " " + inputs[2] + "\n";
 
-        user.uid = inputs[1];  /* Sets user's uid */
+        user->uid = inputs[1];  /* Sets user's uid */
+        user->pass = inputs[2];  /* Saves user's password locally */
 
         return true;  /* Since everything was ok, we return true */
 
     } else if (inputs[0] == "logout") {
 
-        /* TODO: implement login functionality */
+        /* Verifies if the user input a valid command and that this command can be issued */
+        validate_(!user->is_logged, "Client needs to be logged in")
+
+        /* Transforms user input into a valid command to be sent to the server */
+        out = "OUT " + user->uid + " " + user->pass + "\n";
 
         return true;  /* Since everything was ok, we return true */
 
@@ -207,10 +215,10 @@ bool preprocessing(const string& msg, string& out) {
         /* Verifies if the user input a valid command and that this command can be issued */
         validate_(inputs.size() == 3, "User did not input group ID and/or group name")
         validate_(isNumber(inputs[1]), "Group ID is not a number")
-        validate_(user.is_logged, "Client is not logged in")
+        validate_(user->is_logged, "Client is not logged in")
 
         /* Transforms user input into a valid command to be sent to the server */
-        out = "GSR " + user.uid + " " + inputs[1] + " " + inputs[2] + "\n";
+        out = "GSR " + user->uid + " " + inputs[1] + " " + inputs[2] + "\n";
 
         return true;  /* Since everything was ok, we return true */
 
@@ -219,24 +227,38 @@ bool preprocessing(const string& msg, string& out) {
         /* Verifies if the user input a valid command and that this command can be issued */
         validate_(inputs.size() == 2, "User did not input group ID")
         validate_(isNumber(inputs[1]), "Group ID is not a number")
-        validate_(user.is_logged, "Client is not logged in")
+        validate_(user->is_logged, "Client is not logged in")
 
         /* Transforms user input into a valid command to be sent to the server */
-        out = "GUR " + user.uid + "\n";
+        out = "GUR " + user->uid + "\n";
 
         return true;  /* Since everything was ok, we return true */
 
     } else if (inputs[0] == "my_groups" || inputs[0] == "mgl") {
 
         /* Verifies if the user input a valid command and that this command can be issued */
-        validate_(user.is_logged, "Client is not logged in")
+        validate_(user->is_logged, "Client is not logged in")
 
         /* Transforms user input into a valid command to be sent to the server */
-        out = "GLM " + user.uid + " " + inputs[1] + "\n";
+        out = "GLM " + user->uid + " " + inputs[1] + "\n";
+
+        return true;  /* Since everything was ok, we return true */
+
+    } else if (inputs[0] == "select" || inputs[0] == "sag") {
+
+        /* Verifies if the user input a valid command and that this command can be issued */
+        validate_(inputs.size() == 2, "User did not input group ID")
+        validate_(isNumber(inputs[1]), "Group ID is not a number")
+        validate_(user->is_logged, "Client is not logged in")
+
+        /* Saves selected group locally */
+        user->selected_group = inputs[1];
 
         return true;  /* Since everything was ok, we return true */
 
     }
+
+    /* TODO: implement rest of TCP */
 
     return false;  /* Since no command was chosen, the user did not input a valid command */
 
@@ -298,6 +320,7 @@ int main(int argc, char const *argv[]) {
         /* Verify if message has correct formatting. If not, displays error to user and continues */
         /* Also populates "req" with a valid request */
         if (! preprocessing(buffer, req)) {
+            memset(buffer, 0, MSG_MAX_SIZE);  /* Cleans buffer */
             cout << "Incorrect message format!" << endl;
             continue;
         }

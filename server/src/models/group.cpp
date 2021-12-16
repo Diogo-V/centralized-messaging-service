@@ -52,7 +52,7 @@ unordered_map<string, User*> Group::getUsers(){
  *
  * @return message identifier counter
  */
-int Group::getMid(){
+uint32_t Group::getMid(){
     return _mid;
 }
 
@@ -93,7 +93,7 @@ void Group::postMessage(Message m){
 }
 
 
-list<Message> Group::retrieveMessages(int mid) {
+list<Message> Group::retrieveMessages(uint32_t mid) {
     return {};
 }
 
