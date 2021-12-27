@@ -67,55 +67,63 @@ string selector(char* msg, unordered_map<string, User>* users, unordered_map<str
 
     vector<string> inputs;  /* Holds a list of strings with the inputs from our user */
     split(msg, inputs);  /* Splits msg by the spaces and returns an array with everything*/
-    string status;
+    string status{"OK"};
 
     if (inputs[0] == "REG") {  /* Registers user */
-        /* receives status from call function*/
-        cout << "REG!" << endl;
 
-        return "REG" + status;
+        /* receives status from call function*/
+        cout << "REG" << endl;
+
+        return "RRG " + status;  /* Sends report to client */
 
     } else if (inputs[0] == "UNR") {  /* Unregisters user */
+
         /* receives status from call function*/
         cout << "UNR" << endl;
 
-        return "UNR" + status;
+        return "RUN " + status;  /* Sends report to client */
 
     } else if (inputs[0] == "LOG") {  /* Signs in user */
+
         /* receives status from call function*/
         cout << "LOG" << endl;
 
-        return "LOG" + status;
+        return "RLO " + status;  /* Sends report to client */
 
     } else if (inputs[0] == "OUT") {  /* Logout user */
+
         /* receives status from call function*/
         cout << "OUT" << endl;
 
-        return "OUT" + status;
+        return "ROU " + status;  /* Sends report to client */
 
     } else if (inputs[0] == "GLS") {  /* Requested list of existing groups */
+
         /* receives status from call function*/
         cout << "GLS" << endl;
 
-        return "GLS" + status;
+        return "RGL " + status;  /* Sends report to client */
 
     } else if (inputs[0] == "GSR") {  /* Join group */
+
         /* receives status from call function*/
         cout << "GSR" << endl;
 
-        return "GSR" + status;
+        return "RGS " + status;  /* Sends report to client */
 
     } else if (inputs[0] == "GUR") {  /* Unsubscribe to group */
+
         /* receives status from call function*/
         cout << "GUR" << endl;
 
-        return "GUR" + status;
+        return "RGU " + status;  /* Sends report to client */
 
     } else if (inputs[0] == "GLM") {  /* Get list of user's groups */
+
         /* receives status from call function*/
         cout << "GLM" << endl;
 
-        return "GLM" + status;
+        return "RGM " + status;  /* Sends report to client */
 
     } else {
         return "ERR";
@@ -177,10 +185,13 @@ int main(int argc, char const *argv[]) {
         assert_(n != -1, "Failed to receive message")
 
         /* Process client's message and decides what to do with it based on the passed code */
-        string response = selector(buffer, &users, &groups).c_str();
+        string response = selector(buffer, &users, &groups);
 
-		n = sendto(fd, response.c_str(), n, 0, (struct sockaddr*) &addr, addrlen);
+        /* Sends response back t client */
+        n = sendto(fd, response.c_str(), response.size(), 0, (struct sockaddr*) &addr, addrlen);
         assert_(n != -1, "Failed to send message")
+
+        memset(buffer, 0, MSG_MAX_SIZE);  /* Cleans buffer for new iteration */
 
 	}
 

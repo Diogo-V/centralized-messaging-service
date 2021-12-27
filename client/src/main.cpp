@@ -75,7 +75,7 @@ void selector(const string& msg) {
     vector<string> outputs;  /* Holds a list of strings with the outputs from our server */
     split(msg, outputs);  /* Splits msg by the spaces and returns an array with everything */
 
-    if(outputs[0] == "RRG")  {  /* Receives status from REG (register user) */
+    if (outputs[0] == "RRG")  {  /* Receives status from REG (register user) */
         if (outputs[1] == "OK") cout << "User registered successfully" << endl;
         else if (outputs[1] == "DUP") cerr << "Failed. User has already registered" << endl;
         else if (outputs[1] == "NOK") cerr << "Failed. Too many users already registered " << endl;
@@ -325,6 +325,8 @@ int main(int argc, char const *argv[]) {
             continue;
         }
 
+        memset(buffer, 0, MSG_MAX_SIZE);  /* Cleans buffer before receiving response */
+
         /* Sends message to server */
         n = sendto(fd, req.c_str(), req.length(), 0, res->ai_addr, res->ai_addrlen);
         assert_(n != -1, "Failed to send message")
@@ -337,7 +339,6 @@ int main(int argc, char const *argv[]) {
 
         /* Based on the message sent by the server, display a message to the user */
         selector(buffer);
-        write(1, "Server mandou a mensagem com sucesso\n", 30);
 
         /* Gets the new command that the user input. This replaces the previous command */
         cin.getline(buffer, MSG_MAX_SIZE);
@@ -350,4 +351,5 @@ int main(int argc, char const *argv[]) {
     close(fd);
 
     return EXIT_SUCCESS;
+
 }
