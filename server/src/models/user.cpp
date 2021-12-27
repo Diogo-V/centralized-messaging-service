@@ -10,9 +10,12 @@ using namespace std;
  * @param id
  * @param password
  */
-User::User(string id, string password){
+User::User(string& id, string& password){
     _id = id;
     _password = password;
+    _status = false;
+    _gid = "";
+    _group_ids = {};
 }
 
 

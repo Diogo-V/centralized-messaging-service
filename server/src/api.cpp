@@ -2,33 +2,35 @@
 
 #include <utility>
 
+
 /**
  * @brief Registers user
  *
  * @param unordered map of users
- * @param user id
+ * @param user user id (must have only 5 digits)
  * @param user password
  *
  * @return status message
  */
-string register_user(unordered_map<string, User>* users, string uid, string pass){
+string register_user(unordered_map<string, User>* users, string& uid, string& pass){
 
-    if(users->size()==USER_LIMIT){ /* verifies if user limit has been reached */
+    /* Verifies if user limit has been reached or that the user id is zero */
+    if (users->size() == USER_LIMIT || uid == "00000") {
         return "NOK";
-    }
-    else if(uid=="00000"){ /* verifies if user id is not 0 */
-        return "NOK";
-    }
-    else if(users->find(uid)==users->end()){ /* verifies if user isn't already registered */
+
+    /* Verifies if user isn't already registered */
+    } else if (users->find(uid) == users->end()) {
         return "DUP";
-    }
-    else{ /* registers user */
+
+    /* Since everything went alright, registers user */
+    } else {
         User user(uid, pass);
         users->insert(make_pair(uid, user));
         return "OK";
     }
 
 }
+
 
 /**
  * @brief Unregisters user

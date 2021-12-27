@@ -337,6 +337,9 @@ int main(int argc, char const *argv[]) {
         n = recvfrom(fd, buffer, MSG_MAX_SIZE, 0, (struct sockaddr*) &addr, &addrlen);
         assert_(n != -1, "Failed to receive message")
 
+        /* Removes \n at the end of the buffer. Makes things easier down the line */
+        buffer[strlen(buffer) - 1] = '\0';
+
         /* Based on the message sent by the server, display a message to the user */
         selector(buffer);
 

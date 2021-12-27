@@ -3,13 +3,14 @@
 #include "models/user.h"
 #include "models/group.h"
 #include "models/message.h"
+#include "api.h"
 
 #include <iostream>
 #include <unistd.h>
 #include <cstdio>
 #include <cstdlib>
 #include <sys/socket.h>
-#include <signal.h>
+#include <csignal>
 #include <netinet/in.h>
 #include <netdb.h>
 #include <cstring>
@@ -22,8 +23,6 @@ using namespace std;
 /* Const definitions */
 #define PORT "58039"
 #define MSG_MAX_SIZE 240
-#define CMD_MAX_SIZE 3
-#define PASS_MAX_SIZE 8
 
 /* If condition is false displays msg and interrupts execution */
 #define assert_(cond, msg) if(! (cond)) { fprintf(stderr, msg); exit(EXIT_FAILURE); }
@@ -44,6 +43,10 @@ char buffer[MSG_MAX_SIZE];  /* Holds current message received in this socket */
 
 bool isVerbose = false;  /* Is true if the server is set to verbose mode */
 
+unordered_map<string, User>* users = {};  /* Holds all users in our server. Key is user's id*/
+unordered_map<string, Group>* groups = {};  /* Holds all groups in our server. Key is group's id */
+
+
 /*----------------------------------------- Functions --------------------------------------------*/
 
 /**
@@ -63,67 +66,65 @@ void split(string const &str, vector<string> &out) {
  *
  * @param msg message sent by user
  */
-string selector(char* msg, unordered_map<string, User>* users, unordered_map<string, Group>* groups) {
+string selector(char* msg) {
 
     vector<string> inputs;  /* Holds a list of strings with the inputs from our user */
     split(msg, inputs);  /* Splits msg by the spaces and returns an array with everything*/
-    string status{"OK"};
+    string status{};
 
     if (inputs[0] == "REG") {  /* Registers user */
 
-        /* receives status from call function*/
-        cout << "REG" << endl;
-
-        return "RRG " + status;  /* Sends report to client */
+        status = register_user(users, inputs[1], inputs[2]);
+        return "RRG " + status + "\n";  /* Sends report to client */
 
     } else if (inputs[0] == "UNR") {  /* Unregisters user */
 
         /* receives status from call function*/
         cout << "UNR" << endl;
 
-        return "RUN " + status;  /* Sends report to client */
+        return "RUN " + status + "\n";  /* Sends report to client */
 
     } else if (inputs[0] == "LOG") {  /* Signs in user */
 
         /* receives status from call function*/
         cout << "LOG" << endl;
 
-        return "RLO " + status;  /* Sends report to client */
+        return "RLO " + status + "\n";  /* Sends report to client */
 
     } else if (inputs[0] == "OUT") {  /* Logout user */
 
         /* receives status from call function*/
         cout << "OUT" << endl;
 
-        return "ROU " + status;  /* Sends report to client */
+        return "ROU " + status + "\n";  /* Sends report to client */
 
     } else if (inputs[0] == "GLS") {  /* Requested list of existing groups */
 
         /* receives status from call function*/
         cout << "GLS" << endl;
 
-        return "RGL " + status;  /* Sends report to client */
+        return "RGL " + status + "\n";  /* Sends report to client */
 
     } else if (inputs[0] == "GSR") {  /* Join group */
 
         /* receives status from call function*/
         cout << "GSR" << endl;
 
-        return "RGS " + status;  /* Sends report to client */
+        return "RGS " + status + "\n";  /* Sends report to client */
 
     } else if (inputs[0] == "GUR") {  /* Unsubscribe to group */
 
         /* receives status from call function*/
         cout << "GUR" << endl;
 
-        return "RGU " + status;  /* Sends report to client */
+        return "RGU " + status + "\n";  /* Sends report to client */
 
     } else if (inputs[0] == "GLM") {  /* Get list of user's groups */
 
         /* receives status from call function*/
         cout << "GLM" << endl;
 
-        return "RGM " + status;  /* Sends report to client */
+        return "RGM " + status + "\n";  /* Sends report to client */
 
     } else {
         return "ERR";
@@ -144,18 +145,13 @@ void termination_handler(){}
  */
 int main(int argc, char const *argv[]) {
 
-    /*
+    /* TODO: @Sofia-Morgado -> finish ctrl+c interrupt handling
     struct sigaction new_action;
     new_action.sa_handler = termination_handler; // set callback function
     sigemptyset(&new_action.sa_mask);
     new_action.sa_flags = 0;
-    sigaction(SIGINT, &new_action, NULL)*/
-
-    /* Holds all users in our server. Key is user's id*/
-    unordered_map<string, User> users = {};
-
-    /* Holds all groups in our server. Key is group's id */
-    unordered_map<string, Group> groups = {};
+    sigaction(SIGINT, &new_action, NULL)
+    */
 
     /* Creates udp soGroup for internet */
 	fd = socket(AF_INET, SOCK_DGRAM, 0);
@@ -184,8 +180,11 @@ int main(int argc, char const *argv[]) {
 		n = recvfrom(fd, buffer, MSG_MAX_SIZE, 0, (struct sockaddr*) &addr, &addrlen);
         assert_(n != -1, "Failed to receive message")
 
+        /* Removes \n at the end of the buffer. Makes things easier down the line */
+        buffer[strlen(buffer) - 1] = '\0';
+
         /* Process client's message and decides what to do with it based on the passed code */
-        string response = selector(buffer, &users, &groups);
+        string response = selector(buffer);
 
         /* Sends response back t client */
         n = sendto(fd, response.c_str(), response.size(), 0, (struct sockaddr*) &addr, addrlen);

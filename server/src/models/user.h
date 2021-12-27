@@ -49,7 +49,7 @@ class User {
          * @param id
          * @param password
          */
-        explicit User(string id, string password);
+        explicit User(string& id, string& password);
 
         /**
          * @brief Gets user id
