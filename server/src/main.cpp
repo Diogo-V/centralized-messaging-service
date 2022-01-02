@@ -68,6 +68,7 @@ void split(string const &str, vector<string> &out) {
 
 /**
  * Receives message sent from user and decides based on the first 3 chars which action to take.
+ * Also sends a report back to client.
  *
  * @param msg message sent by user
  */
@@ -85,56 +86,52 @@ string selector(const char* msg) {
     if (inputs[0] == "REG") {  /* Registers user */
 
         status = register_user(&users, inputs[1], inputs[2]);
-        return "RRG " + status + "\n";  /* Sends report to client */
+        return "RRG " + status + "\n";
 
     } else if (inputs[0] == "UNR") {  /* Unregisters user */
 
-        /* receives status from call function*/
         status = unregister_user(&users, inputs[1], inputs[2]);
-
-        return "RUN " + status + "\n";  /* Sends report to client */
+        return "RUN " + status + "\n";
 
     } else if (inputs[0] == "LOG") {  /* Signs in user */
 
-        /* receives status from call function*/
         status = login_user(&users, inputs[1], inputs[2]);
-
-        return "RLO " + status + "\n";  /* Sends report to client */
+        return "RLO " + status + "\n";
 
     } else if (inputs[0] == "OUT") {  /* Logout user */
 
         /* receives status from call function*/
         cout << "OUT" << endl;
 
-        return "ROU " + status + "\n";  /* Sends report to client */
+        return "ROU " + status + "\n";
 
     } else if (inputs[0] == "GLS") {  /* Requested list of existing groups */
 
         /* receives status from call function*/
         cout << "GLS" << endl;
 
-        return "RGL " + status + "\n";  /* Sends report to client */
+        return "RGL " + status + "\n";
 
     } else if (inputs[0] == "GSR") {  /* Join group */
 
         /* receives status from call function*/
         cout << "GSR" << endl;
 
-        return "RGS " + status + "\n";  /* Sends report to client */
+        return "RGS " + status + "\n";
 
     } else if (inputs[0] == "GUR") {  /* Unsubscribe to group */
 
         /* receives status from call function*/
         cout << "GUR" << endl;
 
-        return "RGU " + status + "\n";  /* Sends report to client */
+        return "RGU " + status + "\n";
 
     } else if (inputs[0] == "GLM") {  /* Get list of user's groups */
 
         /* receives status from call function*/
         cout << "GLM" << endl;
 
-        return "RGM " + status + "\n";  /* Sends report to client */
+        return "RGM " + status + "\n";
 
     } else {
         return "ERR";
@@ -162,6 +159,8 @@ int main(int argc, char const *argv[]) {
     new_action.sa_flags = 0;
     sigaction(SIGINT, &new_action, NULL)
     */
+
+    // TODO: @Diogo-V -> Implement TCP connection and put a selector
 
     /* Goes over all the flags and setups port and ip address */
     string ds_port{PORT};  /* Holds server port */
