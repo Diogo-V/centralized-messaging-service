@@ -291,7 +291,7 @@ void init_socket(int argc, char const *argv[]) {
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_DGRAM;
 
-    /* Uses it's URL to consult DNS and get the server to which we want to send messages */
+    /* Uses its URL to consult DNS and get the server to which we want to send messages */
     errcode = getaddrinfo(ds_ip.c_str(), ds_port.c_str(), &hints, &res);
     assert_(errcode == 0, "Failed getaddrinfo call")
 

@@ -93,7 +93,7 @@ class User {
         /**
          * @brief Changes user's status  (logged in or not)
          */
-        void setUserStatus();
+        void toggleStatus();
 
         /**
         * @brief add group to user's group list

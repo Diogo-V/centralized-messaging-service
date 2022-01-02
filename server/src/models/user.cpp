@@ -78,7 +78,7 @@ void User::setUserGid(string id) {
 /**
  * @brief Changes user's status  (logged in or not)
  */
-void User::setUserStatus() {
+void User::toggleStatus() {
     _status = !_status;
 }
 

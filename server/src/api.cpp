@@ -44,9 +44,9 @@ string register_user(unordered_map<string, User>* users, string& uid, string& pa
 string unregister_user(unordered_map<string, User>* users, string& uid, string& pass){
 
     /* verifies if user is already registered or if the password is not correct */
-    if(users->find(uid) != users->end() || users->at(uid).getUserPassword() != pass) {
+    if(users->count(uid) > 0 || users->at(uid).getUserPassword() != pass) {
         return "NOK";
-    } else { /* unregisters user */
+    } else {
         users->erase(uid);
         return "OK";
     }
@@ -62,29 +62,15 @@ string unregister_user(unordered_map<string, User>* users, string& uid, string& 
  * @param pass user password
  * @return status message
  */
-string login_user(unordered_map<string, User>* users, string uid, string pass) {
+string login_user(unordered_map<string, User>* users, string& uid, string& pass) {
 
     auto it = users->find(uid);
 
-    /* verifies if user is registered*/
-    if(it == users->end()){
+    /* Verifies if user is registered, if he is not logged in and if password is correct*/
+    if (it == users->end() || it->second.getUserStatus() || it->second.getUserPassword() != pass) {
             return "NOK";
-    }
-
-    /* verifies if user is already logged in*/
-    else if (it->second.getUserStatus()){
-        return "NOK";
-    }
-
-    /*verifies is password is equal*/
-    else if (it->second.getUserPassword() != pass){
-        return "NOK";
-    }
-
-    /* user logged in*/
-    else{
-        /* set user status to true*/
-        it->second.setUserStatus();
+    } else {
+        it->second.toggleStatus();  /* Sets user status to true */
         return "OK";
     }
 
