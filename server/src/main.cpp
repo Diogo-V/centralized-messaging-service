@@ -90,14 +90,14 @@ string selector(const char* msg) {
     } else if (inputs[0] == "UNR") {  /* Unregisters user */
 
         /* receives status from call function*/
-        cout << "UNR" << endl;
+        status = unregister_user(&users, inputs[1], inputs[2]);
 
         return "RUN " + status + "\n";  /* Sends report to client */
 
     } else if (inputs[0] == "LOG") {  /* Signs in user */
 
         /* receives status from call function*/
-        cout << "LOG" << endl;
+        status = login_user(&users, inputs[1], inputs[2]);
 
         return "RLO " + status + "\n";  /* Sends report to client */
 
