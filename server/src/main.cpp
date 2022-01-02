@@ -12,6 +12,8 @@
 #include <sys/socket.h>
 #include <csignal>
 #include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
 #include <netdb.h>
 #include <cstring>
 #include <vector>
@@ -25,7 +27,10 @@ using namespace std;
 #define MSG_MAX_SIZE 240
 
 /* If condition is false displays msg and interrupts execution */
-#define assert_(cond, msg) if(! (cond)) { fprintf(stderr, msg); exit(EXIT_FAILURE); }
+#define assert_(cond, msg) if(! (cond)) { cerr << (msg) << endl; exit(EXIT_FAILURE); }
+
+/* If server is verbose, output message to the screen */
+#define verbose_(cond, msg) if((cond)) { cout << (msg) << endl; }
 
 /*-------------------------------------- Server global vars --------------------------------------*/
 
@@ -34,7 +39,7 @@ int
     errcode;  /* Holds current error */
 struct addrinfo
     hints,  /* Used to request info from DNS to get our "endpoint" */
-    *res;  /* Stores result from getaddrinfo and uses it to setup our socket */
+    *res;  /* Stores result from getaddrinfo and uses it to set up our socket */
 
 ssize_t n;  /* Holds number of bytes read/sent or -1 in case of error */
 socklen_t addrlen;  /* Holds size of message sent from sender */
@@ -71,6 +76,11 @@ string selector(const char* msg) {
     vector<string> inputs;  /* Holds a list of strings with the inputs from our user */
     split(msg, inputs);  /* Splits msg by the spaces and returns an array with everything*/
     string status{};
+
+    // TODO: Ask teacher about the verbose flag (what are we supposed to output to the screen?)
+    string ip(inet_ntoa(addr.sin_addr));
+    string port{to_string(ntohs(addr.sin_port))};
+    verbose_(isVerbose, "COMMAND: " + inputs[0] + " | IP: " + ip + " | PORT: " + port)
 
     if (inputs[0] == "REG") {  /* Registers user */
 
@@ -153,6 +163,13 @@ int main(int argc, char const *argv[]) {
     sigaction(SIGINT, &new_action, NULL)
     */
 
+    /* Goes over all the flags and setups port and ip address */
+    string ds_port{PORT};  /* Holds server port */
+    for (int i = 1; i < argc; i += 2) {
+        if (strcmp(argv[i], "-p") == 0) { string s(argv[i + 1]); ds_port = s; }
+        else if (strcmp(argv[i], "-v") == 0) { isVerbose = true; }
+    }
+
     /* Creates udp soGroup for internet */
 	fd = socket(AF_INET, SOCK_DGRAM, 0);
     assert_(fd != -1, "Could not create socket")
@@ -163,8 +180,8 @@ int main(int argc, char const *argv[]) {
 	hints.ai_socktype = SOCK_DGRAM;
 	hints.ai_flags = AI_PASSIVE;
 
-	/* Uses it's URL to consult DNS and get a UDP server's IP address */
-	errcode = getaddrinfo(nullptr, PORT, &hints, &res);
+	/* Uses its URL to consult DNS and get a UDP server's IP address */
+	errcode = getaddrinfo(nullptr, ds_port.c_str(), &hints, &res);
     assert_(errcode == 0, "Failed getaddrinfo call")
 
     /* Binds sockets to our specified port and tells our SO that this channel if for this server */

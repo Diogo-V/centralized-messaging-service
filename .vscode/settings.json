@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "*.mqh": "cpp",
+        "*.mq4": "cpp",
+        "*.mq5": "cpp",
+        "array": "cpp",
+        "string_view": "cpp",
+        "initializer_list": "cpp",
+        "utility": "cpp"
+    }
+}
