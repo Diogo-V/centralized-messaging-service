@@ -105,8 +105,8 @@ string list_groups(unordered_map<string, Group>* groups){
     unordered_map<string, Group>:: iterator itr;
     string group, list;
 
-    for (itr = groups.begin(); itr != groups.end(); itr++){
-        group = itr->first + " \\ " + itr->second + "\n";
+    for (itr = groups->begin(); itr != groups->end(); itr++){
+        group = itr->first + " \\ " + itr->second.getGroupId() + "\n";
         list.append(group);
     }
 
