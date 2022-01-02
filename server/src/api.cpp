@@ -12,14 +12,14 @@
  *
  * @return status message
  */
-string register_user(unordered_map<string, User>* users, string& uid, string& pass){
+string register_user(unordered_map<string, User>* users, string& uid, string& pass) {
 
     /* Verifies if user limit has been reached or that the user id is zero */
     if (users->size() == USER_LIMIT || uid == "00000") {
         return "NOK";
 
     /* Verifies if user isn't already registered */
-    } else if (users->find(uid) == users->end()) {
+    } else if (users->count(uid) > 0) {
         return "DUP";
 
     /* Since everything went alright, registers user */
@@ -41,20 +41,18 @@ string register_user(unordered_map<string, User>* users, string& uid, string& pa
  *
  * @return status message
  */
-string unregister_user(unordered_map<string, User>* users, string uid, string pass){
+string unregister_user(unordered_map<string, User>* users, string& uid, string& pass){
 
-    if(users->find(uid)!=users->end()){ /* verifies if user is already registered */
+    /* verifies if user is already registered or if the password is not correct */
+    if(users->find(uid) != users->end() || users->at(uid).getUserPassword() != pass) {
         return "NOK";
-    }
-    else if(users->at(uid).getUserPassword()!=pass){ /* verifies if user password is correct */
-        return "NOK";
-    }
-    else{ /* unregisters user */
+    } else { /* unregisters user */
         users->erase(uid);
         return "OK";
     }
 
 }
+
 
 /**
  * @brief user logs in
@@ -101,14 +99,13 @@ string login_user(unordered_map<string, User>* users, string uid, string pass) {
  *
  * @return list of group IDs and names
  */
-string list_groups(unordered_map<string, Group>* groups){
-    unordered_map<string, Group>:: iterator itr;
+string list_groups(unordered_map<string, Group>* groups) {
     string group, list;
 
-    for (itr = groups->begin(); itr != groups->end(); itr++){
-        group = itr->first + " \\ " + itr->second.getGroupId() + "\n";
+    for (auto & itr : *groups) {
+        group = itr.first + " \\ " + itr.second.getGroupId() + "\n";
         list.append(group);
     }
 
     return list;
-};
+}

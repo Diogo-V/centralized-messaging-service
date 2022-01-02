@@ -22,7 +22,7 @@ using namespace std;
 /* If condition is false displays msg and interrupts execution */
 #define assert_(cond, msg) if(! (cond)) { fprintf(stderr, msg); exit(EXIT_FAILURE); }
 
-/* If condition if false displays msg and returns with false bool value */
+/* If condition is false displays msg and returns with false bool value */
 #define validate_(cond, msg) do { if (! (cond)) { cerr << (msg) << endl; return false; } } while(0);
 
 /*-------------------------------------- Server global vars --------------------------------------*/

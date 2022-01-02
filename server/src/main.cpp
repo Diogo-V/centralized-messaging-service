@@ -43,8 +43,8 @@ char buffer[MSG_MAX_SIZE];  /* Holds current message received in this socket */
 
 bool isVerbose = false;  /* Is true if the server is set to verbose mode */
 
-unordered_map<string, User>* users = {};  /* Holds all users in our server. Key is user's id*/
-unordered_map<string, Group>* groups = {};  /* Holds all groups in our server. Key is group's id */
+unordered_map<string, User> users;  /* Holds all users in our server. Key is user's id*/
+unordered_map<string, Group> groups;  /* Holds all groups in our server. Key is group's id */
 
 
 /*----------------------------------------- Functions --------------------------------------------*/
@@ -66,7 +66,7 @@ void split(string const &str, vector<string> &out) {
  *
  * @param msg message sent by user
  */
-string selector(char* msg) {
+string selector(const char* msg) {
 
     vector<string> inputs;  /* Holds a list of strings with the inputs from our user */
     split(msg, inputs);  /* Splits msg by the spaces and returns an array with everything*/
@@ -74,7 +74,7 @@ string selector(char* msg) {
 
     if (inputs[0] == "REG") {  /* Registers user */
 
-        status = register_user(users, inputs[1], inputs[2]);
+        status = register_user(&users, inputs[1], inputs[2]);
         return "RRG " + status + "\n";  /* Sends report to client */
 
     } else if (inputs[0] == "UNR") {  /* Unregisters user */
