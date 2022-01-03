@@ -9,11 +9,12 @@
 #include <unistd.h>
 #include <cstdio>
 #include <cstdlib>
+#include <ctime>
+#include <sys/types.h>
 #include <sys/socket.h>
 #include <csignal>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <netinet/in.h>
 #include <netdb.h>
 #include <cstring>
 #include <vector>
@@ -25,12 +26,14 @@ using namespace std;
 /* Const definitions */
 #define PORT "58039"
 #define MSG_MAX_SIZE 240
+#define TCP_N_CONNECTIONS 5
 
 /* If condition is false displays msg and interrupts execution */
 #define assert_(cond, msg) if(! (cond)) { cerr << (msg) << endl; exit(EXIT_FAILURE); }
 
 /* If server is verbose, output message to the screen */
 #define verbose_(cond, msg) if((cond)) { cout << (msg) << endl; }
+
 
 /*-------------------------------------- Server global vars --------------------------------------*/
 
@@ -194,6 +197,9 @@ void init_tcp_socket() {
     int err = bind(fd_tcp, res->ai_addr, res->ai_addrlen);
     assert_(err == 0, "Failed to bind tcp socket")
 
+    /* Prepares socket to receive connections */
+    assert_(listen(fd_tcp,TCP_N_CONNECTIONS) != -1, "Could not prepare tcp socket")
+
 }
 
 
@@ -215,6 +221,9 @@ int main(int argc, char const *argv[]) {
     */
 
     // TODO: @Diogo-V -> Implement TCP connection and put a selector
+
+    fd_set fds;
+    int maxfd, counter;
 
     /* Goes over all the flags and setups port and verbose mode */
     for (int i = 1; i < argc; i += 2) {
