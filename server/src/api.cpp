@@ -89,7 +89,7 @@ string list_groups(unordered_map<string, Group>* groups) {
     string group, list;
 
     for (auto & itr : *groups) {
-        group = itr.first + " \\ " + itr.second.getGroupId() + "\n";
+        group = itr.first + " \\ " + itr.second.getName() + "\n";
         list.append(group);
     }
 

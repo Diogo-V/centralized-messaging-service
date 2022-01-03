@@ -18,7 +18,7 @@
 #include <cstring>
 #include <vector>
 #include <sstream>
-
+#include <dirent.h>
 
 using namespace std;
 
@@ -139,7 +139,44 @@ string selector(const char* msg) {
 
 }
 
-void termination_handler(){}
+
+/**
+ * @brief Function to handle Ctrl + C signal. Removes all files from the files directory and closes the server sockets
+ *
+ * @param sigtype signal type
+ */
+void termination_handler(int sigtype){
+    struct dirent *entry;
+    DIR *dp;
+    /* Gets the current directory of the project*/
+    char *project_directory = get_current_dir_name();
+    string filepath;
+    string files_directory = string(project_directory) + "/server/files";
+
+    /* Opens the files directory */
+    dp = opendir(files_directory.c_str());
+
+    assert_(dp, "Failed to open the files directory");
+
+    while ((entry = readdir(dp))) {
+        if (strcmp(entry->d_name, ".") == 0 ||strcmp(entry->d_name, "..") == 0 )
+            continue;
+
+        filepath = files_directory +  "/" + entry->d_name;
+        /* Removes file*/
+        assert_((remove(filepath.c_str()) == 0), "Failed to delete file");
+    }
+
+    /* Closes the directory*/
+    closedir(dp);
+
+    /* Closes the server socket*/
+    freeaddrinfo(res);
+    close(fd);
+
+    /* Ends program */
+    exit(EXIT_SUCCESS);
+}
 
 
 
@@ -151,14 +188,28 @@ void termination_handler(){}
  * @return 0 if success and 1 if error
  */
 int main(int argc, char const *argv[]) {
+    struct sigaction sa_1, sa_2;
+    sigset_t block_mask;
 
-    /* TODO: @Sofia-Morgado -> finish ctrl+c interrupt handling
-    struct sigaction new_action;
-    new_action.sa_handler = termination_handler; // set callback function
-    sigemptyset(&new_action.sa_mask);
-    new_action.sa_flags = 0;
-    sigaction(SIGINT, &new_action, NULL)
-    */
+    /*Creating space for the sa and filling the struct. We are setting the handler to termination handlers function,
+     * that will close all the sockets and erase files.*/
+    memset(&sa_1,0,sizeof sa_1);
+    /* Blocks signal quit (CTRL+Q) and signal stop (CTRL+Z) while handling signal interruption (CTRL + C). Only here
+     * for safety*/
+    //TODO: @Sofia-Morgado devia colocar mais sinais a bloquear?
+    sigaddset (&block_mask, SIGTSTP);
+    sigaddset (&block_mask, SIGQUIT);
+    sa_1.sa_mask = block_mask;
+    sa_1.sa_flags = 0;
+    sa_1.sa_handler = termination_handler;
+
+    /*Creating space for the struct and filling the struct. We are setting the handler to ignore the signal*/
+    memset(&sa_2,0,sizeof sa_2);
+    sa_2.sa_handler=SIG_IGN;
+
+    /* Setting the sa_1 to the SIGPIPE and sa_1 to SIGINT*/
+    if(sigaction(SIGPIPE,&sa_2,NULL)==-1 || sigaction(SIGINT, &sa_1, NULL) == -1)
+        exit(1);
 
     // TODO: @Diogo-V -> Implement TCP connection and put a selector
 
