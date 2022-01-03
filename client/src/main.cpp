@@ -28,7 +28,7 @@ using namespace std;
 /*-------------------------------------- Server global vars --------------------------------------*/
 
 int
-    fd,  /* Holds user socket file descriptor */
+    fd_udp,  /* Holds user socket file descriptor */
     errcode;  /* Holds current error */
 struct addrinfo
     hints,  /* Used to request info from DNS to get our "endpoint" */
@@ -266,7 +266,7 @@ bool preprocessing(const string& msg, string& out) {
 
 
 /**
- * Setups our socket "fd". Uses our main function's arguments to process flags.
+ * Setups our socket "fd_udp". Uses our main function's arguments to process flags.
  *
  * @param argc number of arguments passed to main function
  * @param argv array of arguments passed to main function
@@ -283,8 +283,8 @@ void init_socket(int argc, char const *argv[]) {
     }
 
     /* Creates udp socket for internet */
-    fd = socket(AF_INET, SOCK_DGRAM, 0);
-    assert_(fd != -1, "Could not create socket")
+    fd_udp = socket(AF_INET, SOCK_DGRAM, 0);
+    assert_(fd_udp != -1, "Could not create socket")
 
     /* Inits UDP server's struct to access the DNS */
     memset(&hints, 0, sizeof hints);
@@ -307,7 +307,7 @@ void init_socket(int argc, char const *argv[]) {
  */
 int main(int argc, char const *argv[]) {
 
-    /* Initializes and setups fd to be a valid socket */
+    /* Initializes and setups fd_udp to be a valid socket */
     init_socket(argc, argv);
 
     /* Gets the command that the user input */
@@ -328,13 +328,13 @@ int main(int argc, char const *argv[]) {
         memset(buffer, 0, MSG_MAX_SIZE);  /* Cleans buffer before receiving response */
 
         /* Sends message to server */
-        n = sendto(fd, req.c_str(), req.length(), 0, res->ai_addr, res->ai_addrlen);
+        n = sendto(fd_udp, req.c_str(), req.length(), 0, res->ai_addr, res->ai_addrlen);
         assert_(n != -1, "Failed to send message")
 
         /* Gets server response and processes it */
         bzero(&addr, sizeof(struct sockaddr_in));
         addrlen = sizeof(addr);
-        n = recvfrom(fd, buffer, MSG_MAX_SIZE, 0, (struct sockaddr*) &addr, &addrlen);
+        n = recvfrom(fd_udp, buffer, MSG_MAX_SIZE, 0, (struct sockaddr*) &addr, &addrlen);
         assert_(n != -1, "Failed to receive message")
 
         /* Removes \n at the end of the buffer. Makes things easier down the line */
@@ -351,7 +351,7 @@ int main(int argc, char const *argv[]) {
 
     /* Closes client socket */
     freeaddrinfo(res);
-    close(fd);
+    close(fd_udp);
 
     return EXIT_SUCCESS;
 

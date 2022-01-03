@@ -9,11 +9,12 @@
 #include <unistd.h>
 #include <cstdio>
 #include <cstdlib>
+#include <ctime>
+#include <sys/types.h>
 #include <sys/socket.h>
 #include <csignal>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <netinet/in.h>
 #include <netdb.h>
 #include <cstring>
 #include <vector>
@@ -25,6 +26,7 @@ using namespace std;
 /* Const definitions */
 #define PORT "58039"
 #define MSG_MAX_SIZE 240
+#define TCP_N_CONNECTIONS 5
 
 /* If condition is false displays msg and interrupts execution */
 #define assert_(cond, msg) if(! (cond)) { cerr << (msg) << endl; exit(EXIT_FAILURE); }
@@ -32,14 +34,16 @@ using namespace std;
 /* If server is verbose, output message to the screen */
 #define verbose_(cond, msg) if((cond)) { cout << (msg) << endl; }
 
+
 /*-------------------------------------- Server global vars --------------------------------------*/
 
-int
-    fd,  /* Holds server socket file descriptor */
-    errcode;  /* Holds current error */
-struct addrinfo
-    hints,  /* Used to request info from DNS to get our "endpoint" */
-    *res;  /* Stores result from getaddrinfo and uses it to set up our socket */
+
+int fd_udp;  /* Holds server udp socket file descriptor */
+int fd_tcp;  /* Holds server tcp socket file descriptor */
+int errcode;  /* Holds current error */
+
+struct addrinfo hints;  /* Used to request info from DNS to get our "endpoint" */
+struct addrinfo *res;  /* Stores result from getaddrinfo and uses it to set up our socket */
 
 ssize_t n;  /* Holds number of bytes read/sent or -1 in case of error */
 socklen_t addrlen;  /* Holds size of message sent from sender */
@@ -47,12 +51,14 @@ struct sockaddr_in addr;  /* Describes internet socket address. Holds sender inf
 char buffer[MSG_MAX_SIZE];  /* Holds current message received in this socket */
 
 bool isVerbose = false;  /* Is true if the server is set to verbose mode */
+string ds_port{PORT};  /* Holds server port */
 
 unordered_map<string, User> users;  /* Holds all users in our server. Key is user's id*/
 unordered_map<string, Group> groups;  /* Holds all groups in our server. Key is group's id */
 
 
 /*----------------------------------------- Functions --------------------------------------------*/
+
 
 /**
  * Transforms a string with spaces in a vector with substring tokenized by the spaces.
@@ -179,6 +185,60 @@ void termination_handler(int sigtype){
 }
 
 
+/**
+ * @brief Setups our socket "fd_udp"
+ */
+void init_udp_socket() {
+
+    /* Creates udp subgroup for internet */
+    fd_udp = socket(AF_INET, SOCK_DGRAM, 0);
+    assert_(fd_udp != -1, "Could not create udp socket")
+
+    /* Inits UDP server's struct to access the DNS */
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_DGRAM;
+    hints.ai_flags = AI_PASSIVE;
+
+    /* Uses its URL to consult DNS and get a UDP server's IP address */
+    errcode = getaddrinfo(nullptr, ds_port.c_str(), &hints, &res);
+    assert_(errcode == 0, "Failed getaddrinfo call for udp socket")
+
+    /* Binds sockets to our specified port and tells our SO that this channel if for this program */
+    int err = bind(fd_udp, res->ai_addr, res->ai_addrlen);
+    assert_(err == 0, "Failed to bind udp socket")
+
+}
+
+
+/**
+ * @brief Setups our socket "fd_tcp".
+ */
+void init_tcp_socket() {
+
+    /* Creates tcp subgroup for internet */
+    fd_tcp = socket(AF_INET, SOCK_STREAM, 0);
+    assert_(fd_tcp != -1, "Could not create tcp socket")
+
+    /* Inits TCP server's struct to access the DNS */
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE;
+
+    /* Uses its URL to consult DNS and get a TCP server's IP address */
+    errcode = getaddrinfo(nullptr, ds_port.c_str(), &hints, &res);
+    assert_(errcode == 0, "Failed getaddrinfo call for tcp")
+
+    /* Binds sockets to our specified port and tells our SO that this channel if for this program */
+    int err = bind(fd_tcp, res->ai_addr, res->ai_addrlen);
+    assert_(err == 0, "Failed to bind tcp socket")
+
+    /* Prepares socket to receive connections */
+    assert_(listen(fd_tcp,TCP_N_CONNECTIONS) != -1, "Could not prepare tcp socket")
+
+}
+
 
 /**
  * Setups server loop.
@@ -213,30 +273,18 @@ int main(int argc, char const *argv[]) {
 
     // TODO: @Diogo-V -> Implement TCP connection and put a selector
 
-    /* Goes over all the flags and setups port and ip address */
-    string ds_port{PORT};  /* Holds server port */
+    fd_set fds;
+    int maxfd, counter;
+
+    /* Goes over all the flags and setups port and verbose mode */
     for (int i = 1; i < argc; i += 2) {
         if (strcmp(argv[i], "-p") == 0) { string s(argv[i + 1]); ds_port = s; }
         else if (strcmp(argv[i], "-v") == 0) { isVerbose = true; }
     }
 
-    /* Creates udp soGroup for internet */
-	fd = socket(AF_INET, SOCK_DGRAM, 0);
-    assert_(fd != -1, "Could not create socket")
-
-    /* Inits UDP server's struct to access the DNS */
-	memset(&hints, 0, sizeof hints);
-	hints.ai_family = AF_INET;
-	hints.ai_socktype = SOCK_DGRAM;
-	hints.ai_flags = AI_PASSIVE;
-
-	/* Uses its URL to consult DNS and get a UDP server's IP address */
-	errcode = getaddrinfo(nullptr, ds_port.c_str(), &hints, &res);
-    assert_(errcode == 0, "Failed getaddrinfo call")
-
-    /* Binds sockets to our specified port and tells our SO that this channel if for this server */
-	int err = bind(fd, res->ai_addr, res->ai_addrlen);
-    assert_(err == 0, "Failed to bind socket")
+    /* Initializes both sockets */
+    init_udp_socket();
+    init_tcp_socket();
 
     /* Inits server connection loop */
 	while (true) {
@@ -244,7 +292,7 @@ int main(int argc, char const *argv[]) {
 	    /* Receives message from client */
         bzero(&addr, sizeof(struct sockaddr_in));
         addrlen = sizeof(addr);
-		n = recvfrom(fd, buffer, MSG_MAX_SIZE, 0, (struct sockaddr*) &addr, &addrlen);
+		n = recvfrom(fd_udp, buffer, MSG_MAX_SIZE, 0, (struct sockaddr*) &addr, &addrlen);
         assert_(n != -1, "Failed to receive message")
 
         /* Removes \n at the end of the buffer. Makes things easier down the line */
@@ -254,7 +302,7 @@ int main(int argc, char const *argv[]) {
         string response = selector(buffer);
 
         /* Sends response back t client */
-        n = sendto(fd, response.c_str(), response.size(), 0, (struct sockaddr*) &addr, addrlen);
+        n = sendto(fd_udp, response.c_str(), response.size(), 0, (struct sockaddr*) &addr, addrlen);
         assert_(n != -1, "Failed to send message")
 
         memset(buffer, 0, MSG_MAX_SIZE);  /* Cleans buffer for new iteration */
@@ -263,7 +311,7 @@ int main(int argc, char const *argv[]) {
 
 	/* Closes sockets */
     freeaddrinfo(res);
-    close(fd);
+    close(fd_udp);
 
     return EXIT_SUCCESS;
 
