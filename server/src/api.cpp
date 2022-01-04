@@ -53,8 +53,10 @@ string unregister_user(unordered_map<string, User>* users, string& uid, string& 
         return "NOK";
     } else {
         users->erase(uid);
+        //TODO: @Sofia-Morgado -> desinscrever de todos os grupos
         return "OK";
     }
+
 
 }
 
@@ -86,29 +88,6 @@ string login_user(unordered_map<string, User>* users, string& uid, string& pass)
 /**
  * @brief user logs out
  *
- * @param users unordered map of users
- * @param uid user id
- * @param pass user password
- *
- * @return status message
- */
-string logout_user(unordered_map<string, User>* users, string& uid, string& pass) {
-    
-    auto it = users->find(uid);
-
-    /* Verifies if user is registered, if he is logged in and if password is correct*/
-    if (it == users->end() || !(it->second.getUserStatus()) || it->second.getUserPassword() != pass) {
-            return "NOK";
-    } else {
-        it->second.toggleStatus();  /* Sets user status to false */
-        return "OK";
-    }
-
-}
-
-/**
- * @brief user logs out
- *
  * @param users structure that holds all users in the server
  * @param uid user id
  * @param pass user password
@@ -121,7 +100,7 @@ string logout_user(unordered_map<string, User>* users, string& uid, string& pass
     }
 
     /* Verifies if user is registered, if he is logged in and if password is correct*/
-    else if (users->count(uid) == 0 || users->at(uid).getUserStatus() || users->at(uid).getUserPassword() != pass) {
+    else if (users->count(uid) == 0 || !users->at(uid).getUserStatus() || users->at(uid).getUserPassword() != pass) {
         return "NOK";
     } else {
         users->at(uid).toggleStatus();  /* Sets user status to false */

@@ -47,8 +47,12 @@ typedef struct user {  /* Represents current client's user */
     user() { uid = ""; pass = ""; is_logged = false; selected_group = ""; }
 } User;
 
-//User user = (User)malloc(sizeof(struct user));/* Holds current user */
 User user;
+
+/** Flag to represent the need to logout the user when unregister the user has been successful and this user is the
+ * the currently logged in user
+ */
+bool logouts = false;
 /*----------------------------------------- Functions --------------------------------------------*/
 
 
@@ -87,14 +91,16 @@ void selector(const string& msg) {
         else cerr << "Invalid status" << endl;
 
     } else if (outputs[0] == "RLO") {  /* Receives status from LOG (login user) */
-        if (outputs[1] == "OK") { cout << "User logged in successfully" << endl; user.is_logged = true; }
+        if (outputs[1] == "OK") {
+            cout << "User logged in successfully" << endl;
+            user.is_logged = true; }
         else if (outputs[1] == "NOK") cerr << "Failed. Invalid user id or incorrect password." << endl;
         else cerr << "Invalid status" << endl;
 
     } else if (outputs[0] == "ROU") {  /* Receives status from OUT (logout user) */
         if (outputs[1] == "OK") {
             cout << "User logged out successfully" << endl;
-            //user.is_logged = false; user.uid = ""; user.pass = ""; user.selected_group = "";
+            user.is_logged = false; user.uid = ""; user.pass = ""; user.selected_group = "";
         }
         else if (outputs[1] == "NOK") cerr << "Failed. Invalid user id or incorrect password." << endl;
         else cerr << "Invalid status" << endl;
@@ -188,16 +194,15 @@ bool preprocessing(const string& msg, string& out) {
         /* Transforms user input into a valid command to be sent to the server */
         out = "LOG " + inputs[1] + " " + inputs[2] + "\n";
 
-        //TODO: fazer isto depois do server ter feito o log in!!
-        user.uid = inputs[1];  /* Sets user's uid */
-        user.pass = inputs[2];  /* Saves user's password locally */
+        user.uid = inputs[1];  /* Sets tmp_user's uid */
+        user.pass = inputs[2];  /* Saves tmp_user's password locally */
 
         return true;  /* Since everything was ok, we return true */
 
     } else if (inputs[0] == "logout") {
 
         /* Verifies if the user input a valid command and that this command can be issued */
-        validate_(!user.is_logged, "Client needs to be logged in")
+        validate_(user.is_logged, "Client needs to be logged in")
 
         /* Transforms user input into a valid command to be sent to the server */
         out = "OUT " + user.uid + " " + user.pass + "\n";
@@ -261,6 +266,7 @@ bool preprocessing(const string& msg, string& out) {
 
     /* TODO: implement rest of TCP */
 
+    cout << "Invalid command" << endl;
     return false;  /* Since no command was chosen, the user did not input a valid command */
 
 }
@@ -314,7 +320,6 @@ int main(int argc, char const *argv[]) {
 
     /* Gets the command that the user input */
     cin.getline(buffer, MSG_MAX_SIZE);
-    printf("Here 1\n");
 
     while (strcmp(buffer, EXIT_CMD) != 0) {
         string req{};  /* Holds the request message that is going to be sent to the server */
@@ -323,7 +328,6 @@ int main(int argc, char const *argv[]) {
         /* Also populates "req" with a valid request */
         if (! preprocessing(buffer, req)) {
             memset(buffer, 0, MSG_MAX_SIZE);  /* Cleans buffer */
-            cout << "Incorrect message format!" << endl;
 
             /* Gets the new command that the user input. This replaces the previous command */
             cin.getline(buffer, MSG_MAX_SIZE);

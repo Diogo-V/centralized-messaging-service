@@ -100,12 +100,12 @@ string selector(const char* msg) {
         return "RUN " + status + "\n";
 
     } else if (inputs[0] == "LOG") {  /* Signs in user */
-        printf("chamou\n");
         status = login_user(&users, inputs[1], inputs[2]);
         return "RLO " + status + "\n";
 
     } else if (inputs[0] == "OUT") {  /* Logout user */
 
+        status = logout_user(&users, inputs[1] , inputs[2]);
         /* receives status from call function*/
         cout << "OUT" << endl;
 
@@ -184,6 +184,34 @@ void termination_handler(int sigtype){
     exit(EXIT_SUCCESS);
 }
 
+/**
+ * @brief Initializes signal interrupters treatment (for SIGINT and SIGIGN)
+ */
+void initialize_interrupters(){
+    struct sigaction sa_1, sa_2;
+    sigset_t block_mask;
+
+    /*Creating space for the sa and filling the struct. We are setting the handler to termination handlers function,
+     * that will close all the sockets and erase files.*/
+    memset(&sa_1,0,sizeof sa_1);
+    /* Blocks signal quit (CTRL+Q) and signal stop (CTRL+Z) while handling signal interruption (CTRL + C). Only here
+     * for safety*/
+    //TODO: @Sofia-Morgado devia colocar mais sinais a bloquear?
+    sigaddset (&block_mask, SIGTSTP);
+    sigaddset (&block_mask, SIGQUIT);
+    sa_1.sa_mask = block_mask;
+    sa_1.sa_flags = 0;
+    sa_1.sa_handler = termination_handler;
+
+    /*Creating space for the struct and filling the struct. We are setting the handler to ignore the signal*/
+    memset(&sa_2,0,sizeof sa_2);
+    sa_2.sa_handler=SIG_IGN;
+
+    /* Setting the sa_1 to the SIGPIPE and sa_1 to SIGINT*/
+    if(sigaction(SIGPIPE,&sa_2,NULL)==-1 || sigaction(SIGINT, &sa_1, NULL) == -1)
+        exit(1);
+}
+
 
 /**
  * @brief Setups our socket "fd_udp"
@@ -248,33 +276,13 @@ void init_tcp_socket() {
  * @return 0 if success and 1 if error
  */
 int main(int argc, char const *argv[]) {
-    struct sigaction sa_1, sa_2;
-    sigset_t block_mask;
-
-    /*Creating space for the sa and filling the struct. We are setting the handler to termination handlers function,
-     * that will close all the sockets and erase files.*/
-    memset(&sa_1,0,sizeof sa_1);
-    /* Blocks signal quit (CTRL+Q) and signal stop (CTRL+Z) while handling signal interruption (CTRL + C). Only here
-     * for safety*/
-    //TODO: @Sofia-Morgado devia colocar mais sinais a bloquear?
-    sigaddset (&block_mask, SIGTSTP);
-    sigaddset (&block_mask, SIGQUIT);
-    sa_1.sa_mask = block_mask;
-    sa_1.sa_flags = 0;
-    sa_1.sa_handler = termination_handler;
-
-    /*Creating space for the struct and filling the struct. We are setting the handler to ignore the signal*/
-    memset(&sa_2,0,sizeof sa_2);
-    sa_2.sa_handler=SIG_IGN;
-
-    /* Setting the sa_1 to the SIGPIPE and sa_1 to SIGINT*/
-    if(sigaction(SIGPIPE,&sa_2,NULL)==-1 || sigaction(SIGINT, &sa_1, NULL) == -1)
-        exit(1);
-
     // TODO: @Diogo-V -> Implement TCP connection and put a selector
 
     fd_set fds;
     int maxfd, counter;
+
+    /* Initializes signal interrupters treatment */
+    initialize_interrupters();
 
     /* Goes over all the flags and setups port and verbose mode */
     for (int i = 1; i < argc; i += 2) {
