@@ -1,8 +1,9 @@
 #include "api.h"
 
 #include <utility>
+#include <iostream>
 
-
+using namespace std;
 /**
  * @brief Registers user
  *
@@ -42,9 +43,13 @@ string register_user(unordered_map<string, User>* users, string& uid, string& pa
  * @return status message
  */
 string unregister_user(unordered_map<string, User>* users, string& uid, string& pass){
-
-    /* verifies if user is already registered or if the password is not correct */
-    if(users->count(uid) > 0 || users->at(uid).getUserPassword() != pass) {
+    /* verifies if there are users registered. This is for safety measure*/
+    if(users->empty()){
+        return "NOK";
+    }
+    /* verifies if user isn't already registered or if the password is not correct */
+    else if(users->count(uid) == 0 || users->at(uid).getUserPassword() != pass) {
+        cout << users->at(uid).getUserPassword() << endl;
         return "NOK";
     } else {
         users->erase(uid);
@@ -63,20 +68,47 @@ string unregister_user(unordered_map<string, User>* users, string& uid, string& 
  * @return status message
  */
 string login_user(unordered_map<string, User>* users, string& uid, string& pass) {
-
-    auto it = users->find(uid);
+    /* verifies if there are users registered. This is for safety measure*/
+    if(users->empty()) {
+        return "NOK";
+    }
 
     /* Verifies if user is registered, if he is not logged in and if password is correct*/
-    if (it == users->end() || it->second.getUserStatus() || it->second.getUserPassword() != pass) {
+    else if (users->count(uid) == 0 || users->at(uid).getUserStatus() || users->at(uid).getUserPassword() != pass) {
             return "NOK";
     } else {
-        it->second.toggleStatus();  /* Sets user status to true */
+        users->at(uid).toggleStatus();  /* Sets user status to true */
         return "OK";
     }
 
 }
 
 // TODO: fazer logged out
+
+/**
+ * @brief user logs out
+ *
+ * @param users structure that holds all users in the server
+ * @param uid user id
+ * @param pass user password
+ * @return status message
+ */
+string logout_user(unordered_map<string, User>* users, string& uid, string& pass) {
+    /* verifies if there are users registered. This is for safety measure*/
+    if(users->empty()) {
+        return "NOK";
+    }
+
+    /* Verifies if user is registered, if he is logged in and if password is correct*/
+    else if (users->count(uid) == 0 || users->at(uid).getUserStatus() || users->at(uid).getUserPassword() != pass) {
+        return "NOK";
+    } else {
+        users->at(uid).toggleStatus();  /* Sets user status to false */
+        return "OK";
+    }
+
+}
+
 
 /**
  * @brief Lists groups

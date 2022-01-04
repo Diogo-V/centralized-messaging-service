@@ -100,7 +100,7 @@ string selector(const char* msg) {
         return "RUN " + status + "\n";
 
     } else if (inputs[0] == "LOG") {  /* Signs in user */
-
+        printf("chamou\n");
         status = login_user(&users, inputs[1], inputs[2]);
         return "RLO " + status + "\n";
 
@@ -178,7 +178,7 @@ void termination_handler(int sigtype){
 
     /* Closes the server socket*/
     freeaddrinfo(res);
-    close(fd);
+    close(fd_udp);
 
     /* Ends program */
     exit(EXIT_SUCCESS);
