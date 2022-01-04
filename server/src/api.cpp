@@ -6,9 +6,9 @@
 /**
  * @brief Registers user
  *
- * @param unordered map of users
- * @param user user id (must have only 5 digits)
- * @param user password
+ * @param users unordered map of users
+ * @param uid user id (must have only 5 digits)
+ * @param pass user password
  *
  * @return status message
  */
@@ -35,9 +35,9 @@ string register_user(unordered_map<string, User>* users, string& uid, string& pa
 /**
  * @brief Unregisters user
  *
- * @param unordered map of users
- * @param user id
- * @param user password
+ * @param users unordered map of users
+ * @param uid user id
+ * @param pass user password
  *
  * @return status message
  */
@@ -76,12 +76,33 @@ string login_user(unordered_map<string, User>* users, string& uid, string& pass)
 
 }
 
-// TODO: fazer logged out
+/**
+ * @brief user logs out
+ *
+ * @param users unordered map of users
+ * @param uid user id
+ * @param pass user password
+ *
+ * @return status message
+ */
+string logout_user(unordered_map<string, User>* users, string& uid, string& pass) {
+    
+    auto it = users->find(uid);
+
+    /* Verifies if user is registered, if he is logged in and if password is correct*/
+    if (it == users->end() || !(it->second.getUserStatus()) || it->second.getUserPassword() != pass) {
+            return "NOK";
+    } else {
+        it->second.toggleStatus();  /* Sets user status to false */
+        return "OK";
+    }
+
+}
 
 /**
  * @brief Lists groups
  *
- * @param unordered map of groups
+ * @param groups unordered map of groups
  *
  * @return list of group IDs and names
  */
