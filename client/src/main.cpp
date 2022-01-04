@@ -53,6 +53,7 @@ User user;
  * the currently logged in user
  */
 bool logouts = false;
+
 /*----------------------------------------- Functions --------------------------------------------*/
 
 
@@ -86,7 +87,17 @@ void selector(const string& msg) {
         else cerr << "Invalid status" << endl;
 
     } else if (outputs[0] == "RUN") { /* Receives status from UNR (unregister user) */
-        if (outputs[1] == "OK") cout << "User unregistered successfully" << endl;
+        if (outputs[1] == "OK"){
+            cout << "User unregistered successfully" << endl;
+
+            /*Logouts the user if the user was logged in*/
+            if (logouts) {
+                user.is_logged = false;
+                user.uid = "";
+                user.pass = "";
+                user.selected_group = "";
+                logouts = !logouts;}
+        }
         else if (outputs[1] == "NOK") cerr << "Failed. Invalid user id or incorrect password." << endl;
         else cerr << "Invalid status" << endl;
 
@@ -179,6 +190,8 @@ bool preprocessing(const string& msg, string& out) {
         validate_(isNumber(inputs[1]), "User ID is not a number")
         validate_(inputs[1].size() == 5, "User ID should have 5 numbers")
 
+        if (user.uid == inputs[1] && user.is_logged) logouts = true;
+
         /* Transforms user input into a valid command to be sent to the server */
         out = "UNR " + inputs[1] + " " + inputs[2] + "\n";
 
@@ -206,6 +219,14 @@ bool preprocessing(const string& msg, string& out) {
 
         /* Transforms user input into a valid command to be sent to the server */
         out = "OUT " + user.uid + " " + user.pass + "\n";
+
+        return true;  /* Since everything was ok, we return true */
+
+    } else if (inputs[0] == "showuid" || inputs[0] == "su"){
+        /* Verifies if the user input a valid command and that this command can be issued */
+        validate_(user.is_logged, "No client logged in")
+
+        cout << user.uid << endl;
 
         return true;  /* Since everything was ok, we return true */
 
