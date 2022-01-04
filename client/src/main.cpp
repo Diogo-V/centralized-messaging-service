@@ -50,9 +50,11 @@ typedef struct user {  /* Represents current client's user */
 User user;
 
 /** Flag to represent the need to logout the user when unregister the user has been successful and this user is the
- * the currently logged in user
- */
+ the currently logged in user */
 bool logouts = false;
+
+/** No need to send message to server */
+bool no_server = false;
 
 /*----------------------------------------- Functions --------------------------------------------*/
 
@@ -228,6 +230,8 @@ bool preprocessing(const string& msg, string& out) {
 
         cout << user.uid << endl;
 
+        no_server = true;
+
         return true;  /* Since everything was ok, we return true */
 
     } else if (inputs[0] == "groups" || inputs[0] == "gl") {
@@ -349,6 +353,17 @@ int main(int argc, char const *argv[]) {
         /* Also populates "req" with a valid request */
         if (! preprocessing(buffer, req)) {
             memset(buffer, 0, MSG_MAX_SIZE);  /* Cleans buffer */
+
+            /* Gets the new command that the user input. This replaces the previous command */
+            cin.getline(buffer, MSG_MAX_SIZE);
+
+            continue;
+        }
+
+        //FIXME: Perguntar se isto é uma boa ideia;
+        /*In case of a command that not requires to send message to the server */
+        if(no_server){
+            no_server = false;
 
             /* Gets the new command that the user input. This replaces the previous command */
             cin.getline(buffer, MSG_MAX_SIZE);

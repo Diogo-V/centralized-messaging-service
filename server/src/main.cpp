@@ -41,11 +41,12 @@ using namespace std;
 int fd_udp;  /* Holds server udp socket file descriptor */
 int fd_tcp;  /* Holds server tcp socket file descriptor */
 int errcode;  /* Holds current error */
+fd_set fds;  /* Holds file descriptors in select */
 
 struct addrinfo hints;  /* Used to request info from DNS to get our "endpoint" */
 struct addrinfo *res;  /* Stores result from getaddrinfo and uses it to set up our socket */
 
-ssize_t n;  /* Holds number of bytes read/sent or -1 in case of error */
+ssize_t n, nw;  /* Holds number of bytes read/sent or -1 in case of error */
 socklen_t addrlen;  /* Holds size of message sent from sender */
 struct sockaddr_in addr;  /* Describes internet socket address. Holds sender info */
 char buffer[MSG_MAX_SIZE];  /* Holds current message received in this socket */
@@ -149,11 +150,13 @@ string selector(const char* msg) {
 /**
  * @brief Function to handle Ctrl + C signal. Removes all files from the files directory and closes the server sockets
  *
- * @param sigtype signal type
+ * @param sig_type type of signal
  */
-void termination_handler(int sigtype){
+void termination_handler(int sig_type) {
+
     struct dirent *entry;
     DIR *dp;
+
     /* Gets the current directory of the project*/
     char *project_directory = get_current_dir_name();
     string filepath;
@@ -161,9 +164,9 @@ void termination_handler(int sigtype){
 
     /* Opens the files directory */
     dp = opendir(files_directory.c_str());
-
     assert_(dp, "Failed to open the files directory");
 
+    /* Goes over each file and removes it */
     while ((entry = readdir(dp))) {
         if (strcmp(entry->d_name, ".") == 0 ||strcmp(entry->d_name, "..") == 0 )
             continue;
@@ -179,15 +182,18 @@ void termination_handler(int sigtype){
     /* Closes the server socket*/
     freeaddrinfo(res);
     close(fd_udp);
+    close(fd_tcp);
 
     /* Ends program */
     exit(EXIT_SUCCESS);
 }
 
+
 /**
  * @brief Initializes signal interrupters treatment (for SIGINT and SIGIGN)
  */
-void initialize_interrupters(){
+void initialize_interrupters() {
+
     struct sigaction sa_1, sa_2;
     sigset_t block_mask;
 
@@ -203,13 +209,13 @@ void initialize_interrupters(){
     sa_1.sa_flags = 0;
     sa_1.sa_handler = termination_handler;
 
-    /*Creating space for the struct and filling the struct. We are setting the handler to ignore the signal*/
+    /* Creating space for the struct and filling the struct. We are setting the handler to ignore the signal */
     memset(&sa_2,0,sizeof sa_2);
-    sa_2.sa_handler=SIG_IGN;
+    sa_2.sa_handler = SIG_IGN;
 
     /* Setting the sa_1 to the SIGPIPE and sa_1 to SIGINT*/
-    if(sigaction(SIGPIPE,&sa_2,NULL)==-1 || sigaction(SIGINT, &sa_1, NULL) == -1)
-        exit(1);
+    if(sigaction(SIGPIPE,&sa_2,nullptr) == -1 || sigaction(SIGINT, &sa_1, nullptr) == -1)
+        exit(EXIT_FAILURE);
 }
 
 
@@ -276,10 +282,6 @@ void init_tcp_socket() {
  * @return 0 if success and 1 if error
  */
 int main(int argc, char const *argv[]) {
-    // TODO: @Diogo-V -> Implement TCP connection and put a selector
-
-    fd_set fds;
-    int maxfd, counter;
 
     /* Initializes signal interrupters treatment */
     initialize_interrupters();
@@ -297,30 +299,66 @@ int main(int argc, char const *argv[]) {
     /* Inits server connection loop */
 	while (true) {
 
-	    /* Receives message from client */
+        FD_ZERO(&fds);  // Clears all file descriptors
+        FD_SET(fd_udp, &fds);  // Adds socket to selector
+        FD_SET(fd_tcp, &fds);  // Adds socket to selector
+
+        /* Blocks until one of the descriptors, previously set in are ready to by read. Returns number of file descriptors ready */
+        int counter = select(fd_tcp + 1,&fds,(fd_set*) nullptr,(fd_set*) nullptr,(struct timeval *) nullptr);
+        assert_(counter > 0, "Select threw an error")
+
+        /* Cleans previous iteration so that it does not bug */
         bzero(&addr, sizeof(struct sockaddr_in));
         addrlen = sizeof(addr);
-		n = recvfrom(fd_udp, buffer, MSG_MAX_SIZE, 0, (struct sockaddr*) &addr, &addrlen);
-        assert_(n != -1, "Failed to receive message")
 
-        /* Removes \n at the end of the buffer. Makes things easier down the line */
-        buffer[strlen(buffer) - 1] = '\0';
+        if (FD_ISSET(fd_udp, &fds)) {  /* Checks if udp socket activated */
 
-        /* Process client's message and decides what to do with it based on the passed code */
-        string response = selector(buffer);
+            /* Receives message from client */
+            n = recvfrom(fd_udp, buffer, MSG_MAX_SIZE, 0, (struct sockaddr*) &addr, &addrlen);
+            assert_(n != -1, "Failed to receive message")
 
-        /* Sends response back t client */
-        n = sendto(fd_udp, response.c_str(), response.size(), 0, (struct sockaddr*) &addr, addrlen);
-        assert_(n != -1, "Failed to send message")
+            /* Removes \n at the end of the buffer. Makes things easier down the line */
+            buffer[strlen(buffer) - 1] = '\0';
+
+            /* Process client's message and decides what to do with it based on the passed code */
+            string response = selector(buffer);
+
+            /* Sends response back t client */
+            n = sendto(fd_udp, response.c_str(), response.size(), 0, (struct sockaddr*) &addr, addrlen);
+            assert_(n != -1, "Failed to send message")
+
+        } else if (FD_ISSET(fd_tcp, &fds)) {  /* Checks if tcp socket activated */
+
+            /* Creates temporary socket to connect to client. Keeps main channel active */
+            int tmp_fd = accept(fd_tcp,(struct sockaddr*) &addr, &addrlen);
+            assert_(tmp_fd != -1, "Could not create temporary tcp socket")
+
+            /* Keeps on reading until everything has been read from the client */
+            while ((n = read(tmp_fd,buffer, MSG_MAX_SIZE)) != 0) {
+                assert_(n != -1, "Failed to read from temporary socket")
+            }
+
+            /* Removes \n at the end of the buffer. Makes things easier down the line */
+            buffer[strlen(buffer) - 1] = '\0';
+
+            /* Process client's message and decides what to do with it based on the passed code */
+            string response = selector(buffer);
+
+            /* Keeps sending messages to client until everything is sent */
+            char* ptr = &response[0];
+            while (n > 0) {
+                assert_((nw = write(tmp_fd, ptr, n)) > 0, "Could not send message to client")
+                n -= nw; ptr += nw;
+            }
+
+            close(tmp_fd);  /* Closes file descriptor to avoid errors */
+
+        } else {
+            assert_(false, "No correct file descriptor was activated in select")
+        }
 
         memset(buffer, 0, MSG_MAX_SIZE);  /* Cleans buffer for new iteration */
 
 	}
-
-	/* Closes sockets */
-    freeaddrinfo(res);
-    close(fd_udp);
-
-    return EXIT_SUCCESS;
 
 }
