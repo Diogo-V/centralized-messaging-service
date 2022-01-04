@@ -32,7 +32,7 @@ int
     errcode;  /* Holds current error */
 struct addrinfo
     hints,  /* Used to request info from DNS to get our "endpoint" */
-    *res;  /* Stores result from getaddrinfo and uses it to setup our socket */
+    *res;  /* Stores result from getaddrinfo and uses it to set up our socket */
 
 ssize_t n;  /* Holds number of bytes read/sent or -1 in case of error */
 socklen_t addrlen;  /* Holds size of message sent from sender */
@@ -49,10 +49,13 @@ typedef struct user {  /* Represents current client's user */
 
 User user;
 
-/** Flag to represent the need to logout the user when unregister the user has been successful and this user is the
- * the currently logged in user
+/**
+ * Flag to represent the need to logout the user when unregister the user has been successful and
+ * this user is the currently logged in user
  */
 bool logouts = false;
+
+
 /*----------------------------------------- Functions --------------------------------------------*/
 
 
