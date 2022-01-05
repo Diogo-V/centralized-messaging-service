@@ -10,6 +10,8 @@
 #include <cstring>
 #include <vector>
 #include <sstream>
+#include <stdio.h>
+#include <stdlib.h>
 
 using namespace std;
 
@@ -113,14 +115,15 @@ void selector(const string& msg) {
         else if (outputs[1] == "NOK") cerr << "Failed. Invalid user id or incorrect password." << endl;
         else cerr << "Invalid status" << endl;
 
-        //TODO: @Sofia-Morgado -> talvez aprensetar uma mensagem caso não haja grupos disponíveis?
+
     } else if (outputs[0] == "RGL") {  /* Receives status from GLS (list of groups) */
         /* There are groups created*/
-        if (outputs[1] != "0")
-            for (std::vector<string>::const_iterator i = outputs.begin() + 2; i != outputs.end(); ++i) {
-                std::cout << *i;
+        //TODO: @Sofia-Morgado -> corrigir este último espaço
+        if (outputs[1] != "0") {
+            for (auto i = outputs.begin() + 2; i != outputs.end(); ++i) {
+                std::cout << *i << " ";
             }
-
+        }
 
     } else if (outputs[0] == "RGS") {  /* Receives status from GSR (join group) */
         if (outputs[1] == "OK") cout << "User subscribed successfully." << endl;
@@ -167,7 +170,7 @@ bool isNumber(const string& line) {
  * @return boolean value
  */
 bool isAlphaNumeric(const string& line){
-    int i = 0, len = strlen(line.c_str());
+    uint8_t i = 0, len = line.length();
 
     while (isalnum(line[i])) i++;
 
@@ -180,7 +183,7 @@ bool isAlphaNumeric(const string& line){
  * @return boolean value
  */
 bool isAlphaNumericPlus(const string& line){
-    int i = 0, len = strlen(line.c_str());
+    uint8_t i = 0, len = line.length();
 
     while (isalnum(line[i]) || (line[i] == '-') || (line[i] == '_')) i++;
 
@@ -308,10 +311,11 @@ bool preprocessing(const string& msg, string& out) {
         /* Verifies if the user input a valid command and that this command can be issued */
         validate_(inputs.size() == 2, "User did not input group ID")
         validate_(isNumber(inputs[1]), "Group ID is not a number")
+        validate_(inputs[1].size() <= 2, "Group ID is a 2 digit-number")
         validate_(user.is_logged, "Client is not logged in")
 
         /* Transforms user input into a valid command to be sent to the server */
-        out = "GUR " + user.uid + "\n";
+        out = "GUR " + user.uid + " " + inputs[1] + "\n";
 
         return true;  /* Since everything was ok, we return true */
 

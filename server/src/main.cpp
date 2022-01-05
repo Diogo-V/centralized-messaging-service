@@ -129,9 +129,8 @@ string selector(const char* msg) {
         return "RGS " + status + "\n";
 
     } else if (inputs[0] == "GUR") {  /* Unsubscribe to group */
-
         /* receives status from call function*/
-        cout << "GUR" << endl;
+        status = unsubscribe(&groups, &users, inputs[1], inputs[2]);
 
         return "RGU " + status + "\n";
 

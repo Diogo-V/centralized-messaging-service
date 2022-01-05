@@ -127,7 +127,7 @@ string list_groups(unordered_map<string, Group>* groups) {
 
     for (auto & itr : *groups) {
         mid = itr.second.getMid() == 0 ? "0000" : to_string(itr.second.getMid()) ;
-        group = itr.first + '|' + itr.second.getName() + '|' + mid + "\n";
+        group = itr.first + "|" + itr.second.getName() + "|" + mid + "\n";
         list.append(group);
     }
 
@@ -150,6 +150,7 @@ string list_groups(unordered_map<string, Group>* groups) {
 string subscribe (unordered_map<string, Group>* groups, unordered_map<string, User>* users, string uid, string gid, string gname, int* p_gid_counter){
     string new_gid;
 
+    //FIXME: @Sofia-Morgado -> visto que isto é um erro de não existirem grupos ou users, o erro é NOK ou E_USR?
     /* Verifies if there are users registered or if there are groups to subscribe. This is for safety measures*/
     if(users->empty() || (groups->empty() && gid != "0")) {
         return "NOK";
@@ -199,3 +200,39 @@ string subscribe (unordered_map<string, Group>* groups, unordered_map<string, Us
     }
 
 }
+
+
+/**
+ * Unsubscribe user from the group
+ *
+ * @param groups structure that holds all groups in the server
+ * @param users structure that holds all users in the server
+ * @param uid user's id
+ * @param gid group's id
+ * @return status message
+ */
+string unsubscribe(unordered_map<string, Group>* groups, unordered_map<string, User>* users, string uid, string gid) {
+    /*Verifies if the user exists */
+    if(!users->empty() && users->count(uid) == 0){
+        return "E_USR";
+
+    /*Verifies if the group exists */
+    } else if (!groups->empty() && groups->count(gid) == 0){
+        return "E_GRP";
+
+    //FIXME: @Sofia-Morgado coloquei aqui porque não faz sentido o user poder dessubscrever a second time. Qual o erro?
+    /* Verifies if the user is subscribed to the group */
+    } else if ((groups->at(gid).getUsers().count(uid) == 0)){
+        return "NOK";
+
+    } else {
+        /*Unsubscribe user */
+        groups->at(gid).unsubscribeUser(uid);
+        users->at(uid).removeGroup(gid);
+
+        return "OK";
+    }
+
+
+}
+
