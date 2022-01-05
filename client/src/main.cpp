@@ -117,7 +117,6 @@ void selector(const string& msg) {
 
 
     } else if (outputs[0] == "RGL") {  /* Receives status from GLS (list of groups) */
-        /* There are groups created*/
         //TODO: @Sofia-Morgado -> corrigir este último espaço
         if (outputs[1] != "0") {
             for (auto i = outputs.begin() + 2; i != outputs.end(); ++i) {
@@ -143,8 +142,11 @@ void selector(const string& msg) {
         else cerr << "Invalid status" << endl;
 
     } else if (outputs[0] == "RGM") {  /* Receives status from GLM (lst usr groups) */
-        //TODO: mostra grupos que está subscrito
-        // else cerr << "Invalid status" << endl;
+        if (outputs[1] != "0") {
+            for (auto i = outputs.begin() + 2; i != outputs.end(); ++i) {
+                std::cout << *i << " ";
+            }
+        }
 
     } else {
         cerr << "ERR" << endl;

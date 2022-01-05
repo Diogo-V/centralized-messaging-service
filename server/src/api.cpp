@@ -2,6 +2,7 @@
 
 #include <utility>
 #include <iostream>
+#include <list>
 
 using namespace std;
 /**
@@ -152,6 +153,7 @@ string subscribe (unordered_map<string, Group>* groups, unordered_map<string, Us
 
     //FIXME: @Sofia-Morgado -> visto que isto é um erro de não existirem grupos ou users, o erro é NOK ou E_USR?
     /* Verifies if there are users registered or if there are groups to subscribe. This is for safety measures*/
+    printf("here 1\n");
     if(users->empty() || (groups->empty() && gid != "0")) {
         return "NOK";
 
@@ -192,9 +194,12 @@ string subscribe (unordered_map<string, Group>* groups, unordered_map<string, Us
             new_gid = gid;
         }
 
+        cout << "subscreveu" << endl;
         /* Subscribes user to new group. Add user to group subscribers and the group to user's group */
         groups->at(new_gid).subscribeUser(&users->at(uid));
+        cout << "our of range 1" << endl;
         users->at(uid).addGroup(new_gid);
+        cout << "our of range 2" << endl;
 
         return "OK";
     }
@@ -231,6 +236,40 @@ string unsubscribe(unordered_map<string, Group>* groups, unordered_map<string, U
         users->at(uid).removeGroup(gid);
 
         return "OK";
+    }
+}
+
+/**
+ * Sends a list of the groups that the user is subscribed
+ * @param groups structure that holds all groups in the server
+ * @param users structure that holds all users in the server
+ * @param uid user's id
+ * @return number of groups and list of groups
+ */
+string user_groups (unordered_map<string, Group>* groups, unordered_map<string, User>* users, string uid){
+    string out, group, mid;
+    list<string> user_groups;
+
+    printf("chamou\n");
+
+    /*Verifies if the user exists */
+    if(!users->empty() && users->count(uid) == 0) {
+        return "E_USR";
+
+    } else {
+        user_groups = users->at(uid).getUserGroups();
+
+        printf("interesting\n");
+
+        cout << user_groups.size() << endl;
+
+        for (auto & itr : user_groups ) {
+            mid = groups->at(itr).getMid() == 0 ? "0000" : to_string(groups->at(itr).getMid()) ;
+            group = groups->at(itr).getGroupId() + "|" + groups->at(itr).getName() + "|" + mid + "\n";
+            out.append(group);
+        }
+
+        return to_string(user_groups.size()) + " " + out;
     }
 
 

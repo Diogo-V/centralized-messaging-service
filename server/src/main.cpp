@@ -137,7 +137,7 @@ string selector(const char* msg) {
     } else if (inputs[0] == "GLM") {  /* Get list of user's groups */
 
         /* receives status from call function*/
-        cout << "GLM" << endl;
+        status = user_groups(&groups, &users, inputs[1]);
 
         return "RGM " + status + "\n";
 
