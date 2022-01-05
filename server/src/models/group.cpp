@@ -12,7 +12,7 @@ using namespace std;
 Group::Group(string id, string name){
     _id = id;
     _name = name;
-    _mid = 1;
+    _mid = 0;
     // message
 }
 

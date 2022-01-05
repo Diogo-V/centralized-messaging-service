@@ -93,12 +93,7 @@ void selector(const string& msg) {
             cout << "User unregistered successfully" << endl;
 
             /*Logouts the user if the user was logged in*/
-            if (logouts) {
-                user.is_logged = false;
-                user.uid = "";
-                user.pass = "";
-                user.selected_group = "";
-                logouts = !logouts;}
+            if (logouts) {user.is_logged = false; user.uid = ""; user.pass = ""; user.selected_group = ""; logouts = !logouts;}
         }
         else if (outputs[1] == "NOK") cerr << "Failed. Invalid user id or incorrect password." << endl;
         else cerr << "Invalid status" << endl;
@@ -118,8 +113,14 @@ void selector(const string& msg) {
         else if (outputs[1] == "NOK") cerr << "Failed. Invalid user id or incorrect password." << endl;
         else cerr << "Invalid status" << endl;
 
+        //TODO: @Sofia-Morgado -> talvez aprensetar uma mensagem caso não haja grupos disponíveis?
     } else if (outputs[0] == "RGL") {  /* Receives status from GLS (list of groups) */
-        //TODO: recebe grupos
+        /* There are groups created*/
+        if (outputs[1] != "0")
+            for (std::vector<string>::const_iterator i = outputs.begin() + 2; i != outputs.end(); ++i) {
+                std::cout << *i;
+            }
+
 
     } else if (outputs[0] == "RGS") {  /* Receives status from GSR (join group) */
         if (outputs[1] == "OK") cout << "User subscribed successfully." << endl;
@@ -148,15 +149,43 @@ void selector(const string& msg) {
 
 }
 
-
 /**
  * Verifies if input string translates to a number.
  *
  * @param line string to be validated
  * @return boolean value
  */
-bool isNumber(const string& line) { char* p; strtod(line.c_str(), &p); return *p == 0; }
+bool isNumber(const string& line) {
+    char* p;
+    strtod(line.c_str(), &p);
+    return *p == 0;
+}
 
+/**
+ * Verifies if input string translates to alpanumeric characters.
+ * @param line string to be validated
+ * @return boolean value
+ */
+bool isAlphaNumeric(const string& line){
+    int i = 0, len = strlen(line.c_str());
+
+    while (isalnum(line[i])) i++;
+
+    return i == len;
+}
+
+/**
+ * Verifies if input string translates to alpanumeric characters plus '-' and '_'.
+ * @param line string to be validated
+ * @return boolean value
+ */
+bool isAlphaNumericPlus(const string& line){
+    int i = 0, len = strlen(line.c_str());
+
+    while (isalnum(line[i]) || (line[i] == '-') || (line[i] == '_')) i++;
+
+    return i == len;
+}
 
 /**
  * Verifies if a message that the user input is valid. Also populates "req" with the request that is
@@ -176,8 +205,10 @@ bool preprocessing(const string& msg, string& out) {
 
         /* Verifies if the user input a valid command */
         validate_(inputs.size() == 3, "User did not input user ID and/or password")
-        validate_(isNumber(inputs[1]), "User ID is not a number")
         validate_(inputs[1].size() == 5, "User ID should have 5 numbers")
+        validate_(isNumber(inputs[1]), "User ID is not a number")
+        validate_(inputs[2].size() == 8, "User password should have 8 alpanumerical characters")
+        validate_(isAlphaNumeric(inputs[2]), "User password should have only alpanumerical characters")
 
 
         /* Transforms user input into a valid command to be sent to the server */
@@ -189,8 +220,10 @@ bool preprocessing(const string& msg, string& out) {
 
         /* Verifies if the user input a valid command */
         validate_(inputs.size() == 3, "User did not input user ID and/or password")
-        validate_(isNumber(inputs[1]), "User ID is not a number")
         validate_(inputs[1].size() == 5, "User ID should have 5 numbers")
+        validate_(isNumber(inputs[1]), "User ID is not a number")
+        validate_(inputs[2].size() == 8, "User password should have 8 alpanumerical characters")
+        validate_(isAlphaNumeric(inputs[2]), "User password should have only alpanumerical characters")
 
         if (user.uid == inputs[1] && user.is_logged) logouts = true;
 
@@ -202,8 +235,10 @@ bool preprocessing(const string& msg, string& out) {
     } else if (inputs[0] == "login") {
         /* Verifies if the user input a valid command and that this command can be issued */
         validate_(inputs.size() == 3, "User did not input user ID and/or password")
-        validate_(isNumber(inputs[1]), "User ID is not a number")
         validate_(inputs[1].size() == 5, "User ID should have 5 numbers")
+        validate_(isNumber(inputs[1]), "User ID is not a number")
+        validate_(inputs[2].size() == 8, "User password should have 8 alpanumerical characters")
+        validate_(isAlphaNumeric(inputs[2]), "User password should have only alpanumerical characters")
         validate_(!user.is_logged, "Client is already logged in")
 
         /* Transforms user input into a valid command to be sent to the server */
@@ -230,9 +265,20 @@ bool preprocessing(const string& msg, string& out) {
 
         cout << user.uid << endl;
 
+        /* There is no need to send message to server */
         no_server = true;
 
         return true;  /* Since everything was ok, we return true */
+
+    } else if (inputs[0] == "exit"){
+        /* Closes client socket */
+        freeaddrinfo(res);
+        close(fd_udp);
+
+        //TODO: close tcp connections;
+        //FIXME: quando há exit antes do logout, o user que está logged int, no servidor fica como logged in e vai dar erro
+
+        return EXIT_SUCCESS;
 
     } else if (inputs[0] == "groups" || inputs[0] == "gl") {
 
@@ -245,7 +291,11 @@ bool preprocessing(const string& msg, string& out) {
 
         /* Verifies if the user input a valid command and that this command can be issued */
         validate_(inputs.size() == 3, "User did not input group ID and/or group name")
+        validate_(inputs[1].size() <= 2, "Group ID is a 2 digit-number")
         validate_(isNumber(inputs[1]), "Group ID is not a number")
+        validate_(inputs[2].size() <= 24, "Group name limited to 24 characters")
+        validate_(isAlphaNumericPlus(inputs[2]), "Group name should have only alpanumerical characters plus '-' and "
+                                                 "'_'")
         validate_(user.is_logged, "Client is not logged in")
 
         /* Transforms user input into a valid command to be sent to the server */

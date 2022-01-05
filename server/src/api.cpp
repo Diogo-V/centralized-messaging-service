@@ -53,7 +53,7 @@ string unregister_user(unordered_map<string, User>* users, string& uid, string& 
         return "NOK";
     } else {
         users->erase(uid);
-        //TODO: @Sofia-Morgado -> desinscrever de todos os grupos
+        //TODO: d@Sofia-Morgado -> desinscrever de todos os grupos
         return "OK";
     }
 
@@ -118,12 +118,84 @@ string logout_user(unordered_map<string, User>* users, string& uid, string& pass
  * @return list of group IDs and names
  */
 string list_groups(unordered_map<string, Group>* groups) {
-    string group, list;
+    string group, list, mid;
+
+    /* verifies if there are groups created. This is for safety measure*/
+    if(groups->empty()) {
+        return "";
+    }
 
     for (auto & itr : *groups) {
-        group = itr.first + " \\ " + itr.second.getName() + "\n";
+        mid = itr.second.getMid() == 0 ? "0000" : to_string(itr.second.getMid()) ;
+        group = itr.first + '|' + itr.second.getName() + '|' + mid + "\n";
         list.append(group);
     }
 
     return list;
+}
+
+//TODO: @Sofia-Morgado -> caso o user já esteja subscrito, devia dar erro
+
+/**
+ * Subscribe user to group. If gid equal 0, also creates group.
+ *
+ * @param groups structure that holds all groups in the server
+ * @param users structure that holds all users in the server
+ * @param uid user's id
+ * @param gid group's id
+ * @param gname group's name
+ * @param p_gid_counter server's group identifier counter
+ * @return status message
+ */
+string subscribe (unordered_map<string, Group>* groups, unordered_map<string, User>* users, string uid, string gid, string gname, int* p_gid_counter){
+    string new_gid;
+
+    /* Verifies if there are users registered or if there are groups to subscribe. This is for safety measures*/
+    if(users->empty() || (groups->empty() && gid != "0")) {
+        return "NOK";
+
+    /* UID doesn't exist or isn't logged in*/
+    } else if ((users->count(uid) == 0) || !(users->at(uid).getUserStatus())) {
+        return "E_USR";
+
+    /* Want to create a new group, but There are already 99 groups*/
+    } else if (gid == "0" && *p_gid_counter == 99) {
+        return "E_FULL";
+
+    /* Group doesn't exist*/
+    } else if (gid != "0" && groups->count(gid) == 0) {
+        return "E_GRP";
+
+    /* Group name is incorrect */
+    } else if (gid != "0" && groups->at(gid).getName() != gname) {
+        return "E_GNAME";
+
+    //FIXME: @Sofia-Morgado coloquei aqui porque não faz sentido o user poder subscrever a second time
+    /* User has already subscribed to this group*/
+    } else if (gid != "0" && groups->at(gid).getUsers().at(uid) != 0) {
+        return "E_USR";
+
+
+    /* Everything is fine */
+    } else {
+        if (gid == "0"){
+            /* Increments gid*/
+            (*p_gid_counter)++;
+            new_gid = to_string(*p_gid_counter);
+
+            /* Create new group*/
+            Group group(new_gid, gname);
+            groups->insert(make_pair(new_gid, group));
+
+        } else {
+            new_gid = gid;
+        }
+
+        /* Subscribes user to new group. Add user to group subscribers and the group to user's group */
+        groups->at(new_gid).subscribeUser(&users->at(uid));
+        users->at(uid).addGroup(new_gid);
+
+        return "OK";
+    }
+
 }
