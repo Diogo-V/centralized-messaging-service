@@ -235,8 +235,7 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
         /* Transforms user input into a valid command to be sent to the server */
         out = "REG " + inputs[1] + " " + inputs[2] + "\n";
 
-        // TODO: remove debug. should be UDP
-        con = TCP;  /* Sets connection type to be used by the client to connect to the server */
+        con = UDP;  /* Sets connection type to be used by the client to connect to the server */
 
         return true;  /* Since everything was ok, we return true */
 
@@ -511,11 +510,12 @@ int main(int argc, char const *argv[]) {
             assert_(connect(fd_tcp, res->ai_addr, res->ai_addrlen) != -1, "Could not connect to sever")
 
             uint16_t nw;  /* Used to keep track of how many bytes we have sent to the server */
+            n = (ssize_t) req.length();  /* Sends request size */
 
             /* Keeps sending messages to sever until everything is sent */
-            char* ptr = &buffer[0];
+            char* ptr = &req[0];
             while (n > 0) {
-                assert_((nw = write(fd_tcp, ptr, n)) > 0, "Could not send message to server")
+                assert_((nw = write(fd_tcp, ptr, MSG_MAX_SIZE)) > 0, "Could not send message to server")
                 n -= nw; ptr += nw;
             }
 

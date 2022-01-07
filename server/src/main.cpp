@@ -46,7 +46,7 @@ fd_set fds;  /* Holds file descriptors in select */
 struct addrinfo hints;  /* Used to request info from DNS to get our "endpoint" */
 struct addrinfo *res;  /* Stores result from getaddrinfo and uses it to set up our socket */
 
-ssize_t n, nw;  /* Holds number of bytes read/sent or -1 in case of error */
+ssize_t n, nw, nr;  /* Holds number of bytes read/sent or -1 in case of error */
 socklen_t addrlen;  /* Holds size of message sent from sender */
 struct sockaddr_in addr;  /* Describes internet socket address. Holds sender info */
 char buffer[MSG_MAX_SIZE];  /* Holds current message received in this socket */
@@ -305,7 +305,7 @@ int main(int argc, char const *argv[]) {
         FD_SET(fd_tcp, &fds);  // Adds socket to selector
 
         /* Blocks until one of the descriptors, previously set in are ready to by read. Returns number of file descriptors ready */
-        int counter = select(fd_tcp + 1,&fds,(fd_set*) nullptr,(fd_set*) nullptr,(struct timeval *) nullptr);
+        uint8_t counter = select(fd_tcp + 1,&fds,(fd_set*) nullptr,(fd_set*) nullptr,(struct timeval *) nullptr);
         assert_(counter > 0, "Select threw an error")
 
         /* Cleans previous iteration so that it does not bug */
@@ -330,14 +330,20 @@ int main(int argc, char const *argv[]) {
 
         } else if (FD_ISSET(fd_tcp, &fds)) {  /* Checks if tcp socket activated */
 
+            n = 0;  /* Clears previous connection's number of bytes before proceeding */
+
             /* Creates temporary socket to connect to client. Keeps main channel active */
             int tmp_fd = accept(fd_tcp,(struct sockaddr*) &addr, &addrlen);
             assert_(tmp_fd != -1, "Could not create temporary tcp socket")
 
             /* Keeps on reading until everything has been read from the client */
-            while ((n = read(tmp_fd,buffer, MSG_MAX_SIZE)) != 0) {
-                assert_(n != -1, "Failed to read from temporary socket")
-            }
+            do {
+                nr = read(tmp_fd, buffer, MSG_MAX_SIZE);
+                assert_(nr != -1, "Failed to read from temporary socket")
+                if (nr == 0) break;  /* If a client closes a socket, we need to ignore */
+                n += nr;
+            } while (n < MSG_MAX_SIZE);
+            if (nr == 0) break;  /* If a client closes a socket, we need to ignore */
 
             /* Removes \n at the end of the buffer. Makes things easier down the line */
             buffer[strlen(buffer) - 1] = '\0';
