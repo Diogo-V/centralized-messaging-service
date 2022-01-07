@@ -116,6 +116,7 @@ void selector(const string& msg) {
 
     } else if (outputs[0] == "RGL") {  /* Receives status from GLS (list of groups) */
         //TODO: @Sofia-Morgado -> corrigir este último espaço
+
         if (outputs[1] != "0") {
             for (auto i = outputs.begin() + 2; i != outputs.end(); ++i) {
                 std::cout << *i << " ";
@@ -145,6 +146,18 @@ void selector(const string& msg) {
                 std::cout << *i << " ";
             }
         }
+
+    } else if (outputs[0] == "RUL"){
+        if (outputs[1] == "NOK") cerr << "Failed. Group doesn't exist." << endl;
+
+        else if (outputs[1] == "OK") {
+            for (auto i = outputs.begin() + 2; i != outputs.end(); ++i) {
+                std::cout << *i << " ";
+            }
+        } else cerr << "Invalid status" << endl;
+
+        //TODO: closes TCP connection with the server
+        /* Closes TCP connection with the server */
 
     } else {
         cerr << "ERR" << endl;
@@ -253,8 +266,8 @@ bool preprocessing(const string& msg, string& out) {
         return true;  /* Since everything was ok, we return true */
 
     } else if (inputs[0] == "logout") {
-
         /* Verifies if the user input a valid command and that this command can be issued */
+        validate_(inputs.size() == 1, "Too many arguments")
         validate_(user.is_logged, "Client needs to be logged in")
 
         /* Transforms user input into a valid command to be sent to the server */
@@ -264,6 +277,7 @@ bool preprocessing(const string& msg, string& out) {
 
     } else if (inputs[0] == "showuid" || inputs[0] == "su"){
         /* Verifies if the user input a valid command and that this command can be issued */
+        validate_(inputs.size() == 1, "Too many arguments")
         validate_(user.is_logged, "No client logged in")
 
         cout << user.uid << endl;
@@ -284,6 +298,8 @@ bool preprocessing(const string& msg, string& out) {
         return EXIT_SUCCESS;
 
     } else if (inputs[0] == "groups" || inputs[0] == "gl") {
+        /* Verifies if the user input a valid command and that this command can be issued */
+        validate_(inputs.size() == 1, "Too many arguments")
 
         /* Transforms user input into a valid command to be sent to the server */
         out = "GLS\n";
@@ -322,15 +338,15 @@ bool preprocessing(const string& msg, string& out) {
     } else if (inputs[0] == "my_groups" || inputs[0] == "mgl") {
 
         /* Verifies if the user input a valid command and that this command can be issued */
+        validate_(inputs.size() == 1, "Too many arguments")
         validate_(user.is_logged, "Client is not logged in")
 
         /* Transforms user input into a valid command to be sent to the server */
-        out = "GLM " + user.uid + " " + inputs[1] + "\n";
+        out = "GLM " + user.uid + "\n";
 
         return true;  /* Since everything was ok, we return true */
     //FIXME: @Sofia-Morgado -> não está no enunciado, mas deviamos de alguma forma verificar se o grupo a selecionar    existe
     } else if (inputs[0] == "select" || inputs[0] == "sag") {
-
         /* Verifies if the user input a valid command and that this command can be issued */
         validate_(inputs.size() == 2, "User did not input group ID")
         validate_(isNumber(inputs[1]), "Group ID is not a number")
@@ -346,8 +362,9 @@ bool preprocessing(const string& msg, string& out) {
         return true;  /* Since everything was ok, we return true */
 
     } else if (inputs[0] == "showgid" || inputs[0] == "sg") {
-
         /* Verifies if the user input a valid command and that this command can be issued */
+        validate_(inputs.size() == 1, "Too many arguments")
+        validate_(user.is_logged, "Client is not logged in")
         validate_(user.selected_group != "", "No selected group")
 
         cout << user.selected_group << endl;
@@ -357,6 +374,16 @@ bool preprocessing(const string& msg, string& out) {
 
         return true;  /* Since everything was ok, we return true */
 
+    } else if (inputs[0] == "ulist" || inputs[0] == "ul"){
+        /* Verifies if the user input a valid command and that this command can be issued */
+        validate_(inputs.size() == 1, "Too many arguments")
+        validate_(user.is_logged, "Client is not logged in")
+        validate_(user.selected_group != "", "No selected group")
+
+        /* Transforms user input into a valid command to be sent to the server */
+        out = "ULS " + user.selected_group +  "\n";
+
+        return true;
     }
 
     /* TODO: implement rest of TCP */

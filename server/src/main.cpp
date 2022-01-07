@@ -93,24 +93,25 @@ string selector(const char* msg) {
     verbose_(isVerbose, "COMMAND: " + inputs[0] + " | IP: " + ip + " | PORT: " + port)
 
     if (inputs[0] == "REG") {  /* Registers user */
-
+        /* receives status from call function*/
         status = register_user(&users, inputs[1], inputs[2]);
         return "RRG " + status + "\n";
 
     } else if (inputs[0] == "UNR") {  /* Unregisters user */
-
+        /* receives status from call function*/
         status = unregister_user(&users, inputs[1], inputs[2]);
+
         return "RUN " + status + "\n";
 
     } else if (inputs[0] == "LOG") {  /* Signs in user */
+        /* receives status from call function*/
         status = login_user(&users, inputs[1], inputs[2]);
+
         return "RLO " + status + "\n";
 
     } else if (inputs[0] == "OUT") {  /* Logout user */
-
-        status = logout_user(&users, inputs[1] , inputs[2]);
         /* receives status from call function*/
-        cout << "OUT" << endl;
+        status = logout_user(&users, inputs[1] , inputs[2]);
 
         return "ROU " + status + "\n";
 
@@ -122,7 +123,6 @@ string selector(const char* msg) {
         return "RGL " + to_string(gid_counter) + " " + status + "\n";
 
     } else if (inputs[0] == "GSR") {  /* Join group */
-
         /* receives status from call function*/
         status = subscribe(&groups, &users, inputs[1], inputs[2], inputs[3], p_gid_counter);
 
@@ -135,13 +135,19 @@ string selector(const char* msg) {
         return "RGU " + status + "\n";
 
     } else if (inputs[0] == "GLM") {  /* Get list of user's groups */
-
         /* receives status from call function*/
-        status = user_groups(&groups, &users, inputs[1]);
+        status = groups_subscribed(&groups, &users, inputs[1]);
 
         return "RGM " + status + "\n";
 
+    } else if (inputs[0] == "ULS"){ /* Get list of users subscribed to this group */
+        /* receives status from call function*/
+        status = users_subscribed(&groups, &users, inputs[1]);
+
+        return "RUL " + status + "\n";
+
     } else {
+        cout << inputs[0] << endl;
         return "ERR";
     }
 
