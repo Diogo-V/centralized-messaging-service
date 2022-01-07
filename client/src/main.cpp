@@ -343,6 +343,18 @@ bool preprocessing(const string& msg, string& out) {
 
         return true;  /* Since everything was ok, we return true */
 
+    } else if (inputs[0] == "showgid" || inputs[0] == "sg") {
+
+        /* Verifies if the user input a valid command and that this command can be issued */
+        validate_(user.gid != "", "No selected group")
+
+        cout << user.gid << endl;
+
+        /* There is no need to send message to server */
+        no_server = true;
+
+        return true;  /* Since everything was ok, we return true */
+
     }
 
     /* TODO: implement rest of TCP */
