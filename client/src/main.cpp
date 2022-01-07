@@ -10,8 +10,6 @@
 #include <cstring>
 #include <vector>
 #include <sstream>
-#include <stdio.h>
-#include <stdlib.h>
 
 using namespace std;
 
@@ -296,7 +294,7 @@ bool preprocessing(const string& msg, string& out) {
 
         /* Verifies if the user input a valid command and that this command can be issued */
         validate_(inputs.size() == 3, "User did not input group ID and/or group name")
-        validate_(inputs[1].size() <= 2, "Group ID is a 2 digit-number")
+        validate_(inputs[1].size() <= 2, "Group ID isn't 2 digit-number")
         validate_(isNumber(inputs[1]), "Group ID is not a number")
         validate_(inputs[2].size() <= 24, "Group name limited to 24 characters")
         validate_(isAlphaNumericPlus(inputs[2]), "Group name should have only alpanumerical characters plus '-' and "
@@ -313,7 +311,7 @@ bool preprocessing(const string& msg, string& out) {
         /* Verifies if the user input a valid command and that this command can be issued */
         validate_(inputs.size() == 2, "User did not input group ID")
         validate_(isNumber(inputs[1]), "Group ID is not a number")
-        validate_(inputs[1].size() <= 2, "Group ID is a 2 digit-number")
+        validate_(inputs[1].size() <= 2, "Group ID isn't a 2 digit-number")
         validate_(user.is_logged, "Client is not logged in")
 
         /* Transforms user input into a valid command to be sent to the server */
@@ -330,25 +328,29 @@ bool preprocessing(const string& msg, string& out) {
         out = "GLM " + user.uid + " " + inputs[1] + "\n";
 
         return true;  /* Since everything was ok, we return true */
-
+    //FIXME: @Sofia-Morgado -> não está no enunciado, mas deviamos de alguma forma verificar se o grupo a selecionar    existe
     } else if (inputs[0] == "select" || inputs[0] == "sag") {
 
         /* Verifies if the user input a valid command and that this command can be issued */
         validate_(inputs.size() == 2, "User did not input group ID")
         validate_(isNumber(inputs[1]), "Group ID is not a number")
+        validate_(inputs[1].size() <= 2, "Group ID isn't a 2 digit-number")
         validate_(user.is_logged, "Client is not logged in")
 
         /* Saves selected group locally */
         user.selected_group = inputs[1];
+
+        /* There is no need to send message to server */
+        no_server = true;
 
         return true;  /* Since everything was ok, we return true */
 
     } else if (inputs[0] == "showgid" || inputs[0] == "sg") {
 
         /* Verifies if the user input a valid command and that this command can be issued */
-        validate_(user.gid != "", "No selected group")
+        validate_(user.selected_group != "", "No selected group")
 
-        cout << user.gid << endl;
+        cout << user.selected_group << endl;
 
         /* There is no need to send message to server */
         no_server = true;

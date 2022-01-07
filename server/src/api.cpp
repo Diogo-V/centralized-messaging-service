@@ -175,12 +175,13 @@ string subscribe (unordered_map<string, Group>* groups, unordered_map<string, Us
 
     //FIXME: @Sofia-Morgado coloquei aqui porque não faz sentido o user poder subscrever a second time
     /* User has already subscribed to this group*/
-    } else if (gid != "0" && groups->at(gid).getUsers().at(uid) != 0) {
+    } else if (gid != "0" && groups->at(gid).getUsers().count(uid) != 0) {
         return "E_USR";
 
 
     /* Everything is fine */
     } else {
+        printf("Entrou no else \n");
         if (gid == "0"){
             /* Increments gid*/
             (*p_gid_counter)++;
@@ -193,6 +194,8 @@ string subscribe (unordered_map<string, Group>* groups, unordered_map<string, Us
         } else {
             new_gid = gid;
         }
+
+        printf("Gid : %s ", gid.c_str());
 
         cout << "subscreveu" << endl;
         /* Subscribes user to new group. Add user to group subscribers and the group to user's group */
