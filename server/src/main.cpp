@@ -60,6 +60,7 @@ unordered_map<string, Group> groups;  /* Holds all groups in our server. Key is 
 int gid_counter = 0; /* Holds the group identifier counter*/
 int* p_gid_counter;
 
+
 /*----------------------------------------- Functions --------------------------------------------*/
 
 
@@ -93,26 +94,19 @@ string selector(const char* msg) {
     verbose_(isVerbose, "COMMAND: " + inputs[0] + " | IP: " + ip + " | PORT: " + port)
 
     if (inputs[0] == "REG") {  /* Registers user */
-        /* receives status from call function*/
         status = register_user(&users, inputs[1], inputs[2]);
         return "RRG " + status + "\n";
 
     } else if (inputs[0] == "UNR") {  /* Unregisters user */
-        /* receives status from call function*/
         status = unregister_user(&users, inputs[1], inputs[2]);
-
         return "RUN " + status + "\n";
 
     } else if (inputs[0] == "LOG") {  /* Signs in user */
-        /* receives status from call function*/
         status = login_user(&users, inputs[1], inputs[2]);
-
         return "RLO " + status + "\n";
 
     } else if (inputs[0] == "OUT") {  /* Logout user */
-        /* receives status from call function*/
         status = logout_user(&users, inputs[1] , inputs[2]);
-
         return "ROU " + status + "\n";
 
     } else if (inputs[0] == "GLS") {  /* Requested list of existing groups */
@@ -123,9 +117,7 @@ string selector(const char* msg) {
         return "RGL " + to_string(gid_counter) + " " + status + "\n";
 
     } else if (inputs[0] == "GSR") {  /* Join group */
-        /* receives status from call function*/
         status = subscribe(&groups, &users, inputs[1], inputs[2], inputs[3], p_gid_counter);
-
         return "RGS " + status + "\n";
 
     } else if (inputs[0] == "GUR") {  /* Unsubscribe to group */
@@ -289,6 +281,7 @@ void init_tcp_socket() {
  * @return 0 if success and 1 if error
  */
 int main(int argc, char const *argv[]) {
+
     p_gid_counter = &gid_counter;
 
     /* Initializes signal interrupters treatment */

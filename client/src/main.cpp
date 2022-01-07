@@ -25,19 +25,23 @@ using namespace std;
 /* If condition is false displays msg and returns with false bool value */
 #define validate_(cond, msg) do { if (! (cond)) { cerr << (msg) << endl; return false; } } while(0);
 
+
 /*-------------------------------------- Server global vars --------------------------------------*/
 
-int
-    fd_udp,  /* Holds user socket file descriptor */
-    errcode;  /* Holds current error */
-struct addrinfo
-    hints,  /* Used to request info from DNS to get our "endpoint" */
-    *res;  /* Stores result from getaddrinfo and uses it to setup our socket */
+
+int fd_udp;  /* Holds server udp socket file descriptor */
+int fd_tcp;  /* Holds server tcp socket file descriptor */
+int errcode;  /* Holds current error */
+
+struct addrinfo hints;  /* Used to request info from DNS to get our "endpoint" */
+struct addrinfo *res;  /* Stores result from getaddrinfo and uses it to set up our socket */
 
 ssize_t n;  /* Holds number of bytes read/sent or -1 in case of error */
 socklen_t addrlen;  /* Holds size of message sent from sender */
 struct sockaddr_in addr;  /* Describes internet socket address. Holds sender info */
 char buffer[MSG_MAX_SIZE];  /* Holds current message received in this socket */
+
+enum con_type {TCP, UDP, NO_CON};  /* Decides how to send message to server (by udp or tcp) */
 
 typedef struct user {  /* Represents current client's user */
     string uid;
@@ -49,12 +53,13 @@ typedef struct user {  /* Represents current client's user */
 
 User user;
 
+string ds_port{PORT};  /* Holds server port */
+string ds_ip{LOCAL_IP};  /* Holds server ip */
+
 /** Flag to represent the need to logout the user when unregister the user has been successful and this user is the
  the currently logged in user */
 bool logouts = false;
 
-/** No need to send message to server */
-bool no_server = false;
 
 /*----------------------------------------- Functions --------------------------------------------*/
 
@@ -191,7 +196,7 @@ bool isAlphaNumeric(const string& line){
 }
 
 /**
- * Verifies if input string translates to alpanumeric characters plus '-' and '_'.
+ * Verifies if input string translates to alphanumeric characters plus '-' and '_'.
  * @param line string to be validated
  * @return boolean value
  */
@@ -211,7 +216,7 @@ bool isAlphaNumericPlus(const string& line){
  * @param out server request
  * @return bool values
  */
-bool preprocessing(const string& msg, string& out) {
+bool preprocessing(const string& msg, string& out, con_type& con) {
 
     vector<string> inputs;  /* Holds a list of strings with the inputs from our user */
     split(msg, inputs);  /* Splits msg by the spaces and returns an array with everything */
@@ -223,12 +228,15 @@ bool preprocessing(const string& msg, string& out) {
         validate_(inputs.size() == 3, "User did not input user ID and/or password")
         validate_(inputs[1].size() == 5, "User ID should have 5 numbers")
         validate_(isNumber(inputs[1]), "User ID is not a number")
-        validate_(inputs[2].size() == 8, "User password should have 8 alpanumerical characters")
-        validate_(isAlphaNumeric(inputs[2]), "User password should have only alpanumerical characters")
+        validate_(inputs[2].size() == 8, "User password should have 8 alphanumerical characters")
+        validate_(isAlphaNumeric(inputs[2]), "User password should have only alphanumerical characters")
 
 
         /* Transforms user input into a valid command to be sent to the server */
         out = "REG " + inputs[1] + " " + inputs[2] + "\n";
+
+        // TODO: remove debug. should be UDP
+        con = TCP;  /* Sets connection type to be used by the client to connect to the server */
 
         return true;  /* Since everything was ok, we return true */
 
@@ -238,27 +246,32 @@ bool preprocessing(const string& msg, string& out) {
         validate_(inputs.size() == 3, "User did not input user ID and/or password")
         validate_(inputs[1].size() == 5, "User ID should have 5 numbers")
         validate_(isNumber(inputs[1]), "User ID is not a number")
-        validate_(inputs[2].size() == 8, "User password should have 8 alpanumerical characters")
-        validate_(isAlphaNumeric(inputs[2]), "User password should have only alpanumerical characters")
+        validate_(inputs[2].size() == 8, "User password should have 8 alphanumerical characters")
+        validate_(isAlphaNumeric(inputs[2]), "User password should have only alphanumerical characters")
 
         if (user.uid == inputs[1] && user.is_logged) logouts = true;
 
         /* Transforms user input into a valid command to be sent to the server */
         out = "UNR " + inputs[1] + " " + inputs[2] + "\n";
 
+        con = UDP;  /* Sets connection type to be used by the client to connect to the server */
+
         return true;  /* Since everything was ok, we return true */
 
     } else if (inputs[0] == "login") {
+
         /* Verifies if the user input a valid command and that this command can be issued */
         validate_(inputs.size() == 3, "User did not input user ID and/or password")
         validate_(inputs[1].size() == 5, "User ID should have 5 numbers")
         validate_(isNumber(inputs[1]), "User ID is not a number")
-        validate_(inputs[2].size() == 8, "User password should have 8 alpanumerical characters")
-        validate_(isAlphaNumeric(inputs[2]), "User password should have only alpanumerical characters")
+        validate_(inputs[2].size() == 8, "User password should have 8 alphanumerical characters")
+        validate_(isAlphaNumeric(inputs[2]), "User password should have only alphanumerical characters")
         validate_(!user.is_logged, "Client is already logged in")
 
         /* Transforms user input into a valid command to be sent to the server */
         out = "LOG " + inputs[1] + " " + inputs[2] + "\n";
+
+        con = UDP;  /* Sets connection type to be used by the client to connect to the server */
 
         user.uid = inputs[1];  /* Sets tmp_user's uid */
         user.pass = inputs[2];  /* Saves tmp_user's password locally */
@@ -273,21 +286,22 @@ bool preprocessing(const string& msg, string& out) {
         /* Transforms user input into a valid command to be sent to the server */
         out = "OUT " + user.uid + " " + user.pass + "\n";
 
+        con = UDP;  /* Sets connection type to be used by the client to connect to the server */
+
         return true;  /* Since everything was ok, we return true */
 
     } else if (inputs[0] == "showuid" || inputs[0] == "su"){
+
         /* Verifies if the user input a valid command and that this command can be issued */
         validate_(inputs.size() == 1, "Too many arguments")
         validate_(user.is_logged, "No client logged in")
 
         cout << user.uid << endl;
 
-        /* There is no need to send message to server */
-        no_server = true;
-
         return true;  /* Since everything was ok, we return true */
 
-    } else if (inputs[0] == "exit"){
+    } else if (inputs[0] == "exit") {
+
         /* Closes client socket */
         freeaddrinfo(res);
         close(fd_udp);
@@ -304,6 +318,8 @@ bool preprocessing(const string& msg, string& out) {
         /* Transforms user input into a valid command to be sent to the server */
         out = "GLS\n";
 
+        con = UDP;  /* Sets connection type to be used by the client to connect to the server */
+
         return true;  /* Since everything was ok, we return true */
 
     } else if (inputs[0] == "subscribe" || inputs[0] == "s") {
@@ -313,12 +329,14 @@ bool preprocessing(const string& msg, string& out) {
         validate_(inputs[1].size() <= 2, "Group ID isn't 2 digit-number")
         validate_(isNumber(inputs[1]), "Group ID is not a number")
         validate_(inputs[2].size() <= 24, "Group name limited to 24 characters")
-        validate_(isAlphaNumericPlus(inputs[2]), "Group name should have only alpanumerical characters plus '-' and "
+        validate_(isAlphaNumericPlus(inputs[2]), "Group name should have only alphanumerical characters plus '-' and "
                                                  "'_'")
         validate_(user.is_logged, "Client is not logged in")
 
         /* Transforms user input into a valid command to be sent to the server */
         out = "GSR " + user.uid + " " + inputs[1] + " " + inputs[2] + "\n";
+
+        con = UDP;  /* Sets connection type to be used by the client to connect to the server */
 
         return true;  /* Since everything was ok, we return true */
 
@@ -333,6 +351,10 @@ bool preprocessing(const string& msg, string& out) {
         /* Transforms user input into a valid command to be sent to the server */
         out = "GUR " + user.uid + " " + inputs[1] + "\n";
 
+        con = UDP;  /* Sets connection type to be used by the client to connect to the server */
+
+        con = UDP;  /* Sets connection type to be used by the client to connect to the server */
+
         return true;  /* Since everything was ok, we return true */
 
     } else if (inputs[0] == "my_groups" || inputs[0] == "mgl") {
@@ -345,6 +367,7 @@ bool preprocessing(const string& msg, string& out) {
         out = "GLM " + user.uid + "\n";
 
         return true;  /* Since everything was ok, we return true */
+
     //FIXME: @Sofia-Morgado -> não está no enunciado, mas deviamos de alguma forma verificar se o grupo a selecionar    existe
     } else if (inputs[0] == "select" || inputs[0] == "sag") {
         /* Verifies if the user input a valid command and that this command can be issued */
@@ -356,21 +379,15 @@ bool preprocessing(const string& msg, string& out) {
         /* Saves selected group locally */
         user.selected_group = inputs[1];
 
-        /* There is no need to send message to server */
-        no_server = true;
-
         return true;  /* Since everything was ok, we return true */
 
     } else if (inputs[0] == "showgid" || inputs[0] == "sg") {
         /* Verifies if the user input a valid command and that this command can be issued */
         validate_(inputs.size() == 1, "Too many arguments")
         validate_(user.is_logged, "Client is not logged in")
-        validate_(user.selected_group != "", "No selected group")
+        validate_(!user.selected_group.empty(), "No selected group")
 
         cout << user.selected_group << endl;
-
-        /* There is no need to send message to server */
-        no_server = true;
 
         return true;  /* Since everything was ok, we return true */
 
@@ -395,21 +412,9 @@ bool preprocessing(const string& msg, string& out) {
 
 
 /**
- * Setups our socket "fd_udp". Uses our main function's arguments to process flags.
- *
- * @param argc number of arguments passed to main function
- * @param argv array of arguments passed to main function
+ * Setups our socket "fd_udp".
  */
-void init_socket(int argc, char const *argv[]) {
-
-    string ds_port{PORT};  /* Holds server port */
-    string ds_ip{LOCAL_IP};  /* Holds server ip */
-
-    /* Goes over all the flags and setups port and ip address */
-    for (int i = 1; i < argc; i += 2) {
-        if (strcmp(argv[i], "-p") == 0) { string s(argv[i + 1]); ds_port = s; }
-        else if (strcmp(argv[i], "-n") == 0) { string s(argv[i + 1]); ds_ip = s; }
-    }
+void init_socket_udp() {
 
     /* Creates udp socket for internet */
     fd_udp = socket(AF_INET, SOCK_DGRAM, 0);
@@ -428,6 +433,30 @@ void init_socket(int argc, char const *argv[]) {
 
 
 /**
+ * @brief Setups our socket "fd_tcp".
+ */
+void init_socket_tcp() {
+
+    /* Creates tcp subgroup for internet */
+    fd_tcp = socket(AF_INET, SOCK_STREAM, 0);
+    assert_(fd_tcp != -1, "Could not create tcp socket")
+
+    /* Inits TCP server's struct to access the DNS */
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE;
+
+    /* Uses its URL to consult DNS and get a TCP server's IP address */
+    errcode = getaddrinfo(ds_ip.c_str(), ds_port.c_str(), &hints, &res);
+    assert_(errcode == 0, "Failed getaddrinfo call for tcp")
+
+
+
+}
+
+
+/**
  * Setups client loop.
  *
  * @param argc number of arguments passed
@@ -436,49 +465,66 @@ void init_socket(int argc, char const *argv[]) {
  */
 int main(int argc, char const *argv[]) {
 
-    /* Initializes and setups fd_udp to be a valid socket */
-    init_socket(argc, argv);
+    /* Goes over all the flags and setups port and ip address to connect to server */
+    for (int i = 1; i < argc; i += 2) {
+        if (strcmp(argv[i], "-p") == 0) { string s(argv[i + 1]); ds_port = s; }
+        else if (strcmp(argv[i], "-n") == 0) { string s(argv[i + 1]); ds_ip = s; }
+    }
 
+    /* Initializes and setups fd_udp and fd_tcp to be a valid socket */
+    init_socket_udp();
+    init_socket_tcp();
 
     /* Gets the command that the user input */
     cin.getline(buffer, MSG_MAX_SIZE);
 
     while (strcmp(buffer, EXIT_CMD) != 0) {
+
         string req{};  /* Holds the request message that is going to be sent to the server */
+        con_type con = NO_CON;  /* Holds the protocol used to perform this request to the server */
 
         /* Verify if message has correct formatting. If not, displays error to user and continues */
-        /* Also populates "req" with a valid request */
-        if (! preprocessing(buffer, req)) {
-            memset(buffer, 0, MSG_MAX_SIZE);  /* Cleans buffer */
-
-            /* Gets the new command that the user input. This replaces the previous command */
+        /* Also populates "req" with a valid request and con with how to connect to the server */
+        if (! preprocessing(buffer, req, con)) {
+            memset(buffer, 0, MSG_MAX_SIZE);  /* Cleans buffer to prevent infinite loop */
             cin.getline(buffer, MSG_MAX_SIZE);
-
-            continue;
-        }
-
-        //FIXME: Perguntar se isto é uma boa ideia;
-        /*In case of a command that not requires to send message to the server */
-        if(no_server){
-            no_server = false;
-
-            /* Gets the new command that the user input. This replaces the previous command */
-            cin.getline(buffer, MSG_MAX_SIZE);
-
             continue;
         }
 
         memset(buffer, 0, MSG_MAX_SIZE);  /* Cleans buffer before receiving response */
 
-        /* Sends message to server */
-        n = sendto(fd_udp, req.c_str(), req.length(), 0, res->ai_addr, res->ai_addrlen);
-        assert_(n != -1, "Failed to send message")
+        if (con == UDP) {  /* Connects to server by UDP */
 
-        /* Gets server response and processes it */
-        bzero(&addr, sizeof(struct sockaddr_in));
-        addrlen = sizeof(addr);
-        n = recvfrom(fd_udp, buffer, MSG_MAX_SIZE, 0, (struct sockaddr*) &addr, &addrlen);
-        assert_(n != -1, "Failed to receive message")
+            /* Sends message to server */
+            n = sendto(fd_udp, req.c_str(), req.length(), 0, res->ai_addr, res->ai_addrlen);
+            assert_(n != -1, "Failed to send message with UDP")
+
+            /* Gets server response and processes it */
+            bzero(&addr, sizeof(struct sockaddr_in));
+            addrlen = sizeof(addr);
+            n = recvfrom(fd_udp, buffer, MSG_MAX_SIZE, 0, (struct sockaddr*) &addr, &addrlen);
+            assert_(n != -1, "Failed to receive message with UDP")
+
+        } else if (con == TCP) {  /* Connects to server by TCP */
+
+            /* Creates connection between server and client */
+            assert_(connect(fd_tcp, res->ai_addr, res->ai_addrlen) != -1, "Could not connect to sever")
+
+            uint16_t nw;  /* Used to keep track of how many bytes we have sent to the server */
+
+            /* Keeps sending messages to sever until everything is sent */
+            char* ptr = &buffer[0];
+            while (n > 0) {
+                assert_((nw = write(fd_tcp, ptr, n)) > 0, "Could not send message to server")
+                n -= nw; ptr += nw;
+            }
+
+            /* Keeps on reading until everything has been read from the server */
+            while ((n = read(fd_tcp,buffer, MSG_MAX_SIZE)) != 0) {
+                assert_(n != -1, "Failed to retrieve response from server")
+            }
+
+        }
 
         /* Removes \n at the end of the buffer. Makes things easier down the line */
         buffer[strlen(buffer) - 1] = '\0';
