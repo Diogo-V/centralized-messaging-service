@@ -417,7 +417,7 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
         out += " " + to_string(inputs[1].length()) + " " + inputs[1];
         if (inputs.size() == 3) {
             ifstream file(inputs[2], ifstream::ate | ifstream::binary);
-            out += " " + inputs[2] + " " + file.tellg();
+            out += " " + inputs[2] + " " + to_string(file.tellg());
         } else { out += "\n"; }
 
         con = TCP;  /* Sets connection type to be used by the client to connect to the server */
