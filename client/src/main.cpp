@@ -120,12 +120,11 @@ void selector(const string& msg) {
 
 
     } else if (outputs[0] == "RGL") {  /* Receives status from GLS (list of groups) */
-        //TODO: @Sofia-Morgado -> corrigir este último espaço
-
         if (outputs[1] != "0") {
-            for (auto i = outputs.begin() + 2; i != outputs.end(); ++i) {
+            for (auto i = outputs.begin() + 2; i != outputs.end() - 1; ++i) {
                 std::cout << *i << " ";
             }
+            std::cout << *(outputs.end() - 1);
         }
 
     } else if (outputs[0] == "RGS") {  /* Receives status from GSR (join group) */
@@ -147,18 +146,20 @@ void selector(const string& msg) {
 
     } else if (outputs[0] == "RGM") {  /* Receives status from GLM (lst usr groups) */
         if (outputs[1] != "0") {
-            for (auto i = outputs.begin() + 2; i != outputs.end(); ++i) {
+            for (auto i = outputs.begin() + 2; i != outputs.end() - 1; ++i) {
                 std::cout << *i << " ";
             }
+            std::cout << *(outputs.end() - 1);
         }
 
     } else if (outputs[0] == "RUL"){
         if (outputs[1] == "NOK") cerr << "Failed. Group doesn't exist." << endl;
 
         else if (outputs[1] == "OK") {
-            for (auto i = outputs.begin() + 2; i != outputs.end(); ++i) {
+            for (auto i = outputs.begin() + 2; i != outputs.end() - 1; ++i) {
                 std::cout << *i << " ";
             }
+            std::cout << *(outputs.end() - 1);
         } else cerr << "Invalid status" << endl;
 
         //TODO: closes TCP connection with the server
@@ -363,6 +364,8 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
         /* Transforms user input into a valid command to be sent to the server */
         out = "GLM " + user.uid + "\n";
 
+        con = UDP; /* Sets connection type to be used by the client to connect to the server */
+
         return true;  /* Since everything was ok, we return true */
 
     //FIXME: @Sofia-Morgado -> não está no enunciado, mas deviamos de alguma forma verificar se o grupo a selecionar    existe
@@ -396,6 +399,8 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         /* Transforms user input into a valid command to be sent to the server */
         out = "ULS " + user.selected_group +  "\n";
+
+        con = TCP; /* Sets connection type to be used by the client to connect to the server */
 
         return true;
     }
