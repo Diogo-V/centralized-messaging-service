@@ -16,19 +16,31 @@ class Message{
         string _id;
 
         /**
-         * brief message's text
+         * @brief message's text
          */
         string _text;
+
+        /**
+         * @brief author identifier
+         */
+        string _uid;
 
         //optional: file;
 
     public:
-        //TODO: comentar
-        explicit Message(string id, string text);
+        /**
+         * Message constructor
+         * @param id message's id
+         * @param uid message's author
+         * @param text message's text
+         */
+        explicit Message(string id, string uid, string text);
 
         string getMessageId();
 
         string getMessageText();
+
+        string getMessageUid();
 
 };
 

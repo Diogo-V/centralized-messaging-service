@@ -6,6 +6,7 @@
 #include "models/group.h"
 
 #define USER_LIMIT 99999
+#define MID_LIMIT 9999
 
 using namespace std;
 
@@ -18,5 +19,7 @@ string subscribe (unordered_map<string, Group>* groups, unordered_map<string, Us
 string unsubscribe(unordered_map<string, Group>* groups, unordered_map<string, User>* users, string uid, string gid);
 string groups_subscribed (unordered_map<string, Group>* groups, unordered_map<string, User>* users, string uid);
 string users_subscribed (unordered_map<string, Group>* groups, unordered_map<string, User>* users, string gid);
+string post_message (unordered_map<string, Group>* groups, unordered_map<string, User>* users, string uid, string gid, string tsize, string text);
+string retrieve_message (unordered_map<string, Group>* groups, unordered_map<string, User>* users, string uid, string gid, string mid);
 
 #endif

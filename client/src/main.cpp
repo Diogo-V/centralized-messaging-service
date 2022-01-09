@@ -63,7 +63,43 @@ bool logouts = false;
 
 
 /*----------------------------------------- Functions --------------------------------------------*/
+/**
+ * Verifies if input string translates to a number.
+ *
+ * @param line string to be validated
+ * @return boolean value
+ */
+bool isNumber(const string& line) {
+    char* p;
+    strtod(line.c_str(), &p);
+    return *p == 0;
+}
 
+/**
+ * Verifies if input string translates to alphanumeric characters.
+ * @param line string to be validated
+ * @return boolean value
+ */
+bool isAlphaNumeric(const string& line){
+    uint8_t i = 0, len = line.length();
+
+    while (isalnum(line[i])) i++;
+
+    return i == len;
+}
+
+/**
+ * Verifies if input string translates to alphanumeric characters plus '-' and '_'.
+ * @param line string to be validated
+ * @return boolean value
+ */
+bool isAlphaNumericPlus(const string& line){
+    uint8_t i = 0, len = line.length();
+
+    while (isalnum(line[i]) || (line[i] == '-') || (line[i] == '_')) i++;
+
+    return i == len;
+}
 
 /*
  * Transforms a string with spaces in a vector with substring tokenized by the spaces.
@@ -153,7 +189,7 @@ void selector(const string& msg) {
             std::cout << *(outputs.end() - 1);
         }
 
-    } else if (outputs[0] == "RUL"){
+    } else if (outputs[0] == "RUL") {
         if (outputs[1] == "NOK") cerr << "Failed. Group doesn't exist." << endl;
         else if (outputs[1] == "OK") {
             for (auto i = outputs.begin() + 2; i != outputs.end() - 1; ++i) {
@@ -162,52 +198,34 @@ void selector(const string& msg) {
             std::cout << *(outputs.end() - 1);
         } else cerr << "Invalid status" << endl;
 
-        //TODO: closes TCP connection with the server
-        /* Closes TCP connection with the server */
-        /* Why is it needed??? */
+        /* Close TCP connection*/
+        close(fd_tcp);
+
+    } else if (outputs[0] == "RPT") {
+        if (outputs[1] == "NOK") cerr << "Failed. Message couldn't be posted" << endl;
+        else if (isNumber(outputs[1])) cout << outputs[1] << endl;
+        else cerr << "Invalid status" << endl;
+
+        /* Close TCP connection*/
+        close(fd_tcp);
+
+    } else if (outputs[0] == "RRT"){
+        if (outputs[1] == "NOK") cerr << "Failed. Couldn't retrieve messages" << endl;
+        else if (outputs[1] == "EOF") cout << "No messages available" << endl;
+        else if (outputs[1] == "OK"){
+            for (auto i = outputs.begin() + 2; i != outputs.end() - 1; ++i) {
+                cout << *i << " ";
+            }
+            std::cout << *(outputs.end() - 1);
+        } else cerr << "Invalid status" << endl;
+
+        /* Close TCP connection*/
+        close(fd_tcp);
 
     } else {
         cerr << "ERR" << endl;
     }
 
-}
-
-/**
- * Verifies if input string translates to a number.
- *
- * @param line string to be validated
- * @return boolean value
- */
-bool isNumber(const string& line) {
-    char* p;
-    strtod(line.c_str(), &p);
-    return *p == 0;
-}
-
-/**
- * Verifies if input string translates to alphanumeric characters.
- * @param line string to be validated
- * @return boolean value
- */
-bool isAlphaNumeric(const string& line){
-    uint8_t i = 0, len = line.length();
-
-    while (isalnum(line[i])) i++;
-
-    return i == len;
-}
-
-/**
- * Verifies if input string translates to alphanumeric characters plus '-' and '_'.
- * @param line string to be validated
- * @return boolean value
- */
-bool isAlphaNumericPlus(const string& line){
-    uint8_t i = 0, len = line.length();
-
-    while (isalnum(line[i]) || (line[i] == '-') || (line[i] == '_')) i++;
-
-    return i == len;
 }
 
 /**
@@ -405,16 +423,17 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         return true;
 
-    } else if (inputs[0] == "post") {  // TODO: tratar da file transfer
-
+    } else if (inputs[0] == "post") {  // TODO: @Sofia-Morgado-> tratar da file transfer
+        //TODO: problema aqui não podemos fazer o split normal
         /* Verifies if the user input a valid command and that this command can be issued */
         validate_(inputs.size() == 2 || inputs.size() == 3, "Invalid number of arguments")
         validate_(user.is_logged, "Client is not logged in")
         validate_(!user.selected_group.empty(), "No selected group")
+        validate_((inputs[1].length() - 2) <= 240, "Text is limited to 240 characters")
 
         /* Transforms user input into a valid command to be sent to the server */
         out = "PST " + user.uid + " " + user.selected_group;
-        out += " " + to_string(inputs[1].length()) + " " + inputs[1];
+        out += " " + to_string(inputs[1].length() - 2) + " " + inputs[1];
         if (inputs.size() == 3) {
             ifstream file(inputs[2], ifstream::ate | ifstream::binary);
             out += " " + inputs[2] + " " + to_string(file.tellg());
@@ -424,6 +443,16 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         return true;
 
+    } else if (inputs[0] == "retrieve" || inputs[0] == "r"){
+        /* Verifies if the user input a valid command and that this command can be issued */
+        validate_(inputs.size() == 2, "Invalid number of arguments")
+        validate_(user.is_logged, "Client is not logged in")
+        validate_(!user.selected_group.empty(), "No selected group")
+
+        out = "RTV " + user.uid + " " + user.selected_group + " " + inputs[1] + "\n";
+
+        con = TCP;
+        return true;
     }
 
     /* TODO: implement rest of TCP */
@@ -494,9 +523,9 @@ int main(int argc, char const *argv[]) {
         else if (strcmp(argv[i], "-n") == 0) { string s(argv[i + 1]); ds_ip = s; }
     }
 
-    /* Initializes and setups fd_udp and fd_tcp to be a valid socket */
+    /* Initializes and setups fd_udp to be a valid socket */
     init_socket_udp();
-    init_socket_tcp();
+
 
     /* Gets the command that the user input */
     cin.getline(buffer, MSG_MAX_SIZE);
@@ -529,6 +558,8 @@ int main(int argc, char const *argv[]) {
             assert_(n != -1, "Failed to receive message with UDP")
 
         } else if (con == TCP) {  /* Connects to server by TCP */
+            /* Initializes and setups fd_udp to be a valid socket */
+            init_socket_tcp();
 
             /* Creates connection between server and client */
             assert_(connect(fd_tcp, res->ai_addr, res->ai_addrlen) != -1, "Could not connect to sever")

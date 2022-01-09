@@ -75,7 +75,6 @@ string login_user(unordered_map<string, User>* users, string& uid, string& pass)
     if(users->empty()) {
         return "NOK";
     }
-
     /* Verifies if user is registered, if he is not logged in and if password is correct*/
     else if (users->count(uid) == 0 || users->at(uid).getUserStatus() || users->at(uid).getUserPassword() != pass) {
             return "NOK";
@@ -294,3 +293,75 @@ string users_subscribed (unordered_map<string, Group>* groups, unordered_map<str
 
 }
 
+/**
+ * Post a new message and optionally also a file in the selected group
+ * @param groups structure that holds all the groups in the server
+ * @param users structure that holds all the users in the server
+ * @param uid user's id
+ * @param gid group's id
+ * @param tsize text size
+ * @param text text
+ * @return status message
+ */
+ //TODO: @Sofia-Morgado-> tratar do file transfer
+string post_message (unordered_map<string, Group>* groups, unordered_map<string, User>* users, string uid, string gid, string tsize, string text){
+    string mid;
+
+    /*Verifies if the user exists */
+    if(!users->empty() && users->count(uid) == 0){
+        return "NOK";
+
+    /*Verifies if the group exists */
+    } else if (!groups->empty() && groups->count(gid) == 0) {
+        return "NOK";
+
+    /*Verifies if it's possible to post a new message*/
+    } else if (groups->at(gid).getMid() == MID_LIMIT) {
+        return "NOK";
+    }
+
+    /* Increments mid*/
+    groups->at(gid).incrementMid();
+
+    mid = to_string(groups->at(gid).getMid());
+
+    /* Create a new message and post it on the group*/
+    Message m(mid, uid, text);
+    groups->at(gid).postMessage(m);
+
+    /* Returns message identifier*/
+    return mid;
+}
+
+
+//TODO: files
+string retrieve_message (unordered_map<string, Group>* groups, unordered_map<string, User>* users, string uid, string gid, string mid){
+    string out;
+    vector<Message> messages;
+
+    /*Verifies if the user exists */
+    if(!users->empty() && users->count(uid) == 0){
+        return "NOK";
+
+    /*Verifies if the group exists */
+    } else if (!groups->empty() && groups->count(gid) == 0) {
+        return "NOK";
+    }
+
+    messages = groups->at(gid).retrieveMessages(stoi(mid));
+
+    /* No messages available*/
+    if (messages.empty()){
+        return "EOF";
+    }
+
+    out = to_string(messages.size()) + "\n";
+
+    for (auto itr: messages){
+        out += itr.getMessageId() + " " + itr.getMessageUid() + " " + to_string(itr.getMessageText().size() - 2) + " " +
+                itr.getMessageText() + "\n";
+    }
+
+    /* Returns message identifier*/
+    return "OK " + out;
+}

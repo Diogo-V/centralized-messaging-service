@@ -3,7 +3,7 @@
 
 #include "message.h"
 #include "user.h"
-#include <list>
+#include <vector>
 
 
 /**
@@ -36,7 +36,7 @@ class Group {
         /**
          * @brief Group's message
          */
-        list<Message> _messages;
+        vector<Message> _messages;
 
     public:
 
@@ -101,9 +101,11 @@ class Group {
         void postMessage(Message m);
 
         /**
-         * @brief retrieves messages with mid values higher than mid
-         */
-        list<Message> retrieveMessages(uint32_t mid);
+        * Retrieve up to 20 messages, starting from the message with identifier mid
+        * @param mid message's identifier
+        * @return vector with message
+        */
+        vector<Message> retrieveMessages(uint32_t mid);
 
 };
 

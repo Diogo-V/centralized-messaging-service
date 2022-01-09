@@ -2,9 +2,10 @@
 
 using namespace std;
 
-Message::Message(string id, string text){
+Message::Message(string id, string uid,  string text){
     _id = id;
     _text = text;
+    _uid = uid;
 }
 
 string Message::getMessageId(){
@@ -14,3 +15,7 @@ string Message::getMessageId(){
 string Message::getMessageText(){
     return _text;
 };
+
+string Message::getMessageUid(){
+    return _uid;
+}

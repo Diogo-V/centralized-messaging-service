@@ -138,12 +138,27 @@ string selector(const char* msg) {
 
         return "RUL " + status + "\n";
 
-    } else {
-        cout << inputs[0] << endl;
-        return "ERR";
-    }
+    } else if (inputs[0] == "PST") { /* Receives a text and optionally also a file*/
+        /* receives status from call function*/
+        status = post_message(&groups, &users, inputs[1], inputs[2], inputs[3], inputs[4]);
 
+        return "RPT " + status + "\n";
+
+    } else if (inputs[0] == "RTV") {
+        /* receives status from call function*/
+        status = retrieve_message(&groups, &users, inputs[1], inputs[2], inputs[3]);
+
+        printf("%s", status.c_str());
+
+        return "RRT " + status + "\n";
+
+    } else {
+            cout << inputs[0] << endl;
+            return "ERR";
+    }
 }
+
+
 
 
 /**

@@ -13,7 +13,6 @@ Group::Group(string id, string name){
     _id = id;
     _name = name;
     _mid = 0;
-    // message
 }
 
 
@@ -93,8 +92,21 @@ void Group::postMessage(Message m){
 }
 
 
-list<Message> Group::retrieveMessages(uint32_t mid) {
-    return {};
+/**
+ * Retrieve up to 20 messages, starting from the message with identifier mid
+ * @param mid message's identifier
+ * @return vector with message
+ */
+vector<Message> Group::retrieveMessages(uint32_t mid) {
+    /* Number of messages from the selected message to the last one*/
+    int interval = this->getMid() - mid + 1;
+    /* If the number is less than 20, display all message. If not, we select the last message to be retrieve as mid plus
+     * 20 */
+    int end = interval < 20 ? 0 : (this->getMid() - (mid + 19));
+
+    vector<Message> subvector (_messages.begin() + mid - 1, _messages.end() - end);
+
+    return subvector;
 }
 
 
