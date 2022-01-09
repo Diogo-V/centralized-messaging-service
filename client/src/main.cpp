@@ -10,6 +10,7 @@
 #include <cstring>
 #include <vector>
 #include <sstream>
+#include <fstream>
 
 using namespace std;
 
@@ -154,15 +155,15 @@ void selector(const string& msg) {
 
     } else if (outputs[0] == "RUL"){
         if (outputs[1] == "NOK") cerr << "Failed. Group doesn't exist." << endl;
-
         else if (outputs[1] == "OK") {
             for (auto i = outputs.begin() + 2; i != outputs.end(); ++i) {
-                std::cout << *i << " ";
+                cout << *i << " ";
             }
         } else cerr << "Invalid status" << endl;
 
         //TODO: closes TCP connection with the server
         /* Closes TCP connection with the server */
+        /* Why is it needed??? */
 
     } else {
         cerr << "ERR" << endl;
@@ -183,7 +184,7 @@ bool isNumber(const string& line) {
 }
 
 /**
- * Verifies if input string translates to alpanumeric characters.
+ * Verifies if input string translates to alphanumeric characters.
  * @param line string to be validated
  * @return boolean value
  */
@@ -230,7 +231,6 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
         validate_(isNumber(inputs[1]), "User ID is not a number")
         validate_(inputs[2].size() == 8, "User password should have 8 alphanumerical characters")
         validate_(isAlphaNumeric(inputs[2]), "User password should have only alphanumerical characters")
-
 
         /* Transforms user input into a valid command to be sent to the server */
         out = "REG " + inputs[1] + " " + inputs[2] + "\n";
@@ -352,8 +352,6 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         con = UDP;  /* Sets connection type to be used by the client to connect to the server */
 
-        con = UDP;  /* Sets connection type to be used by the client to connect to the server */
-
         return true;  /* Since everything was ok, we return true */
 
     } else if (inputs[0] == "my_groups" || inputs[0] == "mgl") {
@@ -364,6 +362,8 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         /* Transforms user input into a valid command to be sent to the server */
         out = "GLM " + user.uid + "\n";
+
+        con = UDP;  /* Sets connection type to be used by the client to connect to the server */
 
         return true;  /* Since everything was ok, we return true */
 
@@ -390,16 +390,39 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         return true;  /* Since everything was ok, we return true */
 
-    } else if (inputs[0] == "ulist" || inputs[0] == "ul"){
+    } else if (inputs[0] == "ulist" || inputs[0] == "ul") {
+
         /* Verifies if the user input a valid command and that this command can be issued */
         validate_(inputs.size() == 1, "Too many arguments")
         validate_(user.is_logged, "Client is not logged in")
-        validate_(user.selected_group != "", "No selected group")
+        validate_(!user.selected_group.empty(), "No selected group")
 
         /* Transforms user input into a valid command to be sent to the server */
         out = "ULS " + user.selected_group +  "\n";
 
+        con = TCP;  /* Sets connection type to be used by the client to connect to the server */
+
         return true;
+
+    } else if (inputs[0] == "post") {  // TODO: tratar da file transfer
+
+        /* Verifies if the user input a valid command and that this command can be issued */
+        validate_(inputs.size() == 2 || inputs.size() == 3, "Invalid number of arguments")
+        validate_(user.is_logged, "Client is not logged in")
+        validate_(!user.selected_group.empty(), "No selected group")
+
+        /* Transforms user input into a valid command to be sent to the server */
+        out = "PST " + user.uid + " " + user.selected_group;
+        out += " " + to_string(inputs[1].length()) + " " + inputs[1];
+        if (inputs.size() == 3) {
+            ifstream file(inputs[2], ifstream::ate | ifstream::binary);
+            out += " " + inputs[2] + " " + file.tellg();
+        } else { out += "\n"; }
+
+        con = TCP;  /* Sets connection type to be used by the client to connect to the server */
+
+        return true;
+
     }
 
     /* TODO: implement rest of TCP */
@@ -541,6 +564,7 @@ int main(int argc, char const *argv[]) {
     /* Closes client socket */
     freeaddrinfo(res);
     close(fd_udp);
+    close(fd_tcp);
 
     return EXIT_SUCCESS;
 
