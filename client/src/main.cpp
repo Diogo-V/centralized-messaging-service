@@ -304,8 +304,8 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
         /* Closes client socket */
         freeaddrinfo(res);
         close(fd_udp);
+        close(fd_tcp);
 
-        //TODO: close tcp connections;
         //FIXME: quando há exit antes do logout, o user que está logged int, no servidor fica como logged in e vai dar erro
 
         return EXIT_SUCCESS;
@@ -349,8 +349,6 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         /* Transforms user input into a valid command to be sent to the server */
         out = "GUR " + user.uid + " " + inputs[1] + "\n";
-
-        con = UDP;  /* Sets connection type to be used by the client to connect to the server */
 
         con = UDP;  /* Sets connection type to be used by the client to connect to the server */
 
@@ -526,11 +524,13 @@ int main(int argc, char const *argv[]) {
 
         }
 
-        /* Removes \n at the end of the buffer. Makes things easier down the line */
-        buffer[strlen(buffer) - 1] = '\0';
+        if (con == UDP || con == TCP){
+            /* Removes \n at the end of the buffer. Makes things easier down the line */
+            buffer[strlen(buffer) - 1] = '\0';
 
-        /* Based on the message sent by the server, display a message to the user */
-        selector(buffer);
+            /* Based on the message sent by the server, display a message to the user */
+            selector(buffer);
+        }
 
         /* Gets the new command that the user input. This replaces the previous command */
         cin.getline(buffer, MSG_MAX_SIZE);
