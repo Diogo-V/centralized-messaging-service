@@ -128,7 +128,7 @@ string list_groups(unordered_map<string, Group>* groups) {
 
     for (auto & itr : *groups) {
         mid = itr.second.getMid() == 0 ? "0000" : to_string(itr.second.getMid()) ;
-        group = itr.first + "|" + itr.second.getName() + "|" + mid + "\n";
+        group = itr.first + " " + itr.second.getName() + " " + mid + "\n";
         list.append(group);
     }
 
@@ -254,7 +254,7 @@ string groups_subscribed (unordered_map<string, Group>* groups, unordered_map<st
 
         for (auto & itr : user_groups ) {
             mid = groups->at(itr).getMid() == 0 ? "0000" : to_string(groups->at(itr).getMid()) ;
-            group = groups->at(itr).getGroupId() + "|" + groups->at(itr).getName() + "|" + mid + "\n";
+            group = groups->at(itr).getGroupId() + " " + groups->at(itr).getName() + " " + mid + "\n";
             out.append(group);
         }
 
@@ -289,7 +289,7 @@ string users_subscribed (unordered_map<string, Group>* groups, unordered_map<str
             out.append(user);
         }
 
-        return "OK " + groups->at(gid).getName() + "\n " + out;
+        return "OK " + groups->at(gid).getName() + "\n" + out;
     }
 
 }

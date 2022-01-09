@@ -121,12 +121,11 @@ void selector(const string& msg) {
 
 
     } else if (outputs[0] == "RGL") {  /* Receives status from GLS (list of groups) */
-        //TODO: @Sofia-Morgado -> corrigir este último espaço
-
         if (outputs[1] != "0") {
-            for (auto i = outputs.begin() + 2; i != outputs.end(); ++i) {
+            for (auto i = outputs.begin() + 2; i != outputs.end() - 1; ++i) {
                 std::cout << *i << " ";
             }
+            std::cout << *(outputs.end() - 1);
         }
 
     } else if (outputs[0] == "RGS") {  /* Receives status from GSR (join group) */
@@ -148,17 +147,19 @@ void selector(const string& msg) {
 
     } else if (outputs[0] == "RGM") {  /* Receives status from GLM (lst usr groups) */
         if (outputs[1] != "0") {
-            for (auto i = outputs.begin() + 2; i != outputs.end(); ++i) {
+            for (auto i = outputs.begin() + 2; i != outputs.end() - 1; ++i) {
                 std::cout << *i << " ";
             }
+            std::cout << *(outputs.end() - 1);
         }
 
     } else if (outputs[0] == "RUL"){
         if (outputs[1] == "NOK") cerr << "Failed. Group doesn't exist." << endl;
         else if (outputs[1] == "OK") {
-            for (auto i = outputs.begin() + 2; i != outputs.end(); ++i) {
+            for (auto i = outputs.begin() + 2; i != outputs.end() - 1; ++i) {
                 cout << *i << " ";
             }
+            std::cout << *(outputs.end() - 1);
         } else cerr << "Invalid status" << endl;
 
         //TODO: closes TCP connection with the server
@@ -304,8 +305,8 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
         /* Closes client socket */
         freeaddrinfo(res);
         close(fd_udp);
+        close(fd_tcp);
 
-        //TODO: close tcp connections;
         //FIXME: quando há exit antes do logout, o user que está logged int, no servidor fica como logged in e vai dar erro
 
         return EXIT_SUCCESS;
@@ -549,11 +550,13 @@ int main(int argc, char const *argv[]) {
 
         }
 
-        /* Removes \n at the end of the buffer. Makes things easier down the line */
-        buffer[strlen(buffer) - 1] = '\0';
+        if (con == UDP || con == TCP){
+            /* Removes \n at the end of the buffer. Makes things easier down the line */
+            buffer[strlen(buffer) - 1] = '\0';
 
-        /* Based on the message sent by the server, display a message to the user */
-        selector(buffer);
+            /* Based on the message sent by the server, display a message to the user */
+            selector(buffer);
+        }
 
         /* Gets the new command that the user input. This replaces the previous command */
         cin.getline(buffer, MSG_MAX_SIZE);
