@@ -358,8 +358,8 @@ string retrieve_message (unordered_map<string, Group>* groups, unordered_map<str
     out = to_string(messages.size()) + "\n";
 
     for (auto itr: messages){
-        out += itr.getMessageId() + " " + itr.getMessageUid() + " " + to_string(itr.getMessageText().size() - 2) + " " +
-                itr.getMessageText() + "\n";
+        out += itr.getMessageId() + " " + itr.getMessageUid() + " " + to_string(itr.getMessageText().size()) + " \"" +
+                itr.getMessageText() + "\" \n";
     }
 
     /* Returns message identifier*/

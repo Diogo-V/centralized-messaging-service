@@ -426,18 +426,33 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
     } else if (inputs[0] == "post") {  // TODO: @Sofia-Morgado-> tratar da file transfer
         //TODO: problema aqui não podemos fazer o split normal
         /* Verifies if the user input a valid command and that this command can be issued */
-        validate_(inputs.size() == 2 || inputs.size() == 3, "Invalid number of arguments")
+        //validate_(inputs.size() == 2 || inputs.size() == 3, "Invalid number of arguments")
         validate_(user.is_logged, "Client is not logged in")
         validate_(!user.selected_group.empty(), "No selected group")
         validate_((inputs[1].length() - 2) <= 240, "Text is limited to 240 characters")
 
+        string text;
+
+        for (int i = 1; i <= 240; i++){
+            printf("%s\n", inputs[i].c_str());
+            printf("%c\n", inputs[i][inputs[i].size() - 1]);
+            if (inputs[i][inputs[i].size() - 1] == '\"'){
+                break;
+            }
+
+            text += inputs[i];
+        }
+
+        printf("%s", text.c_str());
+
         /* Transforms user input into a valid command to be sent to the server */
         out = "PST " + user.uid + " " + user.selected_group;
-        out += " " + to_string(inputs[1].length() - 2) + " " + inputs[1];
-        if (inputs.size() == 3) {
+        out += " " + to_string(text.size()) + " " + text + "\n";
+
+        /*if (inputs.size() == 3) {
             ifstream file(inputs[2], ifstream::ate | ifstream::binary);
             out += " " + inputs[2] + " " + to_string(file.tellg());
-        } else { out += "\n"; }
+        } else { out += "\n"; }*/
 
         con = TCP;  /* Sets connection type to be used by the client to connect to the server */
 

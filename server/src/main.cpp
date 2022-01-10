@@ -140,6 +140,7 @@ string selector(const char* msg) {
 
     } else if (inputs[0] == "PST") { /* Receives a text and optionally also a file*/
         /* receives status from call function*/
+
         status = post_message(&groups, &users, inputs[1], inputs[2], inputs[3], inputs[4]);
 
         return "RPT " + status + "\n";
