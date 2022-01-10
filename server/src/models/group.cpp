@@ -4,30 +4,29 @@ using namespace std;
 
 
 /**
- * @brief Group constructor
+ * @brief Group constructor.
  *
  * @param name
  * @param user
  */
-Group::Group(string id, string name){
+Group::Group(const string& id, const string& name) {
     _id = id;
     _name = name;
-    _mid = 0;
 }
 
 
 /**
- * @brief get group's name
+ * @brief get group's name.
  *
  * @return group's name
  */
-string Group::getName(){
+string Group::getName() {
     return _name;
 }
 
 
 /**
- * @brief Gets group's id
+ * @brief Gets group's id.
  *
  * @return group's id
  */
@@ -41,72 +40,67 @@ string Group::getGroupId() {
  *
  * @return users as an unordered map
  */
-unordered_map<string, User*> Group::getUsers(){
+unordered_map<string, User*> Group::getUsers() {
     return _users;
 }
 
 
 /**
- * @brief Get group's message identifier counter
+ * @brief Get group's message identifier counter.
  *
  * @return message identifier counter
  */
-uint32_t Group::getMid(){
-    return _mid;
+uint32_t Group::getMid() {
+    return this->_messages.size();
 }
 
 
 /**
- * @brief increments group's message identifier counter
+ * @brief add user to this group.
+ *
+ * @param user user that wants to subscribe to this group
  */
-void Group::incrementMid(){
-    _mid ++;
-}
-
-
-/**
- * @brief add user to this group
- * @param user
- */
-void Group::subscribeUser(User* user){
+void Group::subscribeUser(User *user) {
     _users.insert({user->getUserId(), user});
 }
 
 
 /**
- * @brief removes user from this group
- * @param userId
+ * @brief removes user from this group.
+ *
+ * @param user_id
  */
-void Group::unsubscribeUser(string userId){
-    _users.erase(userId);
+void Group::unsubscribeUser(const string& user_id) {
+    _users.erase(user_id);
 }
 
 
 /**
  * @brief post new message to this group
  *
- * @param m new message
+ * @param message new message
  */
-void Group::postMessage(Message m){
-        _messages.push_back(m);
+void Group::postMessage(const Message& message) {
+    _messages.push_back(message);
 }
 
 
 /**
- * Retrieve up to 20 messages, starting from the message with identifier mid
+ * Retrieve up to 20 messages, starting from the message with identifier mid.
+ *
  * @param mid message's identifier
+ *
  * @return vector with message
  */
-vector<Message> Group::retrieveMessages(uint32_t mid) {
+vector<Message> Group::retrieveMessages(const uint32_t& mid) {
+
     /* Number of messages from the selected message to the last one*/
-    int interval = this->getMid() - mid + 1;
-    /* If the number is less than 20, display all message. If not, we select the last message to be retrieve as mid plus
-     * 20 */
-    int end = interval < 20 ? 0 : (this->getMid() - (mid + 19));
+    uint32_t interval = this->getMid() - mid + 1;
 
-    vector<Message> subvector (_messages.begin() + mid - 1, _messages.end() - end);
+    /* If the number is less than 20, display all message. If not, we select the last message to
+     * be retrieved as mid plus 20 */
+    uint32_t end = interval < 20 ? 0 : (this->getMid() - (mid + 19));
+    vector<Message> result(_messages.begin() + mid - 1, _messages.end() - end);
 
-    return subvector;
+    return result;
 }
-
-

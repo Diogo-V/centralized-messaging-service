@@ -3,8 +3,11 @@
 #include <utility>
 #include <iostream>
 #include <list>
+#include <cstdio>
 
 using namespace std;
+
+
 /**
  * @brief Registers user
  *
@@ -38,26 +41,23 @@ string register_user(unordered_map<string, User>* users, string& uid, string& pa
  * @brief Unregisters user
  *
  * @param users unordered map of users
+ * @param groups unordered map of groups
  * @param uid user id
  * @param pass user password
  *
  * @return status message
  */
-string unregister_user(unordered_map<string, User>* users, string& uid, string& pass){
-    /* verifies if there are users registered. This is for safety measure*/
-    if(users->empty()){
-        return "NOK";
-    }
-    /* verifies if user isn't already registered or if the password is not correct */
-    else if(users->count(uid) == 0 || users->at(uid).getUserPassword() != pass) {
-        cout << users->at(uid).getUserPassword() << endl;
+string unregister_user(unordered_map<string, User>* users, unordered_map<string, Group>* groups, string& uid, string& pass) {
+
+    /* Verifies if there are users registered, if the user is already registered and if password is correct */
+    if (users->empty() || users->count(uid) == 0 || users->at(uid).getUserPassword() != pass) {
         return "NOK";
     } else {
+        // Removes user from list of users and from all subscribed groups
         users->erase(uid);
-        //TODO: d@Sofia-Morgado -> desinscrever de todos os grupos
+        for (auto& ele: *groups) ele.second.unsubscribeUser(uid);
         return "OK";
     }
-
 
 }
 
@@ -71,6 +71,7 @@ string unregister_user(unordered_map<string, User>* users, string& uid, string& 
  * @return status message
  */
 string login_user(unordered_map<string, User>* users, string& uid, string& pass) {
+
     /* verifies if there are users registered. This is for safety measure*/
     if(users->empty()) {
         return "NOK";
@@ -84,6 +85,7 @@ string login_user(unordered_map<string, User>* users, string& uid, string& pass)
     }
 
 }
+
 
 /**
  * @brief user logs out
@@ -143,15 +145,16 @@ string list_groups(unordered_map<string, Group>* groups) {
  * @param users structure that holds all users in the server
  * @param uid user's id
  * @param gid group's id
- * @param gname group's name
- * @param p_gid_counter server's group identifier counter
+ * @param group_name group's name
+ *
  * @return status message
  */
-string subscribe (unordered_map<string, Group>* groups, unordered_map<string, User>* users, string uid, string gid, string gname, int* p_gid_counter){
-    string new_gid;
+string subscribe(unordered_map<string, Group>* groups, unordered_map<string, User>* users, string& uid, string& gid, string& group_name) {
+
+    char new_gid[3];
 
     //FIXME: @Sofia-Morgado -> visto que isto é um erro de não existirem grupos ou users, o erro é NOK ou E_USR?
-    /* Verifies if there are users registered or if there are groups to subscribe. This is for safety measures*/
+    /* Verifies if there are users registered or if there are groups to subscribe. This is for safety measure s*/
     if(users->empty() || (groups->empty() && gid != "0")) {
         return "NOK";
 
@@ -159,8 +162,8 @@ string subscribe (unordered_map<string, Group>* groups, unordered_map<string, Us
     } else if ((users->count(uid) == 0) || !(users->at(uid).getUserStatus())) {
         return "E_USR";
 
-    /* Want to create a new group, but There are already 99 groups*/
-    } else if (gid == "0" && *p_gid_counter == 99) {
+    /* Want to create a new group, but there are already 99 groups*/
+    } else if (gid == "0" && groups->size() == 99) {
         return "E_FULL";
 
     /* Group doesn't exist*/
@@ -168,7 +171,7 @@ string subscribe (unordered_map<string, Group>* groups, unordered_map<string, Us
         return "E_GRP";
 
     /* Group name is incorrect */
-    } else if (gid != "0" && groups->at(gid).getName() != gname) {
+    } else if (gid != "0" && groups->at(gid).getName() != group_name) {
         return "E_GNAME";
 
     //FIXME: @Sofia-Morgado coloquei aqui porque não faz sentido o user poder subscrever a second time
@@ -179,18 +182,20 @@ string subscribe (unordered_map<string, Group>* groups, unordered_map<string, Us
 
     /* Everything is fine */
     } else {
-        if (gid == "0"){
-            /* Increments gid*/
-            (*p_gid_counter)++;
-            new_gid = to_string(*p_gid_counter);
+
+        if (gid == "0") {
+
+            /* Formats group id to hold 2 chars */
+            sprintf(new_gid, "%02lu", groups->size() + 1);
 
             /* Create new group*/
-            Group group(new_gid, gname);
+            Group group(new_gid, group_name);
             groups->insert(make_pair(new_gid, group));
 
         } else {
-            new_gid = gid;
+            strcpy(new_gid, gid.c_str());
         }
+
         /* Subscribes user to new group. Add user to group subscribers and the group to user's group */
         groups->at(new_gid).subscribeUser(&users->at(uid));
         users->at(uid).addGroup(new_gid);
@@ -202,7 +207,7 @@ string subscribe (unordered_map<string, Group>* groups, unordered_map<string, Us
 
 
 /**
- * Unsubscribe user from the group
+ * Unsubscribe user from the group.
  *
  * @param groups structure that holds all groups in the server
  * @param users structure that holds all users in the server
@@ -233,6 +238,7 @@ string unsubscribe(unordered_map<string, Group>* groups, unordered_map<string, U
     }
 }
 
+
 /**
  * Sends a list of the groups that the user is subscribed
  * @param groups structure that holds all groups in the server
@@ -240,7 +246,7 @@ string unsubscribe(unordered_map<string, Group>* groups, unordered_map<string, U
  * @param uid user's id
  * @return number of groups and list of groups
  */
-string groups_subscribed (unordered_map<string, Group>* groups, unordered_map<string, User>* users, string uid){
+string groups_subscribed(unordered_map<string, Group>* groups, unordered_map<string, User>* users, string uid){
     string out, group, mid;
     list<string> user_groups;
 
@@ -262,6 +268,7 @@ string groups_subscribed (unordered_map<string, Group>* groups, unordered_map<st
 
 }
 
+
 /**
  * Sends a list of the users subscribed to this group
  * @param groups structure that holds all groups in the server
@@ -269,7 +276,7 @@ string groups_subscribed (unordered_map<string, Group>* groups, unordered_map<st
  * @param gid group's is
  * @return status message and list of users (if applicable)
  */
-string users_subscribed (unordered_map<string, Group>* groups, unordered_map<string, User>* users, string gid){
+string users_subscribed(unordered_map<string, Group>* groups, unordered_map<string, User>* users, string gid){
     string out, user;
     unordered_map<string, User*> users_subscribed;
 
@@ -293,6 +300,7 @@ string users_subscribed (unordered_map<string, Group>* groups, unordered_map<str
 
 }
 
+
 /**
  * Post a new message and optionally also a file in the selected group
  * @param groups structure that holds all the groups in the server
@@ -304,11 +312,12 @@ string users_subscribed (unordered_map<string, Group>* groups, unordered_map<str
  * @return status message
  */
  //TODO: @Sofia-Morgado-> tratar do file transfer
-string post_message (unordered_map<string, Group>* groups, unordered_map<string, User>* users, string uid, string gid, string tsize, string text){
-    string mid;
+string post_message(unordered_map<string, Group>* groups, unordered_map<string, User>* users, string uid, string gid, string tsize, string text) {
+
+    char mid[5];
 
     /*Verifies if the user exists */
-    if(!users->empty() && users->count(uid) == 0){
+    if(!users->empty() && users->count(uid) == 0) {
         return "NOK";
 
     /*Verifies if the group exists */
@@ -320,10 +329,8 @@ string post_message (unordered_map<string, Group>* groups, unordered_map<string,
         return "NOK";
     }
 
-    /* Increments mid*/
-    groups->at(gid).incrementMid();
-
-    mid = to_string(groups->at(gid).getMid());
+    /* Formats message id to hold 4 chars */
+    sprintf(mid, "%04u", groups->at(gid).getMid() + 1);
 
     /* Create a new message and post it on the group*/
     Message m(mid, uid, text);
@@ -335,7 +342,7 @@ string post_message (unordered_map<string, Group>* groups, unordered_map<string,
 
 
 //TODO: files
-string retrieve_message (unordered_map<string, Group>* groups, unordered_map<string, User>* users, string uid, string gid, string mid){
+string retrieve_message(unordered_map<string, Group>* groups, unordered_map<string, User>* users, string uid, string gid, string mid){
     string out;
     vector<Message> messages;
 
