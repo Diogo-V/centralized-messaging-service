@@ -57,9 +57,6 @@ string ds_port{PORT};  /* Holds server port */
 unordered_map<string, User> users;  /* Holds all users in our server. Key is user's id*/
 unordered_map<string, Group> groups;  /* Holds all groups in our server. Key is group's id */
 
-int gid_counter = 0; /* Holds the group identifier counter*/
-int* p_gid_counter;
-
 
 /*----------------------------------------- Functions --------------------------------------------*/
 
@@ -114,10 +111,10 @@ string selector(const char* msg) {
         /* receives status from call function*/
         status = list_groups(&groups);
 
-        return "RGL " + to_string(gid_counter) + " " + status + "\n";
+        return "RGL " + to_string(groups.size()) + " " + status + "\n";
 
     } else if (inputs[0] == "GSR") {  /* Join group */
-        status = subscribe(&groups, &users, inputs[1], inputs[2], inputs[3], p_gid_counter);
+        status = subscribe(&groups, &users, inputs[1], inputs[2], inputs[3]);
         return "RGS " + status + "\n";
 
     } else if (inputs[0] == "GUR") {  /* Unsubscribe to group */
@@ -297,8 +294,6 @@ void init_tcp_socket() {
  * @return 0 if success and 1 if error
  */
 int main(int argc, char const *argv[]) {
-
-    p_gid_counter = &gid_counter;
 
     /* Initializes signal interrupters treatment */
     initialize_interrupters();

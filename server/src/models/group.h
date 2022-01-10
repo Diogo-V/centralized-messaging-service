@@ -24,11 +24,6 @@ class Group {
         string _name;
 
         /**
-         * @brief message identifier counter
-         */
-        uint32_t _mid;
-
-        /**
          * @brief hashmap of users subscribed to this group
          */
         unordered_map<string, User*> _users;
@@ -43,10 +38,10 @@ class Group {
         /**
          * @brief Group Constructor
          *
-         * @param name
-         * @param user
+         * @param id group's identifier
+         * @param name group's name
          */
-        explicit Group(string id, string name);
+        explicit Group(string& id, string& name);
 
         /**
         * @brief Get group's name
@@ -77,11 +72,6 @@ class Group {
         uint32_t getMid();
 
         /**
-        * @brief increments group's message identifier counter
-        */
-        void incrementMid();
-
-        /**
         * @brief add user to this group
         * @param user's pointer
         */
@@ -90,15 +80,15 @@ class Group {
         /**
          * @brief removes user from this group
 
-         * @param userId
+         * @param user_id
          */
-        void unsubscribeUser(string userId);
+        void unsubscribeUser(string& user_id);
 
         /**
          * @brief post new message
          * @param m message to be posted
          */
-        void postMessage(Message m);
+        void postMessage(Message& m);
 
         /**
         * Retrieve up to 20 messages, starting from the message with identifier mid

@@ -15,7 +15,7 @@ string unregister_user(unordered_map<string, User>* users, string& uid, string& 
 string login_user(unordered_map<string, User>* users, string& uid, string& pass);
 string logout_user(unordered_map<string, User>* users, string& uid, string& pass);
 string list_groups(unordered_map<string, Group>* groups);
-string subscribe (unordered_map<string, Group>* groups, unordered_map<string, User>* users, string uid, string gid, string gname, int* p_gid_counter);
+string subscribe (unordered_map<string, Group>* groups, unordered_map<string, User>* users, string& uid, string& gid, string& group_name);
 string unsubscribe(unordered_map<string, Group>* groups, unordered_map<string, User>* users, string uid, string gid);
 string groups_subscribed (unordered_map<string, Group>* groups, unordered_map<string, User>* users, string uid);
 string users_subscribed (unordered_map<string, Group>* groups, unordered_map<string, User>* users, string gid);

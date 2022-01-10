@@ -143,11 +143,10 @@ string list_groups(unordered_map<string, Group>* groups) {
  * @param users structure that holds all users in the server
  * @param uid user's id
  * @param gid group's id
- * @param gname group's name
- * @param p_gid_counter server's group identifier counter
+ * @param group_name group's name
  * @return status message
  */
-string subscribe (unordered_map<string, Group>* groups, unordered_map<string, User>* users, string uid, string gid, string gname, int* p_gid_counter){
+string subscribe (unordered_map<string, Group>* groups, unordered_map<string, User>* users, string& uid, string& gid, string& group_name) {
     string new_gid;
 
     //FIXME: @Sofia-Morgado -> visto que isto é um erro de não existirem grupos ou users, o erro é NOK ou E_USR?
@@ -160,7 +159,7 @@ string subscribe (unordered_map<string, Group>* groups, unordered_map<string, Us
         return "E_USR";
 
     /* Want to create a new group, but There are already 99 groups*/
-    } else if (gid == "0" && *p_gid_counter == 99) {
+    } else if (gid == "0" && groups->size() == 99) {
         return "E_FULL";
 
     /* Group doesn't exist*/
@@ -168,7 +167,7 @@ string subscribe (unordered_map<string, Group>* groups, unordered_map<string, Us
         return "E_GRP";
 
     /* Group name is incorrect */
-    } else if (gid != "0" && groups->at(gid).getName() != gname) {
+    } else if (gid != "0" && groups->at(gid).getName() != group_name) {
         return "E_GNAME";
 
     //FIXME: @Sofia-Morgado coloquei aqui porque não faz sentido o user poder subscrever a second time
@@ -179,18 +178,19 @@ string subscribe (unordered_map<string, Group>* groups, unordered_map<string, Us
 
     /* Everything is fine */
     } else {
-        if (gid == "0"){
+        if (gid == "0") {
+
             /* Increments gid*/
-            (*p_gid_counter)++;
-            new_gid = to_string(*p_gid_counter);
+            new_gid = to_string(groups->size() + 1);
 
             /* Create new group*/
-            Group group(new_gid, gname);
+            Group group(new_gid, group_name);
             groups->insert(make_pair(new_gid, group));
 
         } else {
             new_gid = gid;
         }
+
         /* Subscribes user to new group. Add user to group subscribers and the group to user's group */
         groups->at(new_gid).subscribeUser(&users->at(uid));
         users->at(uid).addGroup(new_gid);
