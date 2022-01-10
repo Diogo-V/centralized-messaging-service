@@ -33,6 +33,10 @@ rcr: cc
 rcl: cc
 	./client/bin/main
 
+# TEST -> Runs both client and server and tests the outputs of each one with a set of instructions
+test: cs cc
+	./test/test.sh
+
 # Cleans everything
 clean:
 	rm -f ./server/bin/* ./client/bin/*
