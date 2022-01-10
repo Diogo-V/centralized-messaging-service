@@ -138,18 +138,22 @@ string selector(const char* msg) {
 
         return "RUL " + status + "\n";
 
-    } else if (inputs[0] == "PST") { /* Receives a text and optionally also a file*/
-        /* receives status from call function*/
 
-        status = post_message(&groups, &users, inputs[1], inputs[2], inputs[3], inputs[4]);
+    } else if (inputs[0] == "PST") { /* Receives a text and optionally also a file*/
+        string text, uid, gid, token, size;
+
+        sscanf(msg, R"(%*s %*s %*s %*s "%240[^"]" %n)", text.c_str(), &n);
+
+        printf("text: %s\n", text.c_str());
+
+        /* receives status from call function*/
+        status = post_message(&groups, &users, inputs[1], inputs[2], inputs[3], text.c_str());
 
         return "RPT " + status + "\n";
 
     } else if (inputs[0] == "RTV") {
         /* receives status from call function*/
         status = retrieve_message(&groups, &users, inputs[1], inputs[2], inputs[3]);
-
-        printf("%s", status.c_str());
 
         return "RRT " + status + "\n";
 

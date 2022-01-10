@@ -423,31 +423,31 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         return true;
 
-    } else if (inputs[0] == "post") {  // TODO: @Sofia-Morgado-> tratar da file transfer
-        //TODO: problema aqui não podemos fazer o split normal
+    } else if (inputs[0] == "post") {
+        //TODO: fazer verificações
+        // TODO: @Sofia-Morgado-> tratar da file transfer
         /* Verifies if the user input a valid command and that this command can be issued */
         //validate_(inputs.size() == 2 || inputs.size() == 3, "Invalid number of arguments")
         validate_(user.is_logged, "Client is not logged in")
         validate_(!user.selected_group.empty(), "No selected group")
-        validate_((inputs[1].length() - 2) <= 240, "Text is limited to 240 characters")
+        //validate_((inputs[1].length() - 2) <= 240, "Text is limited to 240 characters")
 
-        string text;
+        string text, type;
 
-        for (int i = 1; i <= 240; i++){
-            printf("%s\n", inputs[i].c_str());
-            printf("%c\n", inputs[i][inputs[i].size() - 1]);
-            if (inputs[i][inputs[i].size() - 1] == '\"'){
-                break;
-            }
+        //TODO: não está bem
+        if (sscanf(msg.c_str(), R"(%*s "%240[^"]")", text.c_str()) != 1){
+            cerr << "Invalid format" << endl;
+        };
 
-            text += inputs[i];
-        }
+        printf("%s\n", text.c_str());
 
-        printf("%s", text.c_str());
+        printf("%s\n", to_string(strlen(text.c_str())).c_str());
 
         /* Transforms user input into a valid command to be sent to the server */
-        out = "PST " + user.uid + " " + user.selected_group;
-        out += " " + to_string(text.size()) + " " + text + "\n";
+        out = "PST " + user.uid + " " + user.selected_group + " " + to_string(strlen(text.c_str())) + " " + "\""
+                + text.c_str() + "\"\n";
+
+        printf("here 1\n");
 
         /*if (inputs.size() == 3) {
             ifstream file(inputs[2], ifstream::ate | ifstream::binary);
@@ -455,6 +455,8 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
         } else { out += "\n"; }*/
 
         con = TCP;  /* Sets connection type to be used by the client to connect to the server */
+
+        printf("here 2\n");
 
         return true;
 
@@ -558,6 +560,7 @@ int main(int argc, char const *argv[]) {
             continue;
         }
 
+        printf("here 5\n");
         memset(buffer, 0, MSG_MAX_SIZE);  /* Cleans buffer before receiving response */
 
         if (con == UDP) {  /* Connects to server by UDP */
@@ -573,8 +576,11 @@ int main(int argc, char const *argv[]) {
             assert_(n != -1, "Failed to receive message with UDP")
 
         } else if (con == TCP) {  /* Connects to server by TCP */
+            printf("here 3\n");
             /* Initializes and setups fd_udp to be a valid socket */
             init_socket_tcp();
+
+            printf("here 4\n");
 
             /* Creates connection between server and client */
             assert_(connect(fd_tcp, res->ai_addr, res->ai_addrlen) != -1, "Could not connect to sever")
