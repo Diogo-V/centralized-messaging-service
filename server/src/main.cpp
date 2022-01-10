@@ -107,10 +107,7 @@ string selector(const char* msg) {
         return "ROU " + status + "\n";
 
     } else if (inputs[0] == "GLS") {  /* Requested list of existing groups */
-
-        /* receives status from call function*/
         status = list_groups(&groups);
-
         return "RGL " + to_string(groups.size()) + " " + status + "\n";
 
     } else if (inputs[0] == "GSR") {  /* Join group */
@@ -118,45 +115,32 @@ string selector(const char* msg) {
         return "RGS " + status + "\n";
 
     } else if (inputs[0] == "GUR") {  /* Unsubscribe to group */
-        /* receives status from call function*/
         status = unsubscribe(&groups, &users, inputs[1], inputs[2]);
-
         return "RGU " + status + "\n";
 
     } else if (inputs[0] == "GLM") {  /* Get list of user's groups */
-        /* receives status from call function*/
         status = groups_subscribed(&groups, &users, inputs[1]);
-
         return "RGM " + status + "\n";
 
     } else if (inputs[0] == "ULS"){ /* Get list of users subscribed to this group */
-        /* receives status from call function*/
         status = users_subscribed(&groups, &users, inputs[1]);
-
         return "RUL " + status + "\n";
 
     } else if (inputs[0] == "PST") { /* Receives a text and optionally also a file*/
-        /* receives status from call function*/
-
         status = post_message(&groups, &users, inputs[1], inputs[2], inputs[3], inputs[4]);
-
         return "RPT " + status + "\n";
 
     } else if (inputs[0] == "RTV") {
-        /* receives status from call function*/
         status = retrieve_message(&groups, &users, inputs[1], inputs[2], inputs[3]);
-
         printf("%s", status.c_str());
-
         return "RRT " + status + "\n";
 
     } else {
             cout << inputs[0] << endl;
             return "ERR";
     }
+
 }
-
-
 
 
 /**
