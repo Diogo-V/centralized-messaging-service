@@ -125,35 +125,35 @@ void selector(const string& msg) {
     split(msg, outputs);  /* Splits msg by the spaces and returns an array with everything */
 
     if (outputs[0] == "RRG")  {  /* Receives status from REG (register user) */
-        if (outputs[1] == "OK") cout << "User registered successfully" << endl;
-        else if (outputs[1] == "DUP") cerr << "Failed. User has already registered" << endl;
-        else if (outputs[1] == "NOK") cerr << "Failed. Too many users already registered " << endl;
-        else cerr << "Invalid status" << endl;
+        if (outputs[1] == "OK") cout << "User registered successfully." << endl;
+        else if (outputs[1] == "DUP") cerr << "Failed. User already registered." << endl;
+        else if (outputs[1] == "NOK") cerr << "Failed. Too many users already registered." << endl;
+        else cerr << "Invalid status." << endl;
 
     } else if (outputs[0] == "RUN") { /* Receives status from UNR (unregister user) */
         if (outputs[1] == "OK"){
-            cout << "User unregistered successfully" << endl;
+            cout << "User unregistered successfully." << endl;
 
             /*Logouts the user if the user was logged in*/
             if (logouts) {user.is_logged = false; user.uid = ""; user.pass = ""; user.selected_group = ""; logouts = !logouts;}
         }
         else if (outputs[1] == "NOK") cerr << "Failed. Invalid user id or incorrect password." << endl;
-        else cerr << "Invalid status" << endl;
+        else cerr << "Invalid status." << endl;
 
     } else if (outputs[0] == "RLO") {  /* Receives status from LOG (login user) */
         if (outputs[1] == "OK") {
-            cout << "User logged in successfully" << endl;
+            cout << "User logged in successfully." << endl;
             user.is_logged = true; }
         else if (outputs[1] == "NOK") cerr << "Failed. Invalid user id or incorrect password." << endl;
-        else cerr << "Invalid status" << endl;
+        else cerr << "Invalid status." << endl;
 
     } else if (outputs[0] == "ROU") {  /* Receives status from OUT (logout user) */
         if (outputs[1] == "OK") {
-            cout << "User logged out successfully" << endl;
+            cout << "User logged out successfully." << endl;
             user.is_logged = false; user.uid = ""; user.pass = ""; user.selected_group = "";
         }
         else if (outputs[1] == "NOK") cerr << "Failed. Invalid user id or incorrect password." << endl;
-        else cerr << "Invalid status" << endl;
+        else cerr << "Invalid status." << endl;
 
 
     } else if (outputs[0] == "RGL") {  /* Receives status from GLS (list of groups) */
@@ -164,24 +164,24 @@ void selector(const string& msg) {
             std::cout << *(outputs.end() - 1);
         }
 
-    } else if (outputs[0] == "RGS") {  /* Receives status from GSR (join group) */
+    } else if (outputs[0] == "RGS") {  /* Receives status from GSR (join group or create new one) */
         if (outputs[1] == "OK") cout << "User subscribed successfully." << endl;
         else if (outputs[1] == "NEW") cout << "New group created. User subscribed successfully." << endl;
         else if (outputs[1] == "E_USR") cerr << "Failed. Invalid user id." << endl;
         else if (outputs[1] == "E_GRP") cerr << "Failed. Invalid group id." << endl;
         else if (outputs[1] == "E_GNAME") cerr << "Failed. Invalid group name." << endl;
         else if (outputs[1] == "E_FULL") cerr << "Failed. Couldn't create new group." << endl;
-        else if (outputs[1] == "NOK") cerr << "Failed. Unkown reasons." << endl;
-        else cerr << "Invalid status" << endl;
+        else if (outputs[1] == "NOK") cerr << "Failed. Unknown reasons." << endl;
+        else cerr << "Invalid status." << endl;
 
-    } else if (outputs[0] == "RGU") {  /* Receives status from GUR (unsub group) */
-        if (outputs[1] == "OK") cout << "User unsubscribed successfully" << endl;
+    } else if (outputs[0] == "RGU") {  /* Receives status from GUR (unsubscribe from group) */
+        if (outputs[1] == "OK") cout << "User unsubscribed successfully." << endl;
         else if (outputs[1] == "E_USR") cerr << "Failed. Invalid user id.";
         else if (outputs[1] == "E_GRP") cerr << "Failed. Invalid group id." << endl;
-        else if (outputs[1] == "NOK") cerr << "Failed. Unkown reason." << endl;
-        else cerr << "Invalid status" << endl;
+        else if (outputs[1] == "NOK") cerr << "Failed. Unknown reason." << endl;
+        else cerr << "Invalid status." << endl;
 
-    } else if (outputs[0] == "RGM") {  /* Receives status from GLM (lst usr groups) */
+    } else if (outputs[0] == "RGM") {  /* Receives status from GLM (list of groups user has already subscribed to) */
         if (outputs[1] != "0") {
             for (auto i = outputs.begin() + 2; i != outputs.end() - 1; ++i) {
                 std::cout << *i << " ";
@@ -189,35 +189,35 @@ void selector(const string& msg) {
             std::cout << *(outputs.end() - 1);
         }
 
-    } else if (outputs[0] == "RUL") {
+    } else if (outputs[0] == "RUL") {  /* Receives status from ULS (list of users subscribed to selected group) */
         if (outputs[1] == "NOK") cerr << "Failed. Group doesn't exist." << endl;
         else if (outputs[1] == "OK") {
             for (auto i = outputs.begin() + 2; i != outputs.end() - 1; ++i) {
                 cout << *i << " ";
             }
             std::cout << *(outputs.end() - 1);
-        } else cerr << "Invalid status" << endl;
+        } else cerr << "Invalid status." << endl;
 
         /* Close TCP connection*/
         close(fd_tcp);
 
-    } else if (outputs[0] == "RPT") {
-        if (outputs[1] == "NOK") cerr << "Failed. Message couldn't be posted" << endl;
+    } else if (outputs[0] == "RPT") {  /* Receives status from PST (send message) */
+        if (outputs[1] == "NOK") cerr << "Failed. Message couldn't be posted." << endl;
         else if (isNumber(outputs[1])) cout << outputs[1] << endl;
-        else cerr << "Invalid status" << endl;
+        else cerr << "Invalid status." << endl;
 
         /* Close TCP connection*/
         close(fd_tcp);
 
-    } else if (outputs[0] == "RRT"){
-        if (outputs[1] == "NOK") cerr << "Failed. Couldn't retrieve messages" << endl;
-        else if (outputs[1] == "EOF") cout << "No messages available" << endl;
+    } else if (outputs[0] == "RRT"){  /* Receives status from PST (receive unread messages) */
+        if (outputs[1] == "NOK") cerr << "Failed. Couldn't retrieve messages." << endl;
+        else if (outputs[1] == "EOF") cout << "No messages available." << endl;
         else if (outputs[1] == "OK"){
             for (auto i = outputs.begin() + 2; i != outputs.end() - 1; ++i) {
                 cout << *i << " ";
             }
             std::cout << *(outputs.end() - 1);
-        } else cerr << "Invalid status" << endl;
+        } else cerr << "Invalid status." << endl;
 
         /* Close TCP connection*/
         close(fd_tcp);
@@ -245,11 +245,11 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
     if (inputs[0] == "reg") {
 
         /* Verifies if the user input a valid command */
-        validate_(inputs.size() == 3, "User did not input user ID and/or password")
-        validate_(inputs[1].size() == 5, "User ID should have 5 numbers")
-        validate_(isNumber(inputs[1]), "User ID is not a number")
-        validate_(inputs[2].size() == 8, "User password should have 8 alphanumerical characters")
-        validate_(isAlphaNumeric(inputs[2]), "User password should have only alphanumerical characters")
+        validate_(inputs.size() == 3, "User did not input user ID and/or password.")
+        validate_(inputs[1].size() == 5, "User ID should have 5 numbers.")
+        validate_(isNumber(inputs[1]), "User ID is not a number.")
+        validate_(inputs[2].size() == 8, "User password should have 8 alphanumerical characters.")
+        validate_(isAlphaNumeric(inputs[2]), "User password should have only alphanumerical characters.")
 
         /* Transforms user input into a valid command to be sent to the server */
         out = "REG " + inputs[1] + " " + inputs[2] + "\n";
@@ -261,11 +261,11 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
     } else if (inputs[0] == "unr" || inputs[0] == "unregister") {
 
         /* Verifies if the user input a valid command */
-        validate_(inputs.size() == 3, "User did not input user ID and/or password")
-        validate_(inputs[1].size() == 5, "User ID should have 5 numbers")
-        validate_(isNumber(inputs[1]), "User ID is not a number")
-        validate_(inputs[2].size() == 8, "User password should have 8 alphanumerical characters")
-        validate_(isAlphaNumeric(inputs[2]), "User password should have only alphanumerical characters")
+        validate_(inputs.size() == 3, "User did not input user ID and/or password.")
+        validate_(inputs[1].size() == 5, "User ID should have 5 numbers.")
+        validate_(isNumber(inputs[1]), "User ID is not a number.")
+        validate_(inputs[2].size() == 8, "User password should have 8 alphanumerical characters.")
+        validate_(isAlphaNumeric(inputs[2]), "User password should have only alphanumerical characters.")
 
         if (user.uid == inputs[1] && user.is_logged) logouts = true;
 
@@ -279,12 +279,12 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
     } else if (inputs[0] == "login") {
 
         /* Verifies if the user input a valid command and that this command can be issued */
-        validate_(inputs.size() == 3, "User did not input user ID and/or password")
-        validate_(inputs[1].size() == 5, "User ID should have 5 numbers")
-        validate_(isNumber(inputs[1]), "User ID is not a number")
-        validate_(inputs[2].size() == 8, "User password should have 8 alphanumerical characters")
-        validate_(isAlphaNumeric(inputs[2]), "User password should have only alphanumerical characters")
-        validate_(!user.is_logged, "Client is already logged in")
+        validate_(inputs.size() == 3, "User did not input user ID and/or password.")
+        validate_(inputs[1].size() == 5, "User ID should have 5 numbers.")
+        validate_(isNumber(inputs[1]), "User ID is not a number.")
+        validate_(inputs[2].size() == 8, "User password should have 8 alphanumerical characters.")
+        validate_(isAlphaNumeric(inputs[2]), "User password should have only alphanumerical characters.")
+        validate_(!user.is_logged, "Client is already logged in.")
 
         /* Transforms user input into a valid command to be sent to the server */
         out = "LOG " + inputs[1] + " " + inputs[2] + "\n";
@@ -298,8 +298,8 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
     } else if (inputs[0] == "logout") {
         /* Verifies if the user input a valid command and that this command can be issued */
-        validate_(inputs.size() == 1, "Too many arguments")
-        validate_(user.is_logged, "Client needs to be logged in")
+        validate_(inputs.size() == 1, "Too many arguments.")
+        validate_(user.is_logged, "Client needs to be logged in.")
 
         /* Transforms user input into a valid command to be sent to the server */
         out = "OUT " + user.uid + " " + user.pass + "\n";
@@ -311,8 +311,8 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
     } else if (inputs[0] == "showuid" || inputs[0] == "su"){
 
         /* Verifies if the user input a valid command and that this command can be issued */
-        validate_(inputs.size() == 1, "Too many arguments")
-        validate_(user.is_logged, "No client logged in")
+        validate_(inputs.size() == 1, "Too many arguments.")
+        validate_(user.is_logged, "No client logged in.")
 
         cout << user.uid << endl;
 
@@ -331,7 +331,7 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
     } else if (inputs[0] == "groups" || inputs[0] == "gl") {
         /* Verifies if the user input a valid command and that this command can be issued */
-        validate_(inputs.size() == 1, "Too many arguments")
+        validate_(inputs.size() == 1, "Too many arguments.")
 
         /* Transforms user input into a valid command to be sent to the server */
         out = "GLS\n";
@@ -343,13 +343,12 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
     } else if (inputs[0] == "subscribe" || inputs[0] == "s") {
 
         /* Verifies if the user input a valid command and that this command can be issued */
-        validate_(inputs.size() == 3, "User did not input group ID and/or group name")
-        validate_(inputs[1].size() <= 2, "Group ID isn't 2 digit-number")
-        validate_(isNumber(inputs[1]), "Group ID is not a number")
-        validate_(inputs[2].size() <= 24, "Group name limited to 24 characters")
-        validate_(isAlphaNumericPlus(inputs[2]), "Group name should have only alphanumerical characters plus '-' and "
-                                                 "'_'")
-        validate_(user.is_logged, "Client is not logged in")
+        validate_(inputs.size() == 3, "User did not input group ID and/or group name.")
+        validate_(inputs[1].size() <= 2, "Group ID isn't 2 digit-number.")
+        validate_(isNumber(inputs[1]), "Group ID is not a number.")
+        validate_(inputs[2].size() <= 24, "Group name limited to 24 characters.")
+        validate_(isAlphaNumericPlus(inputs[2]), "Group name should have only alphanumerical characters plus '-' and '_'.")
+        validate_(user.is_logged, "Client is not logged in.")
 
         /* Transforms user input into a valid command to be sent to the server */
         out = "GSR " + user.uid + " " + inputs[1] + " " + inputs[2] + "\n";
@@ -361,10 +360,10 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
     } else if (inputs[0] == "unsubscribe" || inputs[0] == "u") {
 
         /* Verifies if the user input a valid command and that this command can be issued */
-        validate_(inputs.size() == 2, "User did not input group ID")
-        validate_(isNumber(inputs[1]), "Group ID is not a number")
-        validate_(inputs[1].size() <= 2, "Group ID isn't a 2 digit-number")
-        validate_(user.is_logged, "Client is not logged in")
+        validate_(inputs.size() == 2, "User did not input group ID.")
+        validate_(isNumber(inputs[1]), "Group ID is not a number.")
+        validate_(inputs[1].size() <= 2, "Group ID isn't a 2 digit-number.")
+        validate_(user.is_logged, "Client is not logged in.")
 
         /* Transforms user input into a valid command to be sent to the server */
         out = "GUR " + user.uid + " " + inputs[1] + "\n";
@@ -376,8 +375,8 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
     } else if (inputs[0] == "my_groups" || inputs[0] == "mgl") {
 
         /* Verifies if the user input a valid command and that this command can be issued */
-        validate_(inputs.size() == 1, "Too many arguments")
-        validate_(user.is_logged, "Client is not logged in")
+        validate_(inputs.size() == 1, "Too many arguments.")
+        validate_(user.is_logged, "Client is not logged in.")
 
         /* Transforms user input into a valid command to be sent to the server */
         out = "GLM " + user.uid + "\n";
@@ -389,10 +388,10 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
     //FIXME: @Sofia-Morgado -> não está no enunciado, mas deviamos de alguma forma verificar se o grupo a selecionar    existe
     } else if (inputs[0] == "select" || inputs[0] == "sag") {
         /* Verifies if the user input a valid command and that this command can be issued */
-        validate_(inputs.size() == 2, "User did not input group ID")
-        validate_(isNumber(inputs[1]), "Group ID is not a number")
-        validate_(inputs[1].size() <= 2, "Group ID isn't a 2 digit-number")
-        validate_(user.is_logged, "Client is not logged in")
+        validate_(inputs.size() == 2, "User did not input group ID.")
+        validate_(isNumber(inputs[1]), "Group ID is not a number.")
+        validate_(inputs[1].size() <= 2, "Group ID isn't a 2 digit-number.")
+        validate_(user.is_logged, "Client is not logged in.")
 
         /* Saves selected group locally */
         user.selected_group = inputs[1];
@@ -401,9 +400,9 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
     } else if (inputs[0] == "showgid" || inputs[0] == "sg") {
         /* Verifies if the user input a valid command and that this command can be issued */
-        validate_(inputs.size() == 1, "Too many arguments")
-        validate_(user.is_logged, "Client is not logged in")
-        validate_(!user.selected_group.empty(), "No selected group")
+        validate_(inputs.size() == 1, "Too many arguments.")
+        validate_(user.is_logged, "Client is not logged in.")
+        validate_(!user.selected_group.empty(), "No selected group.")
 
         cout << user.selected_group << endl;
 
@@ -412,9 +411,9 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
     } else if (inputs[0] == "ulist" || inputs[0] == "ul") {
 
         /* Verifies if the user input a valid command and that this command can be issued */
-        validate_(inputs.size() == 1, "Too many arguments")
-        validate_(user.is_logged, "Client is not logged in")
-        validate_(!user.selected_group.empty(), "No selected group")
+        validate_(inputs.size() == 1, "Too many arguments.")
+        validate_(user.is_logged, "Client is not logged in.")
+        validate_(!user.selected_group.empty(), "No selected group.")
 
         /* Transforms user input into a valid command to be sent to the server */
         out = "ULS " + user.selected_group +  "\n";
@@ -427,9 +426,9 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
         //TODO: problema aqui não podemos fazer o split normal
         /* Verifies if the user input a valid command and that this command can be issued */
         //validate_(inputs.size() == 2 || inputs.size() == 3, "Invalid number of arguments")
-        validate_(user.is_logged, "Client is not logged in")
-        validate_(!user.selected_group.empty(), "No selected group")
-        validate_((inputs[1].length() - 2) <= 240, "Text is limited to 240 characters")
+        validate_(user.is_logged, "Client is not logged in.")
+        validate_(!user.selected_group.empty(), "No selected group.")
+        validate_((inputs[1].length() - 2) <= 240, "Text is limited to 240 characters.")
 
         string text;
 
@@ -460,9 +459,9 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
     } else if (inputs[0] == "retrieve" || inputs[0] == "r"){
         /* Verifies if the user input a valid command and that this command can be issued */
-        validate_(inputs.size() == 2, "Invalid number of arguments")
-        validate_(user.is_logged, "Client is not logged in")
-        validate_(!user.selected_group.empty(), "No selected group")
+        validate_(inputs.size() == 2, "Invalid number of arguments.")
+        validate_(user.is_logged, "Client is not logged in.")
+        validate_(!user.selected_group.empty(), "No selected group.")
 
         out = "RTV " + user.uid + " " + user.selected_group + " " + inputs[1] + "\n";
 
@@ -472,7 +471,7 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
     /* TODO: implement rest of TCP */
 
-    cout << "Invalid command" << endl;
+    cout << "Invalid command." << endl;
     return false;  /* Since no command was chosen, the user did not input a valid command */
 
 }
@@ -485,7 +484,7 @@ void init_socket_udp() {
 
     /* Creates udp socket for internet */
     fd_udp = socket(AF_INET, SOCK_DGRAM, 0);
-    assert_(fd_udp != -1, "Could not create socket")
+    assert_(fd_udp != -1, "Could not create socket.\n")
 
     /* Inits UDP server's struct to access the DNS */
     memset(&hints, 0, sizeof hints);
@@ -494,7 +493,7 @@ void init_socket_udp() {
 
     /* Uses its URL to consult DNS and get the server to which we want to send messages */
     errcode = getaddrinfo(ds_ip.c_str(), ds_port.c_str(), &hints, &res);
-    assert_(errcode == 0, "Failed getaddrinfo call")
+    assert_(errcode == 0, "Failed getaddrinfo call.\n")
 
 }
 
@@ -506,7 +505,7 @@ void init_socket_tcp() {
 
     /* Creates tcp subgroup for internet */
     fd_tcp = socket(AF_INET, SOCK_STREAM, 0);
-    assert_(fd_tcp != -1, "Could not create tcp socket")
+    assert_(fd_tcp != -1, "Could not create tcp socket.\n")
 
     /* Inits TCP server's struct to access the DNS */
     memset(&hints, 0, sizeof hints);
@@ -516,7 +515,7 @@ void init_socket_tcp() {
 
     /* Uses its URL to consult DNS and get a TCP server's IP address */
     errcode = getaddrinfo(ds_ip.c_str(), ds_port.c_str(), &hints, &res);
-    assert_(errcode == 0, "Failed getaddrinfo call for tcp")
+    assert_(errcode == 0, "Failed getaddrinfo call for tcp.\n")
 
 
 
@@ -564,20 +563,20 @@ int main(int argc, char const *argv[]) {
 
             /* Sends message to server */
             n = sendto(fd_udp, req.c_str(), req.length(), 0, res->ai_addr, res->ai_addrlen);
-            assert_(n != -1, "Failed to send message with UDP")
+            assert_(n != -1, "Failed to send message with UDP.\n")
 
             /* Gets server response and processes it */
             bzero(&addr, sizeof(struct sockaddr_in));
             addrlen = sizeof(addr);
             n = recvfrom(fd_udp, buffer, MSG_MAX_SIZE, 0, (struct sockaddr*) &addr, &addrlen);
-            assert_(n != -1, "Failed to receive message with UDP")
+            assert_(n != -1, "Failed to receive message with UDP.\n")
 
         } else if (con == TCP) {  /* Connects to server by TCP */
             /* Initializes and setups fd_udp to be a valid socket */
             init_socket_tcp();
 
             /* Creates connection between server and client */
-            assert_(connect(fd_tcp, res->ai_addr, res->ai_addrlen) != -1, "Could not connect to sever")
+            assert_(connect(fd_tcp, res->ai_addr, res->ai_addrlen) != -1, "Could not connect to sever.\n")
 
             uint16_t nw;  /* Used to keep track of how many bytes we have sent to the server */
             n = (ssize_t) req.length();  /* Sends request size */
@@ -585,13 +584,13 @@ int main(int argc, char const *argv[]) {
             /* Keeps sending messages to sever until everything is sent */
             char* ptr = &req[0];
             while (n > 0) {
-                assert_((nw = write(fd_tcp, ptr, MSG_MAX_SIZE)) > 0, "Could not send message to server")
+                assert_((nw = write(fd_tcp, ptr, MSG_MAX_SIZE)) > 0, "Could not send message to server.\n")
                 n -= nw; ptr += nw;
             }
 
             /* Keeps on reading until everything has been read from the server */
             while ((n = read(fd_tcp,buffer, MSG_MAX_SIZE)) != 0) {
-                assert_(n != -1, "Failed to retrieve response from server")
+                assert_(n != -1, "Failed to retrieve response from server.\n")
             }
 
         }
