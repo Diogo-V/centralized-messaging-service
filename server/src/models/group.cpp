@@ -9,7 +9,7 @@ using namespace std;
  * @param name
  * @param user
  */
-Group::Group(string& id, string& name) {
+Group::Group(const string& id, const string& name) {
     _id = id;
     _name = name;
 }
@@ -60,7 +60,7 @@ uint32_t Group::getMid() {
  *
  * @param user user that wants to subscribe to this group
  */
-void Group::subscribeUser(User* user) {
+void Group::subscribeUser(User *user) {
     _users.insert({user->getUserId(), user});
 }
 
@@ -70,7 +70,7 @@ void Group::subscribeUser(User* user) {
  *
  * @param user_id
  */
-void Group::unsubscribeUser(string& user_id) {
+void Group::unsubscribeUser(const string& user_id) {
     _users.erase(user_id);
 }
 
@@ -80,7 +80,7 @@ void Group::unsubscribeUser(string& user_id) {
  *
  * @param message new message
  */
-void Group::postMessage(Message& message) {
+void Group::postMessage(const Message& message) {
     _messages.push_back(message);
 }
 
@@ -92,7 +92,7 @@ void Group::postMessage(Message& message) {
  *
  * @return vector with message
  */
-vector<Message> Group::retrieveMessages(uint32_t mid) {
+vector<Message> Group::retrieveMessages(const uint32_t& mid) {
 
     /* Number of messages from the selected message to the last one*/
     uint32_t interval = this->getMid() - mid + 1;

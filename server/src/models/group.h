@@ -41,7 +41,7 @@ class Group {
          * @param id group's identifier
          * @param name group's name
          */
-        explicit Group(string& id, string& name);
+        explicit Group(const string& id, const string& name);
 
         /**
         * @brief Get group's name
@@ -75,27 +75,27 @@ class Group {
         * @brief add user to this group
         * @param user's pointer
         */
-        void subscribeUser(User* user);
+        void subscribeUser(User *user);
 
         /**
          * @brief removes user from this group
 
          * @param user_id
          */
-        void unsubscribeUser(string& user_id);
+        void unsubscribeUser(const string& user_id);
 
         /**
          * @brief post new message
          * @param m message to be posted
          */
-        void postMessage(Message& m);
+        void postMessage(const Message& m);
 
         /**
         * Retrieve up to 20 messages, starting from the message with identifier mid
         * @param mid message's identifier
         * @return vector with message
         */
-        vector<Message> retrieveMessages(uint32_t mid);
+        vector<Message> retrieveMessages(const uint32_t& mid);
 
 };
 

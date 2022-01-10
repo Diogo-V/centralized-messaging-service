@@ -3,13 +3,17 @@
 
 #include <string>
 
+
 using namespace std;
+
 
 /**
  * @brief Represents a Message
  */
-class Message{
+class Message {
+
     private:
+
         /**
          * @brief message's id
          */
@@ -28,18 +32,35 @@ class Message{
         //optional: file;
 
     public:
+
         /**
-         * Message constructor
+         * Message constructor.
+         *
          * @param id message's id
          * @param uid message's author
          * @param text message's text
          */
-        explicit Message(string id, string uid, string text);
+        explicit Message(const string& id, const string& uid,  const string& text);
 
+        /**
+         * @brief Returns message's id.
+         *
+         * @return string with 4 chars containing the id
+         */
         string getMessageId();
 
+        /**
+         * @brief Gets message's contents.
+         *
+         * @return message's text
+         */
         string getMessageText();
 
+        /**
+         * @brief Gets message's author identifier.
+         *
+         * @return user's id
+         */
         string getMessageUid();
 
 };
