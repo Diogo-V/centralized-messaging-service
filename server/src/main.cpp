@@ -95,7 +95,7 @@ string selector(const char* msg) {
         return "RRG " + status + "\n";
 
     } else if (inputs[0] == "UNR") {  /* Unregisters user */
-        status = unregister_user(&users, inputs[1], inputs[2]);
+        status = unregister_user(&users, &groups, inputs[1], inputs[2]);
         return "RUN " + status + "\n";
 
     } else if (inputs[0] == "LOG") {  /* Signs in user */

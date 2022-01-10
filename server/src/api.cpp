@@ -41,26 +41,23 @@ string register_user(unordered_map<string, User>* users, string& uid, string& pa
  * @brief Unregisters user
  *
  * @param users unordered map of users
+ * @param groups unordered map of groups
  * @param uid user id
  * @param pass user password
  *
  * @return status message
  */
-string unregister_user(unordered_map<string, User>* users, string& uid, string& pass){
-    /* verifies if there are users registered. This is for safety measure*/
-    if(users->empty()){
-        return "NOK";
-    }
-    /* verifies if user isn't already registered or if the password is not correct */
-    else if(users->count(uid) == 0 || users->at(uid).getUserPassword() != pass) {
-        cout << users->at(uid).getUserPassword() << endl;
+string unregister_user(unordered_map<string, User>* users, unordered_map<string, Group>* groups, string& uid, string& pass) {
+
+    /* Verifies if there are users registered, if the user is already registered and if password is correct */
+    if (users->empty() || users->count(uid) == 0 || users->at(uid).getUserPassword() != pass) {
         return "NOK";
     } else {
+        // Removes user from list of users and from all subscribed groups
         users->erase(uid);
-        //TODO: d@Sofia-Morgado -> desinscrever de todos os grupos
+        for (auto& ele: *groups) ele.second.unsubscribeUser(uid);
         return "OK";
     }
-
 
 }
 
@@ -157,7 +154,7 @@ string subscribe(unordered_map<string, Group>* groups, unordered_map<string, Use
     char new_gid[3];
 
     //FIXME: @Sofia-Morgado -> visto que isto é um erro de não existirem grupos ou users, o erro é NOK ou E_USR?
-    /* Verifies if there are users registered or if there are groups to subscribe. This is for safety measures*/
+    /* Verifies if there are users registered or if there are groups to subscribe. This is for safety measure s*/
     if(users->empty() || (groups->empty() && gid != "0")) {
         return "NOK";
 
@@ -165,7 +162,7 @@ string subscribe(unordered_map<string, Group>* groups, unordered_map<string, Use
     } else if ((users->count(uid) == 0) || !(users->at(uid).getUserStatus())) {
         return "E_USR";
 
-    /* Want to create a new group, but There are already 99 groups*/
+    /* Want to create a new group, but there are already 99 groups*/
     } else if (gid == "0" && groups->size() == 99) {
         return "E_FULL";
 
