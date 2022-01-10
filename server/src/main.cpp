@@ -57,9 +57,6 @@ string ds_port{PORT};  /* Holds server port */
 unordered_map<string, User> users;  /* Holds all users in our server. Key is user's id*/
 unordered_map<string, Group> groups;  /* Holds all groups in our server. Key is group's id */
 
-int gid_counter = 0; /* Holds the group identifier counter*/
-int* p_gid_counter;
-
 
 /*----------------------------------------- Functions --------------------------------------------*/
 
@@ -98,7 +95,7 @@ string selector(const char* msg) {
         return "RRG " + status + "\n";
 
     } else if (inputs[0] == "UNR") {  /* Unregisters user */
-        status = unregister_user(&users, inputs[1], inputs[2]);
+        status = unregister_user(&users, &groups, inputs[1], inputs[2]);
         return "RUN " + status + "\n";
 
     } else if (inputs[0] == "LOG") {  /* Signs in user */
@@ -110,32 +107,23 @@ string selector(const char* msg) {
         return "ROU " + status + "\n";
 
     } else if (inputs[0] == "GLS") {  /* Requested list of existing groups */
-
-        /* receives status from call function*/
         status = list_groups(&groups);
-
-        return "RGL " + to_string(gid_counter) + " " + status + "\n";
+        return "RGL " + to_string(groups.size()) + " " + status + "\n";
 
     } else if (inputs[0] == "GSR") {  /* Join group */
-        status = subscribe(&groups, &users, inputs[1], inputs[2], inputs[3], p_gid_counter);
+        status = subscribe(&groups, &users, inputs[1], inputs[2], inputs[3]);
         return "RGS " + status + "\n";
 
     } else if (inputs[0] == "GUR") {  /* Unsubscribe to group */
-        /* receives status from call function*/
         status = unsubscribe(&groups, &users, inputs[1], inputs[2]);
-
         return "RGU " + status + "\n";
 
     } else if (inputs[0] == "GLM") {  /* Get list of user's groups */
-        /* receives status from call function*/
         status = groups_subscribed(&groups, &users, inputs[1]);
-
         return "RGM " + status + "\n";
 
     } else if (inputs[0] == "ULS"){ /* Get list of users subscribed to this group */
-        /* receives status from call function*/
         status = users_subscribed(&groups, &users, inputs[1]);
-
         return "RUL " + status + "\n";
 
 
@@ -301,8 +289,6 @@ void init_tcp_socket() {
  * @return 0 if success and 1 if error
  */
 int main(int argc, char const *argv[]) {
-
-    p_gid_counter = &gid_counter;
 
     /* Initializes signal interrupters treatment */
     initialize_interrupters();
