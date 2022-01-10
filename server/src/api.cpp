@@ -89,6 +89,7 @@ string login_user(unordered_map<string, User>* users, string& uid, string& pass)
 
 }
 
+
 /**
  * @brief user logs out
  *
@@ -153,7 +154,7 @@ string list_groups(unordered_map<string, Group>* groups) {
  */
 string subscribe(unordered_map<string, Group>* groups, unordered_map<string, User>* users, string& uid, string& gid, string& group_name) {
 
-    char new_gid[2];
+    char new_gid[3];
 
     //FIXME: @Sofia-Morgado -> visto que isto é um erro de não existirem grupos ou users, o erro é NOK ou E_USR?
     /* Verifies if there are users registered or if there are groups to subscribe. This is for safety measures*/
@@ -188,7 +189,7 @@ string subscribe(unordered_map<string, Group>* groups, unordered_map<string, Use
         if (gid == "0") {
 
             /* Formats group id to hold 2 chars */
-            sprintf(new_gid, "%01lu", groups->size() + 1);
+            sprintf(new_gid, "%02lu", groups->size() + 1);
 
             /* Create new group*/
             Group group(new_gid, group_name);
@@ -240,6 +241,7 @@ string unsubscribe(unordered_map<string, Group>* groups, unordered_map<string, U
     }
 }
 
+
 /**
  * Sends a list of the groups that the user is subscribed
  * @param groups structure that holds all groups in the server
@@ -268,6 +270,7 @@ string groups_subscribed(unordered_map<string, Group>* groups, unordered_map<str
     }
 
 }
+
 
 /**
  * Sends a list of the users subscribed to this group
@@ -300,6 +303,7 @@ string users_subscribed(unordered_map<string, Group>* groups, unordered_map<stri
 
 }
 
+
 /**
  * Post a new message and optionally also a file in the selected group
  * @param groups structure that holds all the groups in the server
@@ -311,11 +315,12 @@ string users_subscribed(unordered_map<string, Group>* groups, unordered_map<stri
  * @return status message
  */
  //TODO: @Sofia-Morgado-> tratar do file transfer
-string post_message(unordered_map<string, Group>* groups, unordered_map<string, User>* users, string uid, string gid, string tsize, string text){
-    string mid;
+string post_message(unordered_map<string, Group>* groups, unordered_map<string, User>* users, string uid, string gid, string tsize, string text) {
+
+    char mid[5];
 
     /*Verifies if the user exists */
-    if(!users->empty() && users->count(uid) == 0){
+    if(!users->empty() && users->count(uid) == 0) {
         return "NOK";
 
     /*Verifies if the group exists */
@@ -327,7 +332,8 @@ string post_message(unordered_map<string, Group>* groups, unordered_map<string, 
         return "NOK";
     }
 
-    mid = to_string(groups->at(gid).getMid());
+    /* Formats message id to hold 4 chars */
+    sprintf(mid, "%04u", groups->at(gid).getMid() + 1);
 
     /* Create a new message and post it on the group*/
     Message m(mid, uid, text);
