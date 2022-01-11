@@ -85,50 +85,59 @@ string selector(const char* msg) {
     split(msg, inputs);  /* Splits msg by the spaces and returns an array with everything*/
     string status{};
 
-    // TODO: Ask teacher about the verbose flag (what are we supposed to output to the screen?)
+    /* Gets client's ip and port to be logged */
     string ip(inet_ntoa(addr.sin_addr));
     string port{to_string(ntohs(addr.sin_port))};
-    verbose_(isVerbose, "COMMAND: " + inputs[0] + " | IP: " + ip + " | PORT: " + port)
 
     if (inputs[0] == "REG") {  /* Registers user */
+        verbose_(isVerbose, "UID: " + inputs[1] + " | IP: " + ip + " | PORT: " + port)
         status = register_user(&users, inputs[1], inputs[2]);
         return "RRG " + status + "\n";
 
     } else if (inputs[0] == "UNR") {  /* Unregisters user */
+        verbose_(isVerbose, "UID: " + inputs[1] + " | IP: " + ip + " | PORT: " + port)
         status = unregister_user(&users, &groups, inputs[1], inputs[2]);
         return "RUN " + status + "\n";
 
     } else if (inputs[0] == "LOG") {  /* Signs in user */
+        verbose_(isVerbose, "UID: " + inputs[1] + " | IP: " + ip + " | PORT: " + port)
         status = login_user(&users, inputs[1], inputs[2]);
         return "RLO " + status + "\n";
 
     } else if (inputs[0] == "OUT") {  /* Logout user */
+        verbose_(isVerbose, "UID: " + inputs[1] + " | IP: " + ip + " | PORT: " + port)
         status = logout_user(&users, inputs[1] , inputs[2]);
         return "ROU " + status + "\n";
 
     } else if (inputs[0] == "GLS") {  /* Requested list of existing groups */
+        verbose_(isVerbose, "IP: " + ip + " | PORT: " + port)
         status = list_groups(&groups);
         return "RGL " + to_string(groups.size()) + " " + status + "\n";
 
     } else if (inputs[0] == "GSR") {  /* Join group */
+        verbose_(isVerbose, "UID: " + inputs[1] + "GID: " + inputs[2] + " | IP: " + ip + " | PORT: " + port)
         status = subscribe(&groups, &users, inputs[1], inputs[2], inputs[3]);
         return "RGS " + status + "\n";
 
     } else if (inputs[0] == "GUR") {  /* Unsubscribe to group */
+        verbose_(isVerbose, "UID: " + inputs[1] + "GID: " + inputs[2] + " | IP: " + ip + " | PORT: " + port)
         status = unsubscribe(&groups, &users, inputs[1], inputs[2]);
         return "RGU " + status + "\n";
 
     } else if (inputs[0] == "GLM") {  /* Get list of user's groups */
+        verbose_(isVerbose, "UID: " + inputs[1] + " | IP: " + ip + " | PORT: " + port)
         status = groups_subscribed(&groups, &users, inputs[1]);
         return "RGM " + status + "\n";
 
     } else if (inputs[0] == "ULS"){ /* Get list of users subscribed to this group */
+        verbose_(isVerbose, "GID: " + inputs[1] + "GID: " + inputs[2] + " | IP: " + ip + " | PORT: " + port)
         status = users_subscribed(&groups, &users, inputs[1]);
         return "RUL " + status + "\n";
 
 
     } else if (inputs[0] == "PST") { /* Receives a text and optionally also a file*/
-        string text;
+        verbose_(isVerbose, "UID: " + inputs[1] + "GID: " + inputs[2] + " | IP: " + ip + " | PORT: " + port)
+        string text, uid, gid, token, size;
 
         sscanf(msg, R"(%*s %*s %*s %*s "%240[^"]" %n)", text.c_str());
 
@@ -140,6 +149,7 @@ string selector(const char* msg) {
         return "RPT " + status + "\n";
 
     } else if (inputs[0] == "RTV") {
+        verbose_(isVerbose, "UID: " + inputs[1] + "GID: " + inputs[2] + " | IP: " + ip + " | PORT: " + port)
         /* receives status from call function*/
         status = retrieve_message(&groups, &users, inputs[1], inputs[2], inputs[3]);
 
@@ -149,9 +159,8 @@ string selector(const char* msg) {
             cout << inputs[0] << endl;
             return "ERR";
     }
+
 }
-
-
 
 
 /**
@@ -331,8 +340,8 @@ int main(int argc, char const *argv[]) {
             string response = selector(buffer);
 
             /* Sends response back t client */
-            //n = sendto(fd_udp, response.c_str(), response.size(), 0, (struct sockaddr*) &addr, addrlen);
-            //assert_(n != -1, "Failed to send message")
+            n = sendto(fd_udp, response.c_str(), response.size(), 0, (struct sockaddr*) &addr, addrlen);
+            assert_(n != -1, "Failed to send message")
 
         } else if (FD_ISSET(fd_tcp, &fds)) {  /* Checks if tcp socket activated */
 

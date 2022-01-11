@@ -488,27 +488,38 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
         return true;
 
     } else if (cmd == "post") {
-        //TODO: fazer verificações
-        // TODO: @Sofia-Morgado-> tratar da file transfer
+
+        char text[MSG_MAX_SIZE];  /* Will hold user input text */
+        string file;  /* Will hold the input file */
+        memset(text, 0, MSG_MAX_SIZE);
+        char c;  /* Used to check if the user did not input a file */
+
+        assert_(sscanf(msg.c_str(), R"(%*s "%240[^"]" %c)", text, &c) == 1, "Invalid format")
+//        assert_(sscanf(msg.c_str(), R"(%*s "%*s" %[^\n])", file) == 1, "Invalid format")
+
+        for (auto x = msg.end(); x >= msg.begin(); x--) {
+            file.append(msg[x]);
+        }
+
+        while ()
+
+        cout << file << endl;
+
+        inputs[1] = text;
+        if (c != '\n') inputs[2] = file;
+
         /* Verifies if the user input a valid command and that this command can be issued */
-        //validate_(inputs.size() == 2 || inputs.size() == 3, "Invalid number of arguments")
+        validate_(inputs.size() >= 2, "Invalid number of arguments")
         validate_(user.is_logged, "Client is not logged in")
         validate_(!user.selected_group.empty(), "No selected group")
-        //validate_((inputs[1].length() - 2) <= 240, "Text is limited to 240 characters")
-
-        char text[MSG_MAX_SIZE];
-        memset(text, 0, MSG_MAX_SIZE);
-
-        //TODO: não está bem -> Está sim <3
-        char c;
-        if (sscanf(msg.c_str(), R"(%*s "%240[^"]" %c)", text, &c) != 1) {
-            cerr << "Invalid format" << endl;
-        }
+        validate_((inputs[1].length() - 2) <= 240, "Text is limited to 240 characters")
 
         string len = to_string(strlen(text));
 
         /* Transforms user input into a valid command to be sent to the server */
         out = "PST " + user.uid + " " + user.selected_group + " " + len + " " + "\"" + text + "\"\n";
+
+        cout << out << endl;
 
         /*if (inputs.size() == 3) {
             ifstream file(inputs[2], ifstream::ate | ifstream::binary);
