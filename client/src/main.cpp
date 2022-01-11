@@ -497,11 +497,10 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
         assert_(sscanf(msg.c_str(), R"(%*s "%240[^"]" %c)", text, &c) == 1, "Invalid format")
 //        assert_(sscanf(msg.c_str(), R"(%*s "%*s" %[^\n])", file) == 1, "Invalid format")
 
-        for (auto x = msg.end(); x >= msg.begin(); x--) {
+        /*for (auto x = msg.end(); x >= msg.begin(); x--) {
             file.append(msg[x]);
-        }
+        }*/
 
-        while ()
 
         cout << file << endl;
 
@@ -642,11 +641,32 @@ int main(int argc, char const *argv[]) {
             /* Gets server response and processes it */
             bzero(&addr, sizeof(struct sockaddr_in));
             addrlen = sizeof(addr);
-            //TimerON(fd_udp);
-            n = recvfrom(fd_udp, buffer, MSG_MAX_SIZE, 0, (struct sockaddr*) &addr, &addrlen);
-            //TODO: fazer recvfrom novamente quando dá timeout
-            assert_(n != -1, "Time out")
-            //TimerOFF(fd_udp);
+
+            int tries = 3;
+            bool try_again = false;
+
+            //FIXME: @Sofia-Morgado -> melhorar isto
+            do {
+                TimerON(fd_udp);
+                n = recvfrom(fd_udp, buffer, MSG_MAX_SIZE, 0, (struct sockaddr *) &addr, &addrlen);
+                //TODO: fazer recvfrom novamente quando dá timeout
+                //assert_(n != -1, "Time out")
+                TimerOFF(fd_udp);
+
+                if (n == -1){
+                    try_again = true;
+                    tries --;
+                } else {
+                    try_again = false;
+                }
+
+                if (try_again && tries == 0){
+                    cout << "Time out" << endl;
+                    exit(EXIT_FAILURE);
+                }
+
+            } while (try_again && tries > 0);
+
 
         } else if (con == TCP) {  /* Connects to server by TCP */
 

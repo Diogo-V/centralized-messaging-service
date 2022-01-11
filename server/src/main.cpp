@@ -339,9 +339,10 @@ int main(int argc, char const *argv[]) {
             /* Process client's message and decides what to do with it based on the passed code */
             string response = selector(buffer);
 
+            //FIXME: @Sofia-Morgado -> remover comentário, apenas para debug do timer
             /* Sends response back t client */
-            n = sendto(fd_udp, response.c_str(), response.size(), 0, (struct sockaddr*) &addr, addrlen);
-            assert_(n != -1, "Failed to send message")
+            //n = sendto(fd_udp, response.c_str(), response.size(), 0, (struct sockaddr*) &addr, addrlen);
+            //assert_(n != -1, "Failed to send message")
 
         } else if (FD_ISSET(fd_tcp, &fds)) {  /* Checks if tcp socket activated */
 
