@@ -63,17 +63,16 @@ bool logouts = false;
 
 
 /*----------------------------------------- Functions --------------------------------------------*/
+
+
 /**
  * Verifies if input string translates to a number.
  *
  * @param line string to be validated
  * @return boolean value
  */
-bool isNumber(const string& line) {
-    char* p;
-    strtod(line.c_str(), &p);
-    return *p == 0;
-}
+bool isNumber(const string& line) { char* p; strtod(line.c_str(), &p); return *p == 0; }
+
 
 /**
  * Verifies if input string translates to alphanumeric characters.
@@ -88,6 +87,7 @@ bool isAlphaNumeric(const string& line){
     return i == len;
 }
 
+
 /**
  * Verifies if input string translates to alphanumeric characters plus '-' and '_'.
  * @param line string to be validated
@@ -95,9 +95,7 @@ bool isAlphaNumeric(const string& line){
  */
 bool isAlphaNumericPlus(const string& line){
     uint8_t i = 0, len = line.length();
-
     while (isalnum(line[i]) || (line[i] == '-') || (line[i] == '_')) i++;
-
     return i == len;
 }
 
@@ -128,6 +126,19 @@ int TimerOFF(int sd)
 void split(string const &str, vector<string> &out) {
     stringstream ss(str); string s; const char delim = (const char)* " ";
     while (getline(ss, s, delim)) out.push_back(s);
+}
+
+
+/*
+ * Gets user input command by reading until first space.
+ *
+ * @param str user input command
+ *
+ * @return requested command
+ */
+string get_command(const string& str) {
+    stringstream ss(str); string s; char delim = ' '; string cmd;
+    getline(ss, cmd, delim); return cmd;
 }
 
 
@@ -216,16 +227,10 @@ void selector(const string& msg) {
             std::cout << *(outputs.end() - 1);
         } else cerr << "Invalid status" << endl;
 
-        /* Close TCP connection*/
-        close(fd_tcp);
-
     } else if (outputs[0] == "RPT") {
         if (outputs[1] == "NOK") cerr << "Failed. Message couldn't be posted" << endl;
         else if (isNumber(outputs[1])) cout << outputs[1] << endl;
         else cerr << "Invalid status" << endl;
-
-        /* Close TCP connection*/
-        close(fd_tcp);
 
     } else if (outputs[0] == "RRT"){
         if (outputs[1] == "NOK") cerr << "Failed. Couldn't retrieve messages" << endl;
@@ -237,14 +242,12 @@ void selector(const string& msg) {
             std::cout << *(outputs.end() - 1);
         } else cerr << "Invalid status" << endl;
 
-        /* Close TCP connection*/
-        close(fd_tcp);
-
     } else {
         cerr << "ERR" << endl;
     }
 
 }
+
 
 /**
  * Verifies if a message that the user input is valid. Also populates "req" with the request that is
@@ -257,10 +260,13 @@ void selector(const string& msg) {
 bool preprocessing(const string& msg, string& out, con_type& con) {
 
     vector<string> inputs;  /* Holds a list of strings with the inputs from our user */
-    split(msg, inputs);  /* Splits msg by the spaces and returns an array with everything */
+    string cmd = get_command(msg);
 
     /* Verifies if the user requested a valid command */
-    if (inputs[0] == "reg") {
+    if (cmd == "reg") {
+
+        /* Splits msg by the spaces and returns an array with everything */
+        split(msg, inputs);
 
         /* Verifies if the user input a valid command */
         validate_(inputs.size() == 3, "User did not input user ID and/or password")
@@ -276,7 +282,10 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         return true;  /* Since everything was ok, we return true */
 
-    } else if (inputs[0] == "unr" || inputs[0] == "unregister") {
+    } else if (cmd == "unr" || cmd == "unregister") {
+
+        /* Splits msg by the spaces and returns an array with everything */
+        split(msg, inputs);
 
         /* Verifies if the user input a valid command */
         validate_(inputs.size() == 3, "User did not input user ID and/or password")
@@ -294,7 +303,10 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         return true;  /* Since everything was ok, we return true */
 
-    } else if (inputs[0] == "login") {
+    } else if (cmd == "login") {
+
+        /* Splits msg by the spaces and returns an array with everything */
+        split(msg, inputs);
 
         /* Verifies if the user input a valid command and that this command can be issued */
         validate_(inputs.size() == 3, "User did not input user ID and/or password")
@@ -314,7 +326,11 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         return true;  /* Since everything was ok, we return true */
 
-    } else if (inputs[0] == "logout") {
+    } else if (cmd == "logout") {
+
+        /* Splits msg by the spaces and returns an array with everything */
+        split(msg, inputs);
+
         /* Verifies if the user input a valid command and that this command can be issued */
         validate_(inputs.size() == 1, "Too many arguments")
         validate_(user.is_logged, "Client needs to be logged in")
@@ -326,7 +342,10 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         return true;  /* Since everything was ok, we return true */
 
-    } else if (inputs[0] == "showuid" || inputs[0] == "su"){
+    } else if (cmd == "showuid" || cmd == "su") {
+
+        /* Splits msg by the spaces and returns an array with everything */
+        split(msg, inputs);
 
         /* Verifies if the user input a valid command and that this command can be issued */
         validate_(inputs.size() == 1, "Too many arguments")
@@ -336,7 +355,10 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         return true;  /* Since everything was ok, we return true */
 
-    } else if (inputs[0] == "exit") {
+    } else if (cmd == "exit") {
+
+        /* Splits msg by the spaces and returns an array with everything */
+        split(msg, inputs);
 
         /* Closes client socket */
         freeaddrinfo(res);
@@ -347,7 +369,11 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         return EXIT_SUCCESS;
 
-    } else if (inputs[0] == "groups" || inputs[0] == "gl") {
+    } else if (cmd == "groups" || cmd == "gl") {
+
+        /* Splits msg by the spaces and returns an array with everything */
+        split(msg, inputs);
+
         /* Verifies if the user input a valid command and that this command can be issued */
         validate_(inputs.size() == 1, "Too many arguments")
 
@@ -358,7 +384,10 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         return true;  /* Since everything was ok, we return true */
 
-    } else if (inputs[0] == "subscribe" || inputs[0] == "s") {
+    } else if (cmd == "subscribe" || cmd == "s") {
+
+        /* Splits msg by the spaces and returns an array with everything */
+        split(msg, inputs);
 
         /* Verifies if the user input a valid command and that this command can be issued */
         validate_(inputs.size() == 3, "User did not input group ID and/or group name")
@@ -376,7 +405,10 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         return true;  /* Since everything was ok, we return true */
 
-    } else if (inputs[0] == "unsubscribe" || inputs[0] == "u") {
+    } else if (cmd == "unsubscribe" || cmd == "u") {
+
+        /* Splits msg by the spaces and returns an array with everything */
+        split(msg, inputs);
 
         /* Verifies if the user input a valid command and that this command can be issued */
         validate_(inputs.size() == 2, "User did not input group ID")
@@ -391,7 +423,10 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         return true;  /* Since everything was ok, we return true */
 
-    } else if (inputs[0] == "my_groups" || inputs[0] == "mgl") {
+    } else if (cmd == "my_groups" || cmd == "mgl") {
+
+        /* Splits msg by the spaces and returns an array with everything */
+        split(msg, inputs);
 
         /* Verifies if the user input a valid command and that this command can be issued */
         validate_(inputs.size() == 1, "Too many arguments")
@@ -405,7 +440,11 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
         return true;  /* Since everything was ok, we return true */
 
     //FIXME: @Sofia-Morgado -> não está no enunciado, mas deviamos de alguma forma verificar se o grupo a selecionar    existe
-    } else if (inputs[0] == "select" || inputs[0] == "sag") {
+    } else if (cmd == "select" || cmd == "sag") {
+
+        /* Splits msg by the spaces and returns an array with everything */
+        split(msg, inputs);
+
         /* Verifies if the user input a valid command and that this command can be issued */
         validate_(inputs.size() == 2, "User did not input group ID")
         validate_(isNumber(inputs[1]), "Group ID is not a number")
@@ -417,7 +456,11 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         return true;  /* Since everything was ok, we return true */
 
-    } else if (inputs[0] == "showgid" || inputs[0] == "sg") {
+    } else if (cmd == "showgid" || cmd == "sg") {
+
+        /* Splits msg by the spaces and returns an array with everything */
+        split(msg, inputs);
+
         /* Verifies if the user input a valid command and that this command can be issued */
         validate_(inputs.size() == 1, "Too many arguments")
         validate_(user.is_logged, "Client is not logged in")
@@ -427,7 +470,10 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         return true;  /* Since everything was ok, we return true */
 
-    } else if (inputs[0] == "ulist" || inputs[0] == "ul") {
+    } else if (cmd == "ulist" || cmd == "ul") {
+
+        /* Splits msg by the spaces and returns an array with everything */
+        split(msg, inputs);
 
         /* Verifies if the user input a valid command and that this command can be issued */
         validate_(inputs.size() == 1, "Too many arguments")
@@ -441,7 +487,7 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         return true;
 
-    } else if (inputs[0] == "post") {
+    } else if (cmd == "post") {
         //TODO: fazer verificações
         // TODO: @Sofia-Morgado-> tratar da file transfer
         /* Verifies if the user input a valid command and that this command can be issued */
@@ -450,22 +496,19 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
         validate_(!user.selected_group.empty(), "No selected group")
         //validate_((inputs[1].length() - 2) <= 240, "Text is limited to 240 characters")
 
-        string text;
+        char text[MSG_MAX_SIZE];
+        memset(text, 0, MSG_MAX_SIZE);
 
-        //TODO: não está bem
-        if (sscanf(msg.c_str(), R"(%*s "%240[^"]")", text.c_str()) != 1){
+        //TODO: não está bem -> Está sim <3
+        char c;
+        if (sscanf(msg.c_str(), R"(%*s "%240[^"]" %c)", text, &c) != 1) {
             cerr << "Invalid format" << endl;
-        };
+        }
 
-        printf("%s\n", text.c_str());
-
-        printf("%s\n", to_string(text.length()).c_str());
+        string len = to_string(strlen(text));
 
         /* Transforms user input into a valid command to be sent to the server */
-        out = "PST " + user.uid + " " + user.selected_group + " " + to_string(text.length()) + " " + "\""
-                + text.c_str() + "\"\n";
-
-        printf("here 1\n");
+        out = "PST " + user.uid + " " + user.selected_group + " " + len + " " + "\"" + text + "\"\n";
 
         /*if (inputs.size() == 3) {
             ifstream file(inputs[2], ifstream::ate | ifstream::binary);
@@ -474,11 +517,10 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         con = TCP;  /* Sets connection type to be used by the client to connect to the server */
 
-        printf("here 2\n");
-
         return true;
 
-    } else if (inputs[0] == "retrieve" || inputs[0] == "r"){
+    } else if (cmd == "retrieve" || cmd == "r") {
+
         /* Verifies if the user input a valid command and that this command can be issued */
         validate_(inputs.size() == 2, "Invalid number of arguments")
         validate_(user.is_logged, "Client is not logged in")
@@ -578,7 +620,6 @@ int main(int argc, char const *argv[]) {
             continue;
         }
 
-        printf("here 5\n");
         memset(buffer, 0, MSG_MAX_SIZE);  /* Cleans buffer before receiving response */
 
         if (con == UDP) {  /* Connects to server by UDP */
@@ -597,11 +638,9 @@ int main(int argc, char const *argv[]) {
             TimerOFF(fd_udp);
 
         } else if (con == TCP) {  /* Connects to server by TCP */
-            printf("here 3\n");
+
             /* Initializes and setups fd_udp to be a valid socket */
             init_socket_tcp();
-
-            printf("here 4\n");
 
             /* Creates connection between server and client */
             assert_(connect(fd_tcp, res->ai_addr, res->ai_addrlen) != -1, "Could not connect to sever")
@@ -620,6 +659,9 @@ int main(int argc, char const *argv[]) {
             while ((n = read(fd_tcp,buffer, MSG_MAX_SIZE)) != 0) {
                 assert_(n != -1, "Failed to retrieve response from server")
             }
+
+            /* Closes TCP connection */
+            close(fd_tcp);
 
         }
 
