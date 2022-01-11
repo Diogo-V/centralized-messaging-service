@@ -10,7 +10,6 @@
 #include <cstring>
 #include <vector>
 #include <sstream>
-#include <fstream>
 
 using namespace std;
 
@@ -19,6 +18,8 @@ using namespace std;
 #define LOCAL_IP "localhost"
 #define MSG_MAX_SIZE 240
 #define EXIT_CMD "exit"
+#define UDP_N_TRIES 3
+#define TIMEOUT_TIME_S 5
 
 /* If condition is false displays msg and interrupts execution */
 #define assert_(cond, msg) if(! (cond)) { fprintf(stderr, msg); exit(EXIT_FAILURE); }
@@ -40,7 +41,8 @@ struct addrinfo *res;  /* Stores result from getaddrinfo and uses it to set up o
 ssize_t n;  /* Holds number of bytes read/sent or -1 in case of error */
 socklen_t addrlen;  /* Holds size of message sent from sender */
 struct sockaddr_in addr;  /* Describes internet socket address. Holds sender info */
-char buffer[MSG_MAX_SIZE];  /* Holds current message received in this socket */
+char in_buffer[MSG_MAX_SIZE];  /* Holds user input */
+char res_buffer[MSG_MAX_SIZE];  /* Holds current message received in this socket */
 
 enum con_type {TCP, UDP, NO_CON};  /* Decides how to send message to server (by udp or tcp) */
 
@@ -99,23 +101,38 @@ bool isAlphaNumericPlus(const string& line){
     return i == len;
 }
 
-//TODO: comentar e colocar 5 segundos
-int TimerON(int sd)
-{
-    struct timeval tmout;
-    memset((char *)&tmout,0,sizeof(tmout)); /* clear time structure */
-    tmout.tv_sec=5; /* Wait for 15 sec for a reply from server. */
+
+/**
+ * @brief Activates a timer to wait about 5 seconds. It is used as a measure of backup in case UDP
+ * is not able to send the message to our server.
+ *
+ * @param sd socket to be timed
+ *
+ * @return manipulates socket options
+ */
+int TimerON(int sd) {
+    struct timeval timeval{};
+    memset((char *) &timeval, 0, sizeof(timeval)); /* clear time structure */
+    timeval.tv_sec = TIMEOUT_TIME_S; /* Wait for 5 sec for a reply from server. */
     return(setsockopt(sd, SOL_SOCKET, SO_RCVTIMEO,
-                      (struct timeval *)&tmout,sizeof(struct timeval)));
+                      (struct timeval *)&timeval, sizeof(struct timeval)));
 }
 
-int TimerOFF(int sd)
-{
-    struct timeval tmout;
-    memset((char *)&tmout,0,sizeof(tmout)); /* clear time structure */
+
+/**
+ * @brief Disables a timer previously activated for an input socket.
+ *
+ * @param sd socket that was timed
+ *
+ * @return manipulates socket options
+ */
+int TimerOFF(int sd) {
+    struct timeval timeval{};
+    memset((char *) &timeval, 0, sizeof(timeval)); /* Clear time structure */
     return(setsockopt(sd, SOL_SOCKET, SO_RCVTIMEO,
-                      (struct timeval *)&tmout,sizeof(struct timeval)));
+                      (struct timeval *) &timeval, sizeof(struct timeval)));
 }
+
 
 /*
  * Transforms a string with spaces in a vector with substring tokenized by the spaces.
@@ -360,14 +377,16 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
         /* Splits msg by the spaces and returns an array with everything */
         split(msg, inputs);
 
-        /* Closes client socket */
-        freeaddrinfo(res);
-        close(fd_udp);
-        close(fd_tcp);
+        /* Verifies if the user input a valid command and that this command can be issued */
+        validate_(inputs.size() == 1, "Too many arguments")
 
-        //FIXME: quando há exit antes do logout, o user que está logged int, no servidor fica como logged in e vai dar erro
+        /* Still needs to log out user if he is logged in */
+        if (user.is_logged) {
+            out = "OUT " + user.uid + " " + user.pass + "\n";
+            con = UDP;
+        }
 
-        return EXIT_SUCCESS;
+        return true;
 
     } else if (cmd == "groups" || cmd == "gl") {
 
@@ -496,11 +515,12 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         assert_(sscanf(msg.c_str(), R"(%*s "%240[^"]" %c)", text, &c) == 1, "Invalid format")
 //        assert_(sscanf(msg.c_str(), R"(%*s "%*s" %[^\n])", file) == 1, "Invalid format")
-
-        /*for (auto x = msg.end(); x >= msg.begin(); x--) {
-            file.append(msg[x]);
-        }*/
-
+//
+//        for (auto x = msg.end(); x >= msg.begin(); x--) {
+//            file.append(msg[x]);
+//        }
+//
+//        while ()
 
         //cout << file << endl;
 
@@ -616,24 +636,21 @@ int main(int argc, char const *argv[]) {
     /* Initializes and setups fd_udp to be a valid socket */
     init_socket_udp();
 
+    do {
 
-    /* Gets the command that the user input */
-    cin.getline(buffer, MSG_MAX_SIZE);
-
-    while (strcmp(buffer, EXIT_CMD) != 0) {
+        memset(in_buffer, 0, MSG_MAX_SIZE);  /* Cleans in_buffer before receiving user input */
+        cin.getline(in_buffer, MSG_MAX_SIZE);  /* Gets the command that the user input */
 
         string req{};  /* Holds the request message that is going to be sent to the server */
         con_type con = NO_CON;  /* Holds the protocol used to perform this request to the server */
 
         /* Verify if message has correct formatting. If not, displays error to user and continues */
         /* Also populates "req" with a valid request and con with how to connect to the server */
-        if (! preprocessing(buffer, req, con)) {
-            memset(buffer, 0, MSG_MAX_SIZE);  /* Cleans buffer to prevent infinite loop */
-            cin.getline(buffer, MSG_MAX_SIZE);
+        if (! preprocessing(in_buffer, req, con)) {
+            memset(in_buffer, 0, MSG_MAX_SIZE);  /* Cleans in_buffer to prevent infinite loop */
+            cin.getline(in_buffer, MSG_MAX_SIZE);
             continue;
         }
-
-        memset(buffer, 0, MSG_MAX_SIZE);  /* Cleans buffer before receiving response */
 
         if (con == UDP) {  /* Connects to server by UDP */
 
@@ -645,26 +662,24 @@ int main(int argc, char const *argv[]) {
             bzero(&addr, sizeof(struct sockaddr_in));
             addrlen = sizeof(addr);
 
-            int tries = 3;
-            bool try_again = false;
+            int tries = UDP_N_TRIES;
+            bool try_again;
+            do {  /* We use a loop to allow retrying to send the message in case it fails */
 
-            //FIXME: @Sofia-Morgado -> melhorar isto
-            do {
                 TimerON(fd_udp);
-                n = recvfrom(fd_udp, buffer, MSG_MAX_SIZE, 0, (struct sockaddr *) &addr, &addrlen);
-                //TODO: fazer recvfrom novamente quando dá timeout
-                //assert_(n != -1, "Time out")
+                n = recvfrom(fd_udp, res_buffer, MSG_MAX_SIZE, 0, (struct sockaddr *) &addr, &addrlen);
                 TimerOFF(fd_udp);
 
-                if (n == -1){
+                if (n == -1) {
                     try_again = true;
                     tries --;
                 } else {
                     try_again = false;
                 }
 
-                if (try_again && tries == 0){
-                    cout << "Time out" << endl;
+                /* We tried 3 times before and was not able to send our message to the client */
+                if (try_again && tries == 0) {
+                    cerr << "Connection timed out and was not able to send the message." << endl;
                     exit(EXIT_FAILURE);
                 }
 
@@ -690,7 +705,7 @@ int main(int argc, char const *argv[]) {
             }
 
             /* Keeps on reading until everything has been read from the server */
-            while ((n = read(fd_tcp,buffer, MSG_MAX_SIZE)) != 0) {
+            while ((n = read(fd_tcp, res_buffer, MSG_MAX_SIZE)) != 0) {
                 assert_(n != -1, "Failed to retrieve response from server")
             }
 
@@ -699,19 +714,19 @@ int main(int argc, char const *argv[]) {
 
         }
 
-        if (con == UDP || con == TCP){
-            /* Removes \n at the end of the buffer. Makes things easier down the line */
-            buffer[strlen(buffer) - 1] = '\0';
+        if (con == UDP || con == TCP) {
+
+            /* Removes \n at the end of the in_buffer. Makes things easier down the line */
+            res_buffer[strlen(res_buffer) - 1] = '\0';
 
             /* Based on the message sent by the server, display a message to the user */
-            selector(buffer);
+            selector(res_buffer);
+
+            /* Cleans response buffer before receiving another response */
+            memset(res_buffer, 0, MSG_MAX_SIZE);
         }
 
-        /* Gets the new command that the user input. This replaces the previous command */
-        cin.getline(buffer, MSG_MAX_SIZE);
-
-    }
-
+    } while (strcmp(in_buffer, EXIT_CMD) != 0);
 
     /* Closes client socket */
     freeaddrinfo(res);
