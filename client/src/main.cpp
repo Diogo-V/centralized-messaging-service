@@ -63,17 +63,16 @@ bool logouts = false;
 
 
 /*----------------------------------------- Functions --------------------------------------------*/
+
+
 /**
  * Verifies if input string translates to a number.
  *
  * @param line string to be validated
  * @return boolean value
  */
-bool isNumber(const string& line) {
-    char* p;
-    strtod(line.c_str(), &p);
-    return *p == 0;
-}
+bool isNumber(const string& line) { char* p; strtod(line.c_str(), &p); return *p == 0; }
+
 
 /**
  * Verifies if input string translates to alphanumeric characters.
@@ -88,6 +87,7 @@ bool isAlphaNumeric(const string& line){
     return i == len;
 }
 
+
 /**
  * Verifies if input string translates to alphanumeric characters plus '-' and '_'.
  * @param line string to be validated
@@ -95,11 +95,10 @@ bool isAlphaNumeric(const string& line){
  */
 bool isAlphaNumericPlus(const string& line){
     uint8_t i = 0, len = line.length();
-
     while (isalnum(line[i]) || (line[i] == '-') || (line[i] == '_')) i++;
-
     return i == len;
 }
+
 
 /*
  * Transforms a string with spaces in a vector with substring tokenized by the spaces.
@@ -110,6 +109,19 @@ bool isAlphaNumericPlus(const string& line){
 void split(string const &str, vector<string> &out) {
     stringstream ss(str); string s; const char delim = (const char)* " ";
     while (getline(ss, s, delim)) out.push_back(s);
+}
+
+
+/*
+ * Gets user input command by reading until first space.
+ *
+ * @param str user input command
+ * 
+ * @return requested command
+ */
+string get_command(const string& str) {
+    stringstream ss(str); string s; char delim = ' '; string cmd;
+    getline(ss, cmd, delim); return cmd;
 }
 
 
@@ -228,6 +240,7 @@ void selector(const string& msg) {
 
 }
 
+
 /**
  * Verifies if a message that the user input is valid. Also populates "req" with the request that is
  * going to be sent to the server.
@@ -239,10 +252,13 @@ void selector(const string& msg) {
 bool preprocessing(const string& msg, string& out, con_type& con) {
 
     vector<string> inputs;  /* Holds a list of strings with the inputs from our user */
-    split(msg, inputs);  /* Splits msg by the spaces and returns an array with everything */
+    string cmd = get_command(msg);
 
     /* Verifies if the user requested a valid command */
-    if (inputs[0] == "reg") {
+    if (cmd == "reg") {
+
+        /* Splits msg by the spaces and returns an array with everything */
+        split(msg, inputs);  
 
         /* Verifies if the user input a valid command */
         validate_(inputs.size() == 3, "User did not input user ID and/or password")
@@ -258,7 +274,10 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         return true;  /* Since everything was ok, we return true */
 
-    } else if (inputs[0] == "unr" || inputs[0] == "unregister") {
+    } else if (cmd == "unr" || cmd == "unregister") {
+
+        /* Splits msg by the spaces and returns an array with everything */
+        split(msg, inputs);
 
         /* Verifies if the user input a valid command */
         validate_(inputs.size() == 3, "User did not input user ID and/or password")
@@ -276,7 +295,10 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         return true;  /* Since everything was ok, we return true */
 
-    } else if (inputs[0] == "login") {
+    } else if (cmd == "login") {
+
+        /* Splits msg by the spaces and returns an array with everything */
+        split(msg, inputs);
 
         /* Verifies if the user input a valid command and that this command can be issued */
         validate_(inputs.size() == 3, "User did not input user ID and/or password")
@@ -296,7 +318,11 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         return true;  /* Since everything was ok, we return true */
 
-    } else if (inputs[0] == "logout") {
+    } else if (cmd == "logout") {
+
+        /* Splits msg by the spaces and returns an array with everything */
+        split(msg, inputs);
+        
         /* Verifies if the user input a valid command and that this command can be issued */
         validate_(inputs.size() == 1, "Too many arguments")
         validate_(user.is_logged, "Client needs to be logged in")
@@ -308,7 +334,10 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         return true;  /* Since everything was ok, we return true */
 
-    } else if (inputs[0] == "showuid" || inputs[0] == "su"){
+    } else if (cmd == "showuid" || cmd == "su") {
+
+        /* Splits msg by the spaces and returns an array with everything */
+        split(msg, inputs);
 
         /* Verifies if the user input a valid command and that this command can be issued */
         validate_(inputs.size() == 1, "Too many arguments")
@@ -318,7 +347,10 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         return true;  /* Since everything was ok, we return true */
 
-    } else if (inputs[0] == "exit") {
+    } else if (cmd == "exit") {
+
+        /* Splits msg by the spaces and returns an array with everything */
+        split(msg, inputs);
 
         /* Closes client socket */
         freeaddrinfo(res);
@@ -329,7 +361,11 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         return EXIT_SUCCESS;
 
-    } else if (inputs[0] == "groups" || inputs[0] == "gl") {
+    } else if (cmd == "groups" || cmd == "gl") {
+
+        /* Splits msg by the spaces and returns an array with everything */
+        split(msg, inputs);
+        
         /* Verifies if the user input a valid command and that this command can be issued */
         validate_(inputs.size() == 1, "Too many arguments")
 
@@ -340,7 +376,10 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         return true;  /* Since everything was ok, we return true */
 
-    } else if (inputs[0] == "subscribe" || inputs[0] == "s") {
+    } else if (cmd == "subscribe" || cmd == "s") {
+
+        /* Splits msg by the spaces and returns an array with everything */
+        split(msg, inputs);
 
         /* Verifies if the user input a valid command and that this command can be issued */
         validate_(inputs.size() == 3, "User did not input group ID and/or group name")
@@ -358,7 +397,10 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         return true;  /* Since everything was ok, we return true */
 
-    } else if (inputs[0] == "unsubscribe" || inputs[0] == "u") {
+    } else if (cmd == "unsubscribe" || cmd == "u") {
+
+        /* Splits msg by the spaces and returns an array with everything */
+        split(msg, inputs);
 
         /* Verifies if the user input a valid command and that this command can be issued */
         validate_(inputs.size() == 2, "User did not input group ID")
@@ -373,7 +415,10 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         return true;  /* Since everything was ok, we return true */
 
-    } else if (inputs[0] == "my_groups" || inputs[0] == "mgl") {
+    } else if (cmd == "my_groups" || cmd == "mgl") {
+
+        /* Splits msg by the spaces and returns an array with everything */
+        split(msg, inputs);
 
         /* Verifies if the user input a valid command and that this command can be issued */
         validate_(inputs.size() == 1, "Too many arguments")
@@ -387,7 +432,11 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
         return true;  /* Since everything was ok, we return true */
 
     //FIXME: @Sofia-Morgado -> não está no enunciado, mas deviamos de alguma forma verificar se o grupo a selecionar    existe
-    } else if (inputs[0] == "select" || inputs[0] == "sag") {
+    } else if (cmd == "select" || cmd == "sag") {
+
+        /* Splits msg by the spaces and returns an array with everything */
+        split(msg, inputs);
+        
         /* Verifies if the user input a valid command and that this command can be issued */
         validate_(inputs.size() == 2, "User did not input group ID")
         validate_(isNumber(inputs[1]), "Group ID is not a number")
@@ -399,7 +448,11 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         return true;  /* Since everything was ok, we return true */
 
-    } else if (inputs[0] == "showgid" || inputs[0] == "sg") {
+    } else if (cmd == "showgid" || cmd == "sg") {
+
+        /* Splits msg by the spaces and returns an array with everything */
+        split(msg, inputs);
+        
         /* Verifies if the user input a valid command and that this command can be issued */
         validate_(inputs.size() == 1, "Too many arguments")
         validate_(user.is_logged, "Client is not logged in")
@@ -409,7 +462,10 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         return true;  /* Since everything was ok, we return true */
 
-    } else if (inputs[0] == "ulist" || inputs[0] == "ul") {
+    } else if (cmd == "ulist" || cmd == "ul") {
+
+        /* Splits msg by the spaces and returns an array with everything */
+        split(msg, inputs);
 
         /* Verifies if the user input a valid command and that this command can be issued */
         validate_(inputs.size() == 1, "Too many arguments")
@@ -423,7 +479,7 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         return true;
 
-    } else if (inputs[0] == "post") {
+    } else if (cmd == "post") {
         //TODO: fazer verificações
         // TODO: @Sofia-Morgado-> tratar da file transfer
         /* Verifies if the user input a valid command and that this command can be issued */
@@ -436,7 +492,7 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
         memset(text, 0, MSG_MAX_SIZE);
 
         //TODO: não está bem -> Está sim <3
-        if (sscanf(msg.c_str(), R"(%*s "%240[^"]")", text) != 1) {
+        if (sscanf(msg.c_str(), R"(%*s "%240[^"]" %n)", text, &n) != 1) {
             cerr << "Invalid format" << endl;
         }
 
@@ -454,7 +510,8 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         return true;
 
-    } else if (inputs[0] == "retrieve" || inputs[0] == "r"){
+    } else if (cmd == "retrieve" || cmd == "r") {
+
         /* Verifies if the user input a valid command and that this command can be issued */
         validate_(inputs.size() == 2, "Invalid number of arguments")
         validate_(user.is_logged, "Client is not logged in")
