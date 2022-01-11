@@ -218,7 +218,7 @@ void selector(const string& msg) {
             std::cout << *(outputs.end() - 1);
         }
 
-    } else if (outputs[0] == "RUL") {
+    } else if (outputs[0] == "RUL") { /* Receives status from GLM (lst users subscribed to this group) */
         if (outputs[1] == "NOK") cerr << "Failed. Group doesn't exist." << endl;
         else if (outputs[1] == "OK") {
             for (auto i = outputs.begin() + 2; i != outputs.end() - 1; ++i) {
@@ -227,12 +227,12 @@ void selector(const string& msg) {
             std::cout << *(outputs.end() - 1);
         } else cerr << "Invalid status" << endl;
 
-    } else if (outputs[0] == "RPT") {
+    } else if (outputs[0] == "RPT") { /* Receives status from PST (post message) */
         if (outputs[1] == "NOK") cerr << "Failed. Message couldn't be posted" << endl;
         else if (isNumber(outputs[1])) cout << outputs[1] << endl;
         else cerr << "Invalid status" << endl;
 
-    } else if (outputs[0] == "RRT"){
+    } else if (outputs[0] == "RRT"){ /* Receives status from RTV (retrieve message) */
         if (outputs[1] == "NOK") cerr << "Failed. Couldn't retrieve messages" << endl;
         else if (outputs[1] == "EOF") cout << "No messages available" << endl;
         else if (outputs[1] == "OK"){
@@ -502,23 +502,24 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
         }*/
 
 
-        cout << file << endl;
+        //cout << file << endl;
 
-        inputs[1] = text;
-        if (c != '\n') inputs[2] = file;
+
+        //inputs[1] = text;
+        //if (c != '\n') inputs[2] = file;
 
         /* Verifies if the user input a valid command and that this command can be issued */
-        validate_(inputs.size() >= 2, "Invalid number of arguments")
+        //validate_(inputs.size() >= 2, "Invalid number of arguments")
         validate_(user.is_logged, "Client is not logged in")
         validate_(!user.selected_group.empty(), "No selected group")
-        validate_((inputs[1].length() - 2) <= 240, "Text is limited to 240 characters")
+        //validate_((inputs[1].length() - 2) <= 240, "Text is limited to 240 characters")
 
         string len = to_string(strlen(text));
 
         /* Transforms user input into a valid command to be sent to the server */
         out = "PST " + user.uid + " " + user.selected_group + " " + len + " " + "\"" + text + "\"\n";
 
-        cout << out << endl;
+        //cout << out << endl;
 
         /*if (inputs.size() == 3) {
             ifstream file(inputs[2], ifstream::ate | ifstream::binary);
@@ -530,6 +531,8 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
         return true;
 
     } else if (cmd == "retrieve" || cmd == "r") {
+        /* Splits msg by the spaces and returns an array with everything */
+        split(msg, inputs);
 
         /* Verifies if the user input a valid command and that this command can be issued */
         validate_(inputs.size() == 2, "Invalid number of arguments")

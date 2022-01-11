@@ -59,7 +59,7 @@ unordered_map<string, Group> groups;  /* Holds all groups in our server. Key is 
 
 
 /*----------------------------------------- Functions --------------------------------------------*/
-
+//TODO: @Sogia-Morgado-> colocar split e command num outro file, porque está repetido no client
 
 /**
  * Transforms a string with spaces in a vector with substring tokenized by the spaces.
@@ -72,6 +72,18 @@ void split(string const &str, vector<string> &out) {
     while (getline(ss, s, delim)) out.push_back(s);
 }
 
+/*
+ * Gets user input command by reading until first space.
+ *
+ * @param str user input command
+ *
+ * @return requested command
+ */
+string get_command(const string& str) {
+    stringstream ss(str); string s; char delim = ' '; string cmd;
+    getline(ss, cmd, delim); return cmd;
+}
+
 
 /**
  * Receives message sent from user and decides based on the first 3 chars which action to take.
@@ -79,72 +91,106 @@ void split(string const &str, vector<string> &out) {
  *
  * @param msg message sent by user
  */
-string selector(const char* msg) {
+string selector(const string& msg) {
 
     vector<string> inputs;  /* Holds a list of strings with the inputs from our user */
-    split(msg, inputs);  /* Splits msg by the spaces and returns an array with everything*/
     string status{};
+    string cmd = get_command(msg);
 
     /* Gets client's ip and port to be logged */
     string ip(inet_ntoa(addr.sin_addr));
     string port{to_string(ntohs(addr.sin_port))};
 
-    if (inputs[0] == "REG") {  /* Registers user */
+    if (cmd == "REG") {  /* Registers user */
+        /* Splits msg by the spaces and returns an array with everything */
+        split(msg, inputs);
+
         verbose_(isVerbose, "UID: " + inputs[1] + " | IP: " + ip + " | PORT: " + port)
         status = register_user(&users, inputs[1], inputs[2]);
         return "RRG " + status + "\n";
 
-    } else if (inputs[0] == "UNR") {  /* Unregisters user */
+    } else if (cmd == "UNR") {  /* Unregisters user */
+        /* Splits msg by the spaces and returns an array with everything */
+        split(msg, inputs);
+
         verbose_(isVerbose, "UID: " + inputs[1] + " | IP: " + ip + " | PORT: " + port)
         status = unregister_user(&users, &groups, inputs[1], inputs[2]);
         return "RUN " + status + "\n";
 
-    } else if (inputs[0] == "LOG") {  /* Signs in user */
+    } else if (cmd == "LOG") {  /* Signs in user */
+        /* Splits msg by the spaces and returns an array with everything */
+        split(msg, inputs);
+
         verbose_(isVerbose, "UID: " + inputs[1] + " | IP: " + ip + " | PORT: " + port)
         status = login_user(&users, inputs[1], inputs[2]);
         return "RLO " + status + "\n";
 
-    } else if (inputs[0] == "OUT") {  /* Logout user */
+    } else if (cmd == "OUT") {  /* Logout user */
+        /* Splits msg by the spaces and returns an array with everything */
+        split(msg, inputs);
+
         verbose_(isVerbose, "UID: " + inputs[1] + " | IP: " + ip + " | PORT: " + port)
         status = logout_user(&users, inputs[1] , inputs[2]);
         return "ROU " + status + "\n";
 
-    } else if (inputs[0] == "GLS") {  /* Requested list of existing groups */
+    } else if (cmd == "GLS") {  /* Requested list of existing groups */
+        /* Splits msg by the spaces and returns an array with everything */
+        split(msg, inputs);
+
         verbose_(isVerbose, "IP: " + ip + " | PORT: " + port)
         status = list_groups(&groups);
         return "RGL " + to_string(groups.size()) + " " + status + "\n";
 
-    } else if (inputs[0] == "GSR") {  /* Join group */
+    } else if (cmd == "GSR") {  /* Join group */
+        /* Splits msg by the spaces and returns an array with everything */
+        split(msg, inputs);
+
         verbose_(isVerbose, "UID: " + inputs[1] + "GID: " + inputs[2] + " | IP: " + ip + " | PORT: " + port)
         status = subscribe(&groups, &users, inputs[1], inputs[2], inputs[3]);
         return "RGS " + status + "\n";
 
-    } else if (inputs[0] == "GUR") {  /* Unsubscribe to group */
+    } else if (cmd == "GUR") {  /* Unsubscribe to group */
+        /* Splits msg by the spaces and returns an array with everything */
+        split(msg, inputs);
+
         verbose_(isVerbose, "UID: " + inputs[1] + "GID: " + inputs[2] + " | IP: " + ip + " | PORT: " + port)
         status = unsubscribe(&groups, &users, inputs[1], inputs[2]);
         return "RGU " + status + "\n";
 
-    } else if (inputs[0] == "GLM") {  /* Get list of user's groups */
+    } else if (cmd == "GLM") {  /* Get list of user's groups */
+        /* Splits msg by the spaces and returns an array with everything */
+        split(msg, inputs);
+
         verbose_(isVerbose, "UID: " + inputs[1] + " | IP: " + ip + " | PORT: " + port)
         status = groups_subscribed(&groups, &users, inputs[1]);
         return "RGM " + status + "\n";
 
-    } else if (inputs[0] == "ULS"){ /* Get list of users subscribed to this group */
+    } else if (cmd == "ULS"){ /* Get list of users subscribed to this group */
+        /* Splits msg by the spaces and returns an array with everything */
+        split(msg, inputs);
+
         verbose_(isVerbose, "GID: " + inputs[1] + "GID: " + inputs[2] + " | IP: " + ip + " | PORT: " + port)
         status = users_subscribed(&groups, &users, inputs[1]);
         return "RUL " + status + "\n";
 
 
-    } else if (inputs[0] == "PST") { /* Receives a text and optionally also a file*/
+    } else if (cmd == "PST") { /* Receives a text and optionally also a file*/
         verbose_(isVerbose, "UID: " + inputs[1] + "GID: " + inputs[2] + " | IP: " + ip + " | PORT: " + port)
-        string text, uid, gid, token, size;
 
-        sscanf(msg, R"(%*s %*s %*s %*s "%240[^"]" %n)", text.c_str());
+        /* Splits msg by the spaces and returns an array with everything */
+        split(msg, inputs);
 
-        printf("text: %s\n", text.c_str());
+        char text[MSG_MAX_SIZE];  /* Will hold user input text */
+        string file;  /* Will hold the input file */
+        memset(text, 0, MSG_MAX_SIZE);
+        char c;  /* Used to check if the user did not input a file */
+
+        sscanf(msg.c_str(), R"(%*s %*s %*s %*s "%240[^"]")", text, &c);
+
+        printf("text: %s\n", text);
 
         /* receives status from call function*/
-        status = post_message(&groups, &users, inputs[1], inputs[2], inputs[3], text.c_str());
+        status = post_message(&groups, &users, inputs[1], inputs[2], inputs[3], text);
 
         return "RPT " + status + "\n";
 
@@ -339,10 +385,9 @@ int main(int argc, char const *argv[]) {
             /* Process client's message and decides what to do with it based on the passed code */
             string response = selector(buffer);
 
-            //FIXME: @Sofia-Morgado -> remover comentário, apenas para debug do timer
             /* Sends response back t client */
-            //n = sendto(fd_udp, response.c_str(), response.size(), 0, (struct sockaddr*) &addr, addrlen);
-            //assert_(n != -1, "Failed to send message")
+            n = sendto(fd_udp, response.c_str(), response.size(), 0, (struct sockaddr*) &addr, addrlen);
+            assert_(n != -1, "Failed to send message")
 
         } else if (FD_ISSET(fd_tcp, &fds)) {  /* Checks if tcp socket activated */
 
