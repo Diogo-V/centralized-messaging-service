@@ -100,6 +100,23 @@ bool isAlphaNumericPlus(const string& line){
     return i == len;
 }
 
+//TODO: comentar e colocar 5 segundos
+int TimerON(int sd)
+{
+    struct timeval tmout;
+    memset((char *)&tmout,0,sizeof(tmout)); /* clear time structure */
+    tmout.tv_sec=5; /* Wait for 15 sec for a reply from server. */
+    return(setsockopt(sd, SOL_SOCKET, SO_RCVTIMEO,
+                      (struct timeval *)&tmout,sizeof(struct timeval)));
+}
+
+int TimerOFF(int sd)
+{
+    struct timeval tmout;
+    memset((char *)&tmout,0,sizeof(tmout)); /* clear time structure */
+    return(setsockopt(sd, SOL_SOCKET, SO_RCVTIMEO,
+                      (struct timeval *)&tmout,sizeof(struct timeval)));
+}
 
 /*
  * Transforms a string with spaces in a vector with substring tokenized by the spaces.
@@ -117,7 +134,7 @@ void split(string const &str, vector<string> &out) {
  * Gets user input command by reading until first space.
  *
  * @param str user input command
- * 
+ *
  * @return requested command
  */
 string get_command(const string& str) {
@@ -250,7 +267,7 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
     if (cmd == "reg") {
 
         /* Splits msg by the spaces and returns an array with everything */
-        split(msg, inputs);  
+        split(msg, inputs);
 
         /* Verifies if the user input a valid command */
         validate_(inputs.size() == 3, "User did not input user ID and/or password")
@@ -314,7 +331,7 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         /* Splits msg by the spaces and returns an array with everything */
         split(msg, inputs);
-        
+
         /* Verifies if the user input a valid command and that this command can be issued */
         validate_(inputs.size() == 1, "Too many arguments")
         validate_(user.is_logged, "Client needs to be logged in")
@@ -359,7 +376,7 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         /* Splits msg by the spaces and returns an array with everything */
         split(msg, inputs);
-        
+
         /* Verifies if the user input a valid command and that this command can be issued */
         validate_(inputs.size() == 1, "Too many arguments")
 
@@ -430,7 +447,7 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         /* Splits msg by the spaces and returns an array with everything */
         split(msg, inputs);
-        
+
         /* Verifies if the user input a valid command and that this command can be issued */
         validate_(inputs.size() == 2, "User did not input group ID")
         validate_(isNumber(inputs[1]), "Group ID is not a number")
@@ -446,7 +463,7 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         /* Splits msg by the spaces and returns an array with everything */
         split(msg, inputs);
-        
+
         /* Verifies if the user input a valid command and that this command can be issued */
         validate_(inputs.size() == 1, "Too many arguments")
         validate_(user.is_logged, "Client is not logged in")
@@ -625,8 +642,32 @@ int main(int argc, char const *argv[]) {
             /* Gets server response and processes it */
             bzero(&addr, sizeof(struct sockaddr_in));
             addrlen = sizeof(addr);
-            n = recvfrom(fd_udp, res_buffer, MSG_MAX_SIZE, 0, (struct sockaddr*) &addr, &addrlen);
-            assert_(n != -1, "Failed to receive message with UDP")
+
+            int tries = 3;
+            bool try_again = false;
+
+            //FIXME: @Sofia-Morgado -> melhorar isto
+            do {
+                TimerON(fd_udp);
+                n = recvfrom(fd_udp, res_buffer, MSG_MAX_SIZE, 0, (struct sockaddr *) &addr, &addrlen);
+                //TODO: fazer recvfrom novamente quando dá timeout
+                //assert_(n != -1, "Time out")
+                TimerOFF(fd_udp);
+
+                if (n == -1){
+                    try_again = true;
+                    tries --;
+                } else {
+                    try_again = false;
+                }
+
+                if (try_again && tries == 0){
+                    cout << "Time out" << endl;
+                    exit(EXIT_FAILURE);
+                }
+
+            } while (try_again && tries > 0);
+
 
         } else if (con == TCP) {  /* Connects to server by TCP */
 

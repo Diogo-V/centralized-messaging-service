@@ -31,11 +31,6 @@ class User {
          */
          list<string> _group_ids;
 
-        /*
-         * @brief holds the current active group
-         */
-        string _gid;
-
         /**
          * @brief holds the current status of the users (logged in or not)
          */
@@ -58,11 +53,6 @@ class User {
          */
         string getUserId();
 
-        /*
-         * @brief Gets user's active group id
-         */
-        string getUserGid();
-
         /**
         * @brief Gets user password
         *
@@ -83,12 +73,6 @@ class User {
          */
         bool getUserStatus();
 
-        /**
-         * @brief Changes active group id
-         *
-         * @param id new group's id
-         */
-        void setUserGid(string id);
 
         /**
          * @brief Changes user's status  (logged in or not)

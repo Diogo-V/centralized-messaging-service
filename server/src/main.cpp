@@ -139,7 +139,7 @@ string selector(const char* msg) {
         verbose_(isVerbose, "UID: " + inputs[1] + "GID: " + inputs[2] + " | IP: " + ip + " | PORT: " + port)
         string text, uid, gid, token, size;
 
-        sscanf(msg, R"(%*s %*s %*s %*s "%240[^"]" %n)", text.c_str(), &n);
+        sscanf(msg, R"(%*s %*s %*s %*s "%240[^"]" %n)", text.c_str());
 
         printf("text: %s\n", text.c_str());
 
@@ -321,7 +321,7 @@ int main(int argc, char const *argv[]) {
 
         /* Blocks until one of the descriptors, previously set in are ready to by read. Returns number of file descriptors ready */
         uint8_t counter = select(fd_tcp + 1,&fds,(fd_set*) nullptr,(fd_set*) nullptr,(struct timeval *) nullptr);
-        assert_(counter > 0, "Select threw an error")
+        assert_(counter > 0, "Select threw an error");
 
         /* Cleans previous iteration so that it does not bug */
         bzero(&addr, sizeof(struct sockaddr_in));
@@ -339,9 +339,10 @@ int main(int argc, char const *argv[]) {
             /* Process client's message and decides what to do with it based on the passed code */
             string response = selector(in_buffer);
 
+            //FIXME: @Sofia-Morgado -> remover comentário, apenas para debug do timer
             /* Sends response back t client */
-            n = sendto(fd_udp, response.c_str(), response.size(), 0, (struct sockaddr*) &addr, addrlen);
-            assert_(n != -1, "Failed to send message")
+            //n = sendto(fd_udp, response.c_str(), response.size(), 0, (struct sockaddr*) &addr, addrlen);
+            //assert_(n != -1, "Failed to send message")
 
         } else if (FD_ISSET(fd_tcp, &fds)) {  /* Checks if tcp socket activated */
 
