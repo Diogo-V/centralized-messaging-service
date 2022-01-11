@@ -40,7 +40,8 @@ struct addrinfo *res;  /* Stores result from getaddrinfo and uses it to set up o
 ssize_t n;  /* Holds number of bytes read/sent or -1 in case of error */
 socklen_t addrlen;  /* Holds size of message sent from sender */
 struct sockaddr_in addr;  /* Describes internet socket address. Holds sender info */
-char buffer[MSG_MAX_SIZE];  /* Holds current message received in this socket */
+char in_buffer[MSG_MAX_SIZE];  /* Holds user input */
+char res_buffer[MSG_MAX_SIZE];  /* Holds current message received in this socket */
 
 enum con_type {TCP, UDP, NO_CON};  /* Decides how to send message to server (by udp or tcp) */
 
@@ -343,14 +344,16 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
         /* Splits msg by the spaces and returns an array with everything */
         split(msg, inputs);
 
-        /* Closes client socket */
-        freeaddrinfo(res);
-        close(fd_udp);
-        close(fd_tcp);
+        /* Verifies if the user input a valid command and that this command can be issued */
+        validate_(inputs.size() == 1, "Too many arguments")
 
-        //FIXME: quando há exit antes do logout, o user que está logged int, no servidor fica como logged in e vai dar erro
+        /* Still needs to log out user if he is logged in */
+        if (user.is_logged) {
+            out = "OUT " + user.uid + " " + user.pass + "\n";
+            con = UDP;
+        }
 
-        return EXIT_SUCCESS;
+        return true;
 
     } else if (cmd == "groups" || cmd == "gl") {
 
@@ -479,12 +482,12 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         assert_(sscanf(msg.c_str(), R"(%*s "%240[^"]" %c)", text, &c) == 1, "Invalid format")
 //        assert_(sscanf(msg.c_str(), R"(%*s "%*s" %[^\n])", file) == 1, "Invalid format")
-
-        for (auto x = msg.end(); x >= msg.begin(); x--) {
-            file.append(msg[x]);
-        }
-
-        while ()
+//
+//        for (auto x = msg.end(); x >= msg.begin(); x--) {
+//            file.append(msg[x]);
+//        }
+//
+//        while ()
 
         cout << file << endl;
 
@@ -597,23 +600,21 @@ int main(int argc, char const *argv[]) {
     /* Initializes and setups fd_udp to be a valid socket */
     init_socket_udp();
 
-    /* Gets the command that the user input */
-    cin.getline(buffer, MSG_MAX_SIZE);
+    do {
 
-    while (strcmp(buffer, EXIT_CMD) != 0) {
+        memset(in_buffer, 0, MSG_MAX_SIZE);  /* Cleans in_buffer before receiving user input */
+        cin.getline(in_buffer, MSG_MAX_SIZE);  /* Gets the command that the user input */
 
         string req{};  /* Holds the request message that is going to be sent to the server */
         con_type con = NO_CON;  /* Holds the protocol used to perform this request to the server */
 
         /* Verify if message has correct formatting. If not, displays error to user and continues */
         /* Also populates "req" with a valid request and con with how to connect to the server */
-        if (! preprocessing(buffer, req, con)) {
-            memset(buffer, 0, MSG_MAX_SIZE);  /* Cleans buffer to prevent infinite loop */
-            cin.getline(buffer, MSG_MAX_SIZE);
+        if (! preprocessing(in_buffer, req, con)) {
+            memset(in_buffer, 0, MSG_MAX_SIZE);  /* Cleans in_buffer to prevent infinite loop */
+            cin.getline(in_buffer, MSG_MAX_SIZE);
             continue;
         }
-
-        memset(buffer, 0, MSG_MAX_SIZE);  /* Cleans buffer before receiving response */
 
         if (con == UDP) {  /* Connects to server by UDP */
 
@@ -624,7 +625,7 @@ int main(int argc, char const *argv[]) {
             /* Gets server response and processes it */
             bzero(&addr, sizeof(struct sockaddr_in));
             addrlen = sizeof(addr);
-            n = recvfrom(fd_udp, buffer, MSG_MAX_SIZE, 0, (struct sockaddr*) &addr, &addrlen);
+            n = recvfrom(fd_udp, res_buffer, MSG_MAX_SIZE, 0, (struct sockaddr*) &addr, &addrlen);
             assert_(n != -1, "Failed to receive message with UDP")
 
         } else if (con == TCP) {  /* Connects to server by TCP */
@@ -646,7 +647,7 @@ int main(int argc, char const *argv[]) {
             }
 
             /* Keeps on reading until everything has been read from the server */
-            while ((n = read(fd_tcp,buffer, MSG_MAX_SIZE)) != 0) {
+            while ((n = read(fd_tcp, res_buffer, MSG_MAX_SIZE)) != 0) {
                 assert_(n != -1, "Failed to retrieve response from server")
             }
 
@@ -655,19 +656,19 @@ int main(int argc, char const *argv[]) {
 
         }
 
-        if (con == UDP || con == TCP){
-            /* Removes \n at the end of the buffer. Makes things easier down the line */
-            buffer[strlen(buffer) - 1] = '\0';
+        if (con == UDP || con == TCP) {
+
+            /* Removes \n at the end of the in_buffer. Makes things easier down the line */
+            res_buffer[strlen(res_buffer) - 1] = '\0';
 
             /* Based on the message sent by the server, display a message to the user */
-            selector(buffer);
+            selector(res_buffer);
+
+            /* Cleans response buffer before receiving another response */
+            memset(res_buffer, 0, MSG_MAX_SIZE);
         }
 
-        /* Gets the new command that the user input. This replaces the previous command */
-        cin.getline(buffer, MSG_MAX_SIZE);
-
-    }
-
+    } while (strcmp(in_buffer, EXIT_CMD) != 0);
 
     /* Closes client socket */
     freeaddrinfo(res);
