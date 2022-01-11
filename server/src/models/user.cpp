@@ -14,7 +14,6 @@ User::User(string& id, string& password){
     _id = id;
     _password = password;
     _status = false;
-    _gid = "";
     _group_ids = {};
 }
 
@@ -26,16 +25,6 @@ User::User(string& id, string& password){
  */
 string User::getUserId(){
     return _id;
-}
-
-
-/**
- * @brief gets users active group id
- *
- * @return group id
- */
-string User::getUserGid() {
-    return _gid;
 }
 
 
@@ -67,13 +56,6 @@ bool User::getUserStatus() {
     return _status;
 }
 
-/**
- * @brief Changes user's active group
- * @param id group's id
- */
-void User::setUserGid(string id) {
-    _gid = id;
-}
 
 /**
  * @brief Changes user's status  (logged in or not)

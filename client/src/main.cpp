@@ -101,6 +101,24 @@ bool isAlphaNumericPlus(const string& line){
     return i == len;
 }
 
+//TODO: comentar e perguntar ao stor se colocamos 15 segundos
+int TimerON(int sd)
+{
+    struct timeval tmout;
+    memset((char *)&tmout,0,sizeof(tmout)); /* clear time structure */
+    tmout.tv_sec=15; /* Wait for 15 sec for a reply from server. */
+    return(setsockopt(sd, SOL_SOCKET, SO_RCVTIMEO,
+                      (struct timeval *)&tmout,sizeof(struct timeval)));
+}
+
+int TimerOFF(int sd)
+{
+    struct timeval tmout;
+    memset((char *)&tmout,0,sizeof(tmout)); /* clear time structure */
+    return(setsockopt(sd, SOL_SOCKET, SO_RCVTIMEO,
+                      (struct timeval *)&tmout,sizeof(struct timeval)));
+}
+
 /*
  * Transforms a string with spaces in a vector with substring tokenized by the spaces.
  *
@@ -432,7 +450,7 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
         validate_(!user.selected_group.empty(), "No selected group")
         //validate_((inputs[1].length() - 2) <= 240, "Text is limited to 240 characters")
 
-        string text, type;
+        string text;
 
         //TODO: não está bem
         if (sscanf(msg.c_str(), R"(%*s "%240[^"]")", text.c_str()) != 1){
@@ -441,10 +459,10 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         printf("%s\n", text.c_str());
 
-        printf("%s\n", to_string(strlen(text.c_str())).c_str());
+        printf("%s\n", to_string(text.length()).c_str());
 
         /* Transforms user input into a valid command to be sent to the server */
-        out = "PST " + user.uid + " " + user.selected_group + " " + to_string(strlen(text.c_str())) + " " + "\""
+        out = "PST " + user.uid + " " + user.selected_group + " " + to_string(text.length()) + " " + "\""
                 + text.c_str() + "\"\n";
 
         printf("here 1\n");
@@ -572,8 +590,11 @@ int main(int argc, char const *argv[]) {
             /* Gets server response and processes it */
             bzero(&addr, sizeof(struct sockaddr_in));
             addrlen = sizeof(addr);
+            TimerON(fd_udp);
             n = recvfrom(fd_udp, buffer, MSG_MAX_SIZE, 0, (struct sockaddr*) &addr, &addrlen);
-            assert_(n != -1, "Failed to receive message with UDP")
+            //TODO: is this the correct way?
+            assert_(n != -1, "Time out")
+            TimerOFF(fd_udp);
 
         } else if (con == TCP) {  /* Connects to server by TCP */
             printf("here 3\n");
