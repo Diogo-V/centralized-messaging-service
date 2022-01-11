@@ -210,16 +210,10 @@ void selector(const string& msg) {
             std::cout << *(outputs.end() - 1);
         } else cerr << "Invalid status" << endl;
 
-        /* Close TCP connection*/
-        close(fd_tcp);
-
     } else if (outputs[0] == "RPT") {
         if (outputs[1] == "NOK") cerr << "Failed. Message couldn't be posted" << endl;
         else if (isNumber(outputs[1])) cout << outputs[1] << endl;
         else cerr << "Invalid status" << endl;
-
-        /* Close TCP connection*/
-        close(fd_tcp);
 
     } else if (outputs[0] == "RRT"){
         if (outputs[1] == "NOK") cerr << "Failed. Couldn't retrieve messages" << endl;
@@ -230,9 +224,6 @@ void selector(const string& msg) {
             }
             std::cout << *(outputs.end() - 1);
         } else cerr << "Invalid status" << endl;
-
-        /* Close TCP connection*/
-        close(fd_tcp);
 
     } else {
         cerr << "ERR" << endl;
@@ -492,7 +483,8 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
         memset(text, 0, MSG_MAX_SIZE);
 
         //TODO: não está bem -> Está sim <3
-        if (sscanf(msg.c_str(), R"(%*s "%240[^"]" %n)", text, &n) != 1) {
+        char c;
+        if (sscanf(msg.c_str(), R"(%*s "%240[^"]" %c)", text, &c) != 1) {
             cerr << "Invalid format" << endl;
         }
 
@@ -646,6 +638,9 @@ int main(int argc, char const *argv[]) {
             while ((n = read(fd_tcp,buffer, MSG_MAX_SIZE)) != 0) {
                 assert_(n != -1, "Failed to retrieve response from server")
             }
+
+            /* Closes TCP connection */
+            close(fd_tcp);
 
         }
 
