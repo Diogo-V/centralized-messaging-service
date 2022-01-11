@@ -10,7 +10,6 @@
 #include <cstring>
 #include <vector>
 #include <sstream>
-#include <fstream>
 
 using namespace std;
 
@@ -19,6 +18,8 @@ using namespace std;
 #define LOCAL_IP "localhost"
 #define MSG_MAX_SIZE 240
 #define EXIT_CMD "exit"
+#define UDP_N_TRIES 3
+#define TIMEOUT_TIME_S 5
 
 /* If condition is false displays msg and interrupts execution */
 #define assert_(cond, msg) if(! (cond)) { fprintf(stderr, msg); exit(EXIT_FAILURE); }
@@ -100,23 +101,38 @@ bool isAlphaNumericPlus(const string& line){
     return i == len;
 }
 
-//TODO: comentar e colocar 5 segundos
-int TimerON(int sd)
-{
-    struct timeval tmout;
-    memset((char *)&tmout,0,sizeof(tmout)); /* clear time structure */
-    tmout.tv_sec=5; /* Wait for 15 sec for a reply from server. */
+
+/**
+ * @brief Activates a timer to wait about 5 seconds. It is used as a measure of backup in case UDP
+ * is not able to send the message to our server.
+ *
+ * @param sd socket to be timed
+ *
+ * @return manipulates socket options
+ */
+int TimerON(int sd) {
+    struct timeval timeval{};
+    memset((char *) &timeval, 0, sizeof(timeval)); /* clear time structure */
+    timeval.tv_sec = TIMEOUT_TIME_S; /* Wait for 5 sec for a reply from server. */
     return(setsockopt(sd, SOL_SOCKET, SO_RCVTIMEO,
-                      (struct timeval *)&tmout,sizeof(struct timeval)));
+                      (struct timeval *)&timeval, sizeof(struct timeval)));
 }
 
-int TimerOFF(int sd)
-{
-    struct timeval tmout;
-    memset((char *)&tmout,0,sizeof(tmout)); /* clear time structure */
+
+/**
+ * @brief Disables a timer previously activated for an input socket.
+ *
+ * @param sd socket that was timed
+ *
+ * @return manipulates socket options
+ */
+int TimerOFF(int sd) {
+    struct timeval timeval{};
+    memset((char *) &timeval, 0, sizeof(timeval)); /* Clear time structure */
     return(setsockopt(sd, SOL_SOCKET, SO_RCVTIMEO,
-                      (struct timeval *)&tmout,sizeof(struct timeval)));
+                      (struct timeval *) &timeval, sizeof(struct timeval)));
 }
+
 
 /*
  * Transforms a string with spaces in a vector with substring tokenized by the spaces.
@@ -643,26 +659,24 @@ int main(int argc, char const *argv[]) {
             bzero(&addr, sizeof(struct sockaddr_in));
             addrlen = sizeof(addr);
 
-            int tries = 3;
-            bool try_again = false;
+            int tries = UDP_N_TRIES;
+            bool try_again;
+            do {  /* We use a loop to allow retrying to send the message in case it fails */
 
-            //FIXME: @Sofia-Morgado -> melhorar isto
-            do {
                 TimerON(fd_udp);
                 n = recvfrom(fd_udp, res_buffer, MSG_MAX_SIZE, 0, (struct sockaddr *) &addr, &addrlen);
-                //TODO: fazer recvfrom novamente quando dá timeout
-                //assert_(n != -1, "Time out")
                 TimerOFF(fd_udp);
 
-                if (n == -1){
+                if (n == -1) {
                     try_again = true;
                     tries --;
                 } else {
                     try_again = false;
                 }
 
-                if (try_again && tries == 0){
-                    cout << "Time out" << endl;
+                /* We tried 3 times before and was not able to send our message to the client */
+                if (try_again && tries == 0) {
+                    cerr << "Connection timed out and was not able to send the message." << endl;
                     exit(EXIT_FAILURE);
                 }
 
