@@ -654,17 +654,17 @@ int main(int argc, char const *argv[]) {
 
         if (con == UDP) {  /* Connects to server by UDP */
 
-            /* Sends message to server */
-            n = sendto(fd_udp, req.c_str(), req.length(), 0, res->ai_addr, res->ai_addrlen);
-            assert_(n != -1, "Failed to send message with UDP")
-
-            /* Gets server response and processes it */
-            bzero(&addr, sizeof(struct sockaddr_in));
-            addrlen = sizeof(addr);
-
             int tries = UDP_N_TRIES;
             bool try_again;
             do {  /* We use a loop to allow retrying to send the message in case it fails */
+
+                /* Sends message to server */
+                n = sendto(fd_udp, req.c_str(), req.length(), 0, res->ai_addr, res->ai_addrlen);
+                assert_(n != -1, "Failed to send message with UDP")
+
+                /* Clears previous iteration's information */
+                bzero(&addr, sizeof(struct sockaddr_in));
+                addrlen = sizeof(addr);
 
                 TimerON(fd_udp);
                 n = recvfrom(fd_udp, res_buffer, MSG_MAX_SIZE, 0, (struct sockaddr *) &addr, &addrlen);
@@ -673,6 +673,7 @@ int main(int argc, char const *argv[]) {
                 if (n == -1) {
                     try_again = true;
                     tries --;
+                    cout << "Retrying to send message..." << endl;
                 } else {
                     try_again = false;
                 }
@@ -680,7 +681,7 @@ int main(int argc, char const *argv[]) {
                 /* We tried 3 times before and was not able to send our message to the client */
                 if (try_again && tries == 0) {
                     cerr << "Connection timed out and was not able to send the message." << endl;
-                    exit(EXIT_FAILURE);
+                    con = NO_CON;  // This is used to bypass the selector function down below
                 }
 
             } while (try_again && tries > 0);
