@@ -99,12 +99,12 @@ bool isAlphaNumericPlus(const string& line){
     return i == len;
 }
 
-//TODO: comentar e perguntar ao stor se colocamos 15 segundos
+//TODO: comentar e colocar 5 segundos
 int TimerON(int sd)
 {
     struct timeval tmout;
     memset((char *)&tmout,0,sizeof(tmout)); /* clear time structure */
-    tmout.tv_sec=15; /* Wait for 15 sec for a reply from server. */
+    tmout.tv_sec=5; /* Wait for 15 sec for a reply from server. */
     return(setsockopt(sd, SOL_SOCKET, SO_RCVTIMEO,
                       (struct timeval *)&tmout,sizeof(struct timeval)));
 }
@@ -631,11 +631,11 @@ int main(int argc, char const *argv[]) {
             /* Gets server response and processes it */
             bzero(&addr, sizeof(struct sockaddr_in));
             addrlen = sizeof(addr);
-            TimerON(fd_udp);
+            //TimerON(fd_udp);
             n = recvfrom(fd_udp, buffer, MSG_MAX_SIZE, 0, (struct sockaddr*) &addr, &addrlen);
-            //TODO: is this the correct way?
+            //TODO: fazer recvfrom novamente quando dá timeout
             assert_(n != -1, "Time out")
-            TimerOFF(fd_udp);
+            //TimerOFF(fd_udp);
 
         } else if (con == TCP) {  /* Connects to server by TCP */
 

@@ -310,18 +310,9 @@ int main(int argc, char const *argv[]) {
         FD_SET(fd_udp, &fds);  // Adds socket to selector
         FD_SET(fd_tcp, &fds);  // Adds socket to selector
 
-        //TODO: comentar e 15 basta?
-        struct timeval tmout;
-        memset((char *)&tmout,0,sizeof(tmout)); /* clear time structure */
-        tmout.tv_sec=60; /* Wait for 15 sec for a reply from client. *
-
         /* Blocks until one of the descriptors, previously set in are ready to by read. Returns number of file descriptors ready */
-        uint8_t counter = select(fd_tcp + 1,&fds,(fd_set*) nullptr,(fd_set*) nullptr,(struct timeval *) &tmout);
-        assert_(counter > 0, "Timeout")
-
-        if (counter == 0){
-            //TODO: fechar tudo e limpar os ficheiros
-        }
+        uint8_t counter = select(fd_tcp + 1,&fds,(fd_set*) nullptr,(fd_set*) nullptr,(struct timeval *) nullptr);
+        assert_(counter > 0, "Select threw an error");
 
         /* Cleans previous iteration so that it does not bug */
         bzero(&addr, sizeof(struct sockaddr_in));

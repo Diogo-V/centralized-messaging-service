@@ -174,12 +174,6 @@ string subscribe(unordered_map<string, Group>* groups, unordered_map<string, Use
     } else if (gid != "0" && groups->at(gid).getName() != group_name) {
         return "E_GNAME";
 
-    //FIXME: @Sofia-Morgado coloquei aqui porque não faz sentido o user poder subscrever a second time
-    /* User has already subscribed to this group*/
-    } else if (gid != "0" && groups->at(gid).getUsers().count(uid) != 0) {
-        return "E_USR";
-
-
     /* Everything is fine */
     } else {
 
@@ -223,11 +217,6 @@ string unsubscribe(unordered_map<string, Group>* groups, unordered_map<string, U
     /*Verifies if the group exists */
     } else if (!groups->empty() && groups->count(gid) == 0){
         return "E_GRP";
-
-    //FIXME: @Sofia-Morgado coloquei aqui porque não faz sentido o user poder dessubscrever a second time. Qual o erro?
-    /* Verifies if the user is subscribed to the group */
-    } else if ((groups->at(gid).getUsers().count(uid) == 0)){
-        return "NOK";
 
     } else {
         /*Unsubscribe user */
