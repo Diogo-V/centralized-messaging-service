@@ -25,7 +25,7 @@ using namespace std;
 
 /* Const definitions */
 #define PORT "58011"
-#define MSG_MAX_SIZE 240
+#define MSG_MAX_SIZE 300
 #define TCP_N_CONNECTIONS 5
 
 /* If condition is false displays msg and interrupts execution */
@@ -175,10 +175,10 @@ string selector(const string& msg) {
 
 
     } else if (cmd == "PST") { /* Receives a text and optionally also a file*/
-        verbose_(isVerbose, "UID: " + inputs[1] + "GID: " + inputs[2] + " | IP: " + ip + " | PORT: " + port)
-
         /* Splits msg by the spaces and returns an array with everything */
         split(msg, inputs);
+
+        verbose_(isVerbose, "UID: " + inputs[1] + "GID: " + inputs[2] + " | IP: " + ip + " | PORT: " + port)
 
         char text[MSG_MAX_SIZE];  /* Will hold user input text */
         string file;  /* Will hold the input file */
@@ -187,17 +187,19 @@ string selector(const string& msg) {
 
         sscanf(msg.c_str(), R"(%*s %*s %*s %*s "%240[^"]")", text, &c);
 
-        printf("text: %s\n", text);
-
         /* receives status from call function*/
         status = post_message(&groups, &users, inputs[1], inputs[2], inputs[3], text);
 
         return "RPT " + status + "\n";
 
-    } else if (inputs[0] == "RTV") {
-        verbose_(isVerbose, "UID: " + inputs[1] + "GID: " + inputs[2] + " | IP: " + ip + " | PORT: " + port)
+    } else if (cmd == "RTV") { /* Retrieves a message and optionally a file */
+        /* Splits msg by the spaces and returns an array with everything */
+        split(msg, inputs);
+
+        verbose_(isVerbose, "UID: " + inputs[1] + "GID: " + inputs[2] + "MID: " + inputs[3] + " | IP: " + ip + " | PORT: " + port)
+
         /* receives status from call function*/
-        status = retrieve_message(&groups, &users, inputs[1], inputs[2], inputs[3]);
+        status = retrieve_message(&groups, inputs[2], inputs[3]);
 
         return "RRT " + status + "\n";
 

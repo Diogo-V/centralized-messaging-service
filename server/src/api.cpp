@@ -331,16 +331,17 @@ string post_message(unordered_map<string, Group>* groups, unordered_map<string, 
 
 
 //TODO: files
-string retrieve_message(unordered_map<string, Group>* groups, unordered_map<string, User>* users, string uid, string gid, string mid){
+string retrieve_message(unordered_map<string, Group>* groups, string gid, string mid){
     string out;
     vector<Message> messages;
 
+    //TODO: @Sofia-Morgago penso que esta verificação não é necessária
     /*Verifies if the user exists */
-    if(!users->empty() && users->count(uid) == 0){
-        return "NOK";
+    //if(!users->empty() && users->count(uid) == 0){
+    //    return "NOK";
 
     /*Verifies if the group exists */
-    } else if (!groups->empty() && groups->count(gid) == 0) {
+    if (!groups->empty() && groups->count(gid) == 0) {
         return "NOK";
     }
 

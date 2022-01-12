@@ -16,7 +16,7 @@ using namespace std;
 /* Const definitions */
 #define PORT "58011"
 #define LOCAL_IP "localhost"
-#define MSG_MAX_SIZE 240
+#define MSG_MAX_SIZE 300
 #define EXIT_CMD "exit"
 #define UDP_N_TRIES 3
 #define TIMEOUT_TIME_S 5
@@ -562,6 +562,7 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
         out = "RTV " + user.uid + " " + user.selected_group + " " + inputs[1] + "\n";
 
         con = TCP;
+
         return true;
     }
 
