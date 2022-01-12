@@ -1,10 +1,156 @@
 When used after script_01.txt (should unregister user 10001 and fail to unregister users 10002 to 10009):
+---------------------------
+Wed, 12 Jan 2022 12:17:59 GMT
+
+COMMAND: unregister 10001 pword001
+User 10001 unregistered successfully (RUN OK)
+---------------------------
+Wed, 12 Jan 2022 12:17:59 GMT
+
+COMMAND: unregister 10002 pword002
+UnRegister failed (RUN NOK)
+---------------------------
+Wed, 12 Jan 2022 12:17:59 GMT
+
+COMMAND: unregister 10003 pword003
+UnRegister failed (RUN NOK)
+---------------------------
+Wed, 12 Jan 2022 12:17:59 GMT
+
+COMMAND: unregister 10004 pword004
+UnRegister failed (RUN NOK)
+---------------------------
+Wed, 12 Jan 2022 12:17:59 GMT
+
+COMMAND: unregister 10005 pword005
+UnRegister failed (RUN NOK)
+---------------------------
+Wed, 12 Jan 2022 12:17:59 GMT
+
+COMMAND: unregister 10006 pword006
+UnRegister failed (RUN NOK)
+---------------------------
+Wed, 12 Jan 2022 12:17:59 GMT
+
+COMMAND: unregister 10007 pword007
+UnRegister failed (RUN NOK)
+---------------------------
+Wed, 12 Jan 2022 12:17:59 GMT
+
+COMMAND: unregister 10008 pword008
+UnRegister failed (RUN NOK)
+---------------------------
+Wed, 12 Jan 2022 12:17:59 GMT
+
+COMMAND: unregister 10009 pword009
+UnRegister failed (RUN NOK)
+---------------------------
+Wed, 12 Jan 2022 12:17:59 GMT
+
+COMMAND: exit
+
 
 
 When used after script_06.txt (should unregister users 10001 to 10009):
+---------------------------
+Wed, 12 Jan 2022 12:16:18 GMT
+
+COMMAND: unregister 10001 pword001
+User 10001 unregistered successfully (RUN OK)
+---------------------------
+Wed, 12 Jan 2022 12:16:18 GMT
+
+COMMAND: unregister 10002 pword002
+User 10002 unregistered successfully (RUN OK)
+---------------------------
+Wed, 12 Jan 2022 12:16:18 GMT
+
+COMMAND: unregister 10003 pword003
+User 10003 unregistered successfully (RUN OK)
+---------------------------
+Wed, 12 Jan 2022 12:16:18 GMT
+
+COMMAND: unregister 10004 pword004
+User 10004 unregistered successfully (RUN OK)
+---------------------------
+Wed, 12 Jan 2022 12:16:18 GMT
+
+COMMAND: unregister 10005 pword005
+User 10005 unregistered successfully (RUN OK)
+---------------------------
+Wed, 12 Jan 2022 12:16:18 GMT
+
+COMMAND: unregister 10006 pword006
+User 10006 unregistered successfully (RUN OK)
+---------------------------
+Wed, 12 Jan 2022 12:16:18 GMT
+
+COMMAND: unregister 10007 pword007
+User 10007 unregistered successfully (RUN OK)
+---------------------------
+Wed, 12 Jan 2022 12:16:18 GMT
+
+COMMAND: unregister 10008 pword008
+User 10008 unregistered successfully (RUN OK)
+---------------------------
+Wed, 12 Jan 2022 12:16:18 GMT
+
+COMMAND: unregister 10009 pword009
+User 10009 unregistered successfully (RUN OK)
+---------------------------
+Wed, 12 Jan 2022 12:16:18 GMT
+
+COMMAND: exit
+
 
 
 When used without precedent (should fail due to users 10001 to 10009 not being registered):
+---------------------------
+Wed, 12 Jan 2022 12:18:53 GMT
 
+COMMAND: unregister 10001 pword001
+UnRegister failed (RUN NOK)
+---------------------------
+Wed, 12 Jan 2022 12:18:53 GMT
 
-WHEN USED TO CHECK IF USERS ARE UNSUBSCRIBED FROM THEIR GROUP:
+COMMAND: unregister 10002 pword002
+UnRegister failed (RUN NOK)
+---------------------------
+Wed, 12 Jan 2022 12:18:53 GMT
+
+COMMAND: unregister 10003 pword003
+UnRegister failed (RUN NOK)
+---------------------------
+Wed, 12 Jan 2022 12:18:53 GMT
+
+COMMAND: unregister 10004 pword004
+UnRegister failed (RUN NOK)
+---------------------------
+Wed, 12 Jan 2022 12:18:53 GMT
+
+COMMAND: unregister 10005 pword005
+UnRegister failed (RUN NOK)
+---------------------------
+Wed, 12 Jan 2022 12:18:53 GMT
+
+COMMAND: unregister 10006 pword006
+UnRegister failed (RUN NOK)
+---------------------------
+Wed, 12 Jan 2022 12:18:53 GMT
+
+COMMAND: unregister 10007 pword007
+UnRegister failed (RUN NOK)
+---------------------------
+Wed, 12 Jan 2022 12:18:53 GMT
+
+COMMAND: unregister 10008 pword008
+UnRegister failed (RUN NOK)
+---------------------------
+Wed, 12 Jan 2022 12:18:53 GMT
+
+COMMAND: unregister 10009 pword009
+UnRegister failed (RUN NOK)
+---------------------------
+Wed, 12 Jan 2022 12:18:53 GMT
+
+COMMAND: exit

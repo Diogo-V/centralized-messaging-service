@@ -1,7 +1,23 @@
 When used after script_01.txt (should login user 10001):
+---------------------------
+Wed, 12 Jan 2022 12:03:12 GMT
+
+COMMAND: login 10001 pword001
+Login successful (RLO OK)
+---------------------------
+Wed, 12 Jan 2022 12:03:12 GMT
+
+COMMAND: exit
+
 
 
 When used without precedent (should fail due to user 10001 not being registered):
+---------------------------
+Wed, 12 Jan 2022 12:05:18 GMT
 
+COMMAND: login 10001 pword001
+Login error (RLO NOK)
+---------------------------
+Wed, 12 Jan 2022 12:05:18 GMT
 
-When used twice after script_01.txt (should login user 10001 two times):
+COMMAND: exit

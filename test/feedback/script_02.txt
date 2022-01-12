@@ -1,4 +1,23 @@
 When used after script_01.txt (should unregister user 10001):
+---------------------------
+Wed, 12 Jan 2022 12:01:27 GMT
+
+COMMAND: unregister 10001 pword001
+User 10001 unregistered successfully (RUN OK)
+---------------------------
+Wed, 12 Jan 2022 12:01:27 GMT
+
+COMMAND: exit
+
 
 
 When used without precedent (should fail due to user 10001 not being registered):
+---------------------------
+Wed, 12 Jan 2022 12:01:59 GMT
+
+COMMAND: unregister 10001 pword001
+UnRegister failed (RUN NOK)
+---------------------------
+Wed, 12 Jan 2022 12:01:59 GMT
+
+COMMAND: exit

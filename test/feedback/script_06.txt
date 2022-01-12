@@ -1,1 +1,156 @@
 When used once (should register users 10001 to 10009):
+---------------------------
+Wed, 12 Jan 2022 12:11:39 GMT
+
+COMMAND: unregister 10001 pword001
+User 10001 unregistered successfully (RUN OK)
+---------------------------
+Wed, 12 Jan 2022 12:11:39 GMT
+
+COMMAND: unregister 10002 pword002
+User 10002 unregistered successfully (RUN OK)
+---------------------------
+Wed, 12 Jan 2022 12:11:39 GMT
+
+COMMAND: unregister 10003 pword003
+User 10003 unregistered successfully (RUN OK)
+---------------------------
+Wed, 12 Jan 2022 12:11:39 GMT
+
+COMMAND: unregister 10004 pword004
+User 10004 unregistered successfully (RUN OK)
+---------------------------
+Wed, 12 Jan 2022 12:11:39 GMT
+
+COMMAND: unregister 10005 pword005
+User 10005 unregistered successfully (RUN OK)
+---------------------------
+Wed, 12 Jan 2022 12:11:39 GMT
+
+COMMAND: unregister 10006 pword006
+User 10006 unregistered successfully (RUN OK)
+---------------------------
+Wed, 12 Jan 2022 12:11:39 GMT
+
+COMMAND: unregister 10007 pword007
+User 10007 unregistered successfully (RUN OK)
+---------------------------
+Wed, 12 Jan 2022 12:11:39 GMT
+
+COMMAND: unregister 10008 pword008
+User 10008 unregistered successfully (RUN OK)
+---------------------------
+Wed, 12 Jan 2022 12:11:39 GMT
+
+COMMAND: unregister 10009 pword009
+User 10009 unregistered successfully (RUN OK)
+---------------------------
+Wed, 12 Jan 2022 12:11:39 GMT
+
+COMMAND: exit
+
+
+
+When used after script_01.txt (should fail to register user 10001 and register users 10002 to 10009):
+---------------------------
+Wed, 12 Jan 2022 12:09:40 GMT
+
+COMMAND: reg 10001 pword001
+User 10001 already registered (RRG DUP)
+---------------------------
+Wed, 12 Jan 2022 12:09:40 GMT
+
+COMMAND: reg 10002 pword002
+User 10002 registered successfully (RRG OK)
+---------------------------
+Wed, 12 Jan 2022 12:09:40 GMT
+
+COMMAND: reg 10003 pword003
+User 10003 registered successfully (RRG OK)
+---------------------------
+Wed, 12 Jan 2022 12:09:40 GMT
+
+COMMAND: reg 10004 pword004
+User 10004 registered successfully (RRG OK)
+---------------------------
+Wed, 12 Jan 2022 12:09:40 GMT
+
+COMMAND: reg 10005 pword005
+User 10005 registered successfully (RRG OK)
+---------------------------
+Wed, 12 Jan 2022 12:09:40 GMT
+
+COMMAND: reg 10006 pword006
+User 10006 registered successfully (RRG OK)
+---------------------------
+Wed, 12 Jan 2022 12:09:40 GMT
+
+COMMAND: reg 10007 pword007
+User 10007 registered successfully (RRG OK)
+---------------------------
+Wed, 12 Jan 2022 12:09:40 GMT
+
+COMMAND: reg 10008 pword008
+User 10008 registered successfully (RRG OK)
+---------------------------
+Wed, 12 Jan 2022 12:09:40 GMT
+
+COMMAND: reg 10009 pword009
+User 10009 registered successfully (RRG OK)
+---------------------------
+Wed, 12 Jan 2022 12:09:40 GMT
+
+COMMAND: exit
+
+
+
+When used twice (should fail due to users already being registered):
+---------------------------
+Wed, 12 Jan 2022 12:13:10 GMT
+
+COMMAND: reg 10001 pword001
+User 10001 already registered (RRG DUP)
+---------------------------
+Wed, 12 Jan 2022 12:13:10 GMT
+
+COMMAND: reg 10002 pword002
+User 10002 already registered (RRG DUP)
+---------------------------
+Wed, 12 Jan 2022 12:13:10 GMT
+
+COMMAND: reg 10003 pword003
+User 10003 already registered (RRG DUP)
+---------------------------
+Wed, 12 Jan 2022 12:13:10 GMT
+
+COMMAND: reg 10004 pword004
+User 10004 already registered (RRG DUP)
+---------------------------
+Wed, 12 Jan 2022 12:13:10 GMT
+
+COMMAND: reg 10005 pword005
+User 10005 already registered (RRG DUP)
+---------------------------
+Wed, 12 Jan 2022 12:13:10 GMT
+
+COMMAND: reg 10006 pword006
+User 10006 already registered (RRG DUP)
+---------------------------
+Wed, 12 Jan 2022 12:13:10 GMT
+
+COMMAND: reg 10007 pword007
+User 10007 already registered (RRG DUP)
+---------------------------
+Wed, 12 Jan 2022 12:13:10 GMT
+
+COMMAND: reg 10008 pword008
+User 10008 already registered (RRG DUP)
+---------------------------
+Wed, 12 Jan 2022 12:13:10 GMT
+
+COMMAND: reg 10009 pword009
+User 10009 already registered (RRG DUP)
+---------------------------
+Wed, 12 Jan 2022 12:13:10 GMT
+
+COMMAND: exit

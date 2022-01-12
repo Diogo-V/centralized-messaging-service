@@ -1,1 +1,95 @@
 When used once (should register and unregister users 10001 to 10009):
+---------------------------
+Wed, 12 Jan 2022 12:19:19 GMT
+
+COMMAND: reg 10001 pword001
+User 10001 registered successfully (RRG OK)
+---------------------------
+Wed, 12 Jan 2022 12:19:19 GMT
+
+COMMAND: unregister 10001 pword001
+User 10001 unregistered successfully (RUN OK)
+---------------------------
+Wed, 12 Jan 2022 12:19:19 GMT
+
+COMMAND: reg 10002 pword002
+User 10002 registered successfully (RRG OK)
+---------------------------
+Wed, 12 Jan 2022 12:19:19 GMT
+
+COMMAND: unregister 10002 pword002
+User 10002 unregistered successfully (RUN OK)
+---------------------------
+Wed, 12 Jan 2022 12:19:19 GMT
+
+COMMAND: reg 10003 pword003
+User 10003 registered successfully (RRG OK)
+---------------------------
+Wed, 12 Jan 2022 12:19:19 GMT
+
+COMMAND: unregister 10003 pword003
+User 10003 unregistered successfully (RUN OK)
+---------------------------
+Wed, 12 Jan 2022 12:19:19 GMT
+
+COMMAND: reg 10004 pword004
+User 10004 registered successfully (RRG OK)
+---------------------------
+Wed, 12 Jan 2022 12:19:19 GMT
+
+COMMAND: unregister 10004 pword004
+User 10004 unregistered successfully (RUN OK)
+---------------------------
+Wed, 12 Jan 2022 12:19:19 GMT
+
+COMMAND: reg 10005 pword005
+User 10005 registered successfully (RRG OK)
+---------------------------
+Wed, 12 Jan 2022 12:19:19 GMT
+
+COMMAND: unregister 10005 pword005
+User 10005 unregistered successfully (RUN OK)
+---------------------------
+Wed, 12 Jan 2022 12:19:19 GMT
+
+COMMAND: reg 10006 pword006
+User 10006 registered successfully (RRG OK)
+---------------------------
+Wed, 12 Jan 2022 12:19:19 GMT
+
+COMMAND: unregister 10006 pword006
+User 10006 unregistered successfully (RUN OK)
+---------------------------
+Wed, 12 Jan 2022 12:19:19 GMT
+
+COMMAND: reg 10007 pword007
+User 10007 registered successfully (RRG OK)
+---------------------------
+Wed, 12 Jan 2022 12:19:19 GMT
+
+COMMAND: unregister 10007 pword007
+User 10007 unregistered successfully (RUN OK)
+---------------------------
+Wed, 12 Jan 2022 12:19:19 GMT
+
+COMMAND: reg 10008 pword008
+User 10008 registered successfully (RRG OK)
+---------------------------
+Wed, 12 Jan 2022 12:19:19 GMT
+
+COMMAND: unregister 10008 pword008
+User 10008 unregistered successfully (RUN OK)
+---------------------------
+Wed, 12 Jan 2022 12:19:19 GMT
+
+COMMAND: reg 10009 pword009
+User 10009 registered successfully (RRG OK)
+---------------------------
+Wed, 12 Jan 2022 12:19:19 GMT
+
+COMMAND: unregister 10009 pword009
+User 10009 unregistered successfully (RUN OK)
+---------------------------
+Wed, 12 Jan 2022 12:19:19 GMT
+
+COMMAND: exit

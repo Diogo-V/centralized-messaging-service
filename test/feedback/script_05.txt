@@ -1,4 +1,23 @@
 When used after script_01.txt (should fail due to user 10001's password not being correct):
+---------------------------
+Wed, 12 Jan 2022 12:08:09 GMT
+
+COMMAND: login 10001 xxxxxxxx
+Login error (RLO NOK)
+---------------------------
+Wed, 12 Jan 2022 12:08:09 GMT
+
+COMMAND: exit
+
 
 
 When used without precedent (should fail due to user 10001 not being registered):
+---------------------------
+Wed, 12 Jan 2022 12:08:52 GMT
+
+COMMAND: login 10001 xxxxxxxx
+Login error (RLO NOK)
+---------------------------
+Wed, 12 Jan 2022 12:08:52 GMT
+
+COMMAND: exit

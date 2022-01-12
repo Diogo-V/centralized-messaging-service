@@ -1,4 +1,23 @@
 When used once (should register user 10001 with password pword001):
+---------------------------
+Wed, 12 Jan 2022 11:52:55 GMT
+
+COMMAND: reg 10001 pword001
+User 10001 registered successfully (RRG OK)
+---------------------------
+Wed, 12 Jan 2022 11:52:55 GMT
+
+COMMAND: exit
+
 
 
 When used twice (should fail due to user already being registered):
+---------------------------
+Wed, 12 Jan 2022 11:59:55 GMT
+
+COMMAND: reg 10001 pword001
+User 10001 already registered (RRG DUP)
+---------------------------
+Wed, 12 Jan 2022 11:59:55 GMT
+
+COMMAND: exit
