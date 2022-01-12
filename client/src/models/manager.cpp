@@ -3,8 +3,10 @@
 
 /**
  * @brief Manager class constructor.
+ *
+ * @param connect connection to our server
  */
-Manager::Manager() {
+Manager::Manager(Connect& connect) : _connect(connect) {
     User user;
     this->_user = user;
 }
@@ -26,7 +28,7 @@ User Manager::getUser() {
  * @param input user input command
  * @param fd_udp file descriptor that has an udp connection
  */
-void Manager::doRegister(const string& input, const int& fd_udp) {
+void Manager::doRegister(const string& input) {
 
     vector<string> inputs;  /* Holds a list of strings with the inputs from our user */
     string req;  /* Holds request that is going to be sent to the server */
@@ -55,7 +57,7 @@ void Manager::doRegister(const string& input, const int& fd_udp) {
  * @param input user input command
  * @param fd_udp file descriptor that has an udp connection
  */
-void Manager::doUnregister(const string& input, const int& fd_udp) {
+void Manager::doUnregister(const string& input) {
 
     vector<string> inputs;  /* Holds a list of strings with the inputs from our user */
     string req;  /* Holds request that is going to be sent to the server */
@@ -86,12 +88,12 @@ void Manager::doUnregister(const string& input, const int& fd_udp) {
  * @param input user input command
  * @param fd_udp file descriptor that has an udp connection
  */
-void Manager::doLogin(const string& input, const int& fd_udp) {
+void Manager::doLogin(const string& input) {
 
     vector<string> inputs;  /* Holds a list of strings with the inputs from our user */
     string req;  /* Holds request that is going to be sent to the server */
 
-    /* Splits msg by the spaces and returns an array with everything */
+    /* Splits message by the spaces and returns an array with everything */
     split(input, inputs);
 
     /* Verifies if the user input a valid command and that this command can be issued */
@@ -105,10 +107,11 @@ void Manager::doLogin(const string& input, const int& fd_udp) {
     /* Transforms user input into a valid command to be sent to the server */
     req = "LOG " + inputs[1] + " " + inputs[2] + "\n";
 
-    con = UDP;  /* Sets connection type to be used by the client to connect to the server */
 
-    this->getUser().setUserID( inputs[1]);  /* Sets user's _uid */
-    this->getUser().setUserPassword(inputs[2]);  /* Saves user's password locally */
+
+    /* Updates user's info */
+    this->getUser().setUserID( inputs[1]);
+    this->getUser().setUserPassword(inputs[2]);
 
 }
 
@@ -117,10 +120,24 @@ void Manager::doLogin(const string& input, const int& fd_udp) {
  * @brief Mounts and sends a logout command and analyses response from server.
  *
  * @param input user input command
- * @param fd_udp file descriptor that has an udp connection
  */
-void Manager::doLogout(const string& input, const int& fd_udp) {
-    
+void Manager::doLogout(const string& input) {
+
+    vector<string> inputs;  /* Holds a list of strings with the inputs from our user */
+    string req;  /* Holds request that is going to be sent to the server */
+
+    /* Splits msg by the spaces and returns an array with everything */
+    split(input, inputs);
+
+    /* Verifies if the user input a valid command and that this command can be issued */
+    validate_(inputs.size() == 1, "Too many arguments")
+    validate_(this->getUser().getLoggedStatus(), "Client needs to be logged in")
+
+    /* Transforms user input into a valid command to be sent to the server */
+    req = "OUT " + this->getUser().getUserID() + " " + this->getUser().getUserPassword() + "\n";
+
+//    con = UDP;  /* Sets connection type to be used by the client to connect to the server */
+
 }
 
 
@@ -130,7 +147,19 @@ void Manager::doLogout(const string& input, const int& fd_udp) {
  * @param input user input command
  */
 void Manager::doShowUID(const string& input) {
-    
+
+    vector<string> inputs;  /* Holds a list of strings with the inputs from our user */
+    string req;  /* Holds request that is going to be sent to the server */
+
+    /* Splits msg by the spaces and returns an array with everything */
+    split(input, inputs);
+
+    /* Verifies if the user input a valid command and that this command can be issued */
+    validate_(inputs.size() == 1, "Too many arguments")
+    validate_(this->getUser().getLoggedStatus(), "No client logged in")
+
+    cout << this->getUser().getUserID() << endl;
+
 }
 
 
@@ -138,10 +167,24 @@ void Manager::doShowUID(const string& input) {
  * @brief Mounts and performs an exit command by also logging out the user from the server.
  *
  * @param input user input command
- * @param fd_udp file descriptor that has an udp connection
  */
-void Manager::doExit(const string& input, const int& fd_udp) {
-    
+void Manager::doExit(const string& input) {
+
+    vector<string> inputs;  /* Holds a list of strings with the inputs from our user */
+    string req;  /* Holds request that is going to be sent to the server */
+
+    /* Splits msg by the spaces and returns an array with everything */
+    split(input, inputs);
+
+    /* Verifies if the user input a valid command and that this command can be issued */
+    validate_(inputs.size() == 1, "Too many arguments")
+
+    /* Still needs to log out user if he is logged in */
+    if (this->getUser().getLoggedStatus()) {
+        req = "OUT " + this->getUser().getUserID() + " " + this->getUser().getUserPassword() + "\n";
+//        con = UDP;
+    }
+
 }
 
 
@@ -149,10 +192,23 @@ void Manager::doExit(const string& input, const int& fd_udp) {
  * @brief Mounts and sends a list groups command and analyses response from server.
  *
  * @param input user input command
- * @param fd_udp file descriptor that has an udp connection
  */
-void Manager::doListGroups(const string& input, const int& fd_udp) {
-    
+void Manager::doListGroups(const string& input) {
+
+    vector<string> inputs;  /* Holds a list of strings with the inputs from our user */
+    string req;  /* Holds request that is going to be sent to the server */
+
+    /* Splits msg by the spaces and returns an array with everything */
+    split(input, inputs);
+
+    /* Verifies if the user input a valid command and that this command can be issued */
+    validate_(inputs.size() == 1, "Too many arguments")
+
+    /* Transforms user input into a valid command to be sent to the server */
+    req = "GLS\n";
+
+//    con = UDP;  /* Sets connection type to be used by the client to connect to the server */
+
 }
 
 
@@ -160,9 +216,28 @@ void Manager::doListGroups(const string& input, const int& fd_udp) {
  * @brief Mounts and sends a subscribe command and analyses response from server.
  *
  * @param input user input command
- * @param fd_udp file descriptor that has an udp connection
  */
-void Manager::doSubscribe(const string& input, const int& fd_udp) {
+void Manager::doSubscribe(const string& input) {
+
+    vector<string> inputs;  /* Holds a list of strings with the inputs from our user */
+    string req;  /* Holds request that is going to be sent to the server */
+
+    /* Splits msg by the spaces and returns an array with everything */
+    split(input, inputs);
+
+    /* Verifies if the user input a valid command and that this command can be issued */
+    validate_(inputs.size() == 3, "User did not input group ID and/or group name")
+    validate_(inputs[1].size() <= 2, "Group ID isn't 2 digit-number")
+    validate_(isNumber(inputs[1]), "Group ID is not a number")
+    validate_(inputs[2].size() <= 24, "Group name limited to 24 characters")
+    validate_(isAlphaNumericPlus(inputs[2]), "Group name should have only alphanumerical characters plus '-' and "
+                                             "'_'")
+    validate_(this->getUser().getLoggedStatus(), "Client is not logged in")
+
+    /* Transforms user input into a valid command to be sent to the server */
+    req = "GSR " + this->getUser().getUserID() + " " + inputs[1] + " " + inputs[2] + "\n";
+
+//    con = UDP;  /* Sets connection type to be used by the client to connect to the server */
     
 }
 
@@ -171,9 +246,25 @@ void Manager::doSubscribe(const string& input, const int& fd_udp) {
  * @brief Mounts and sends an unsubscribe command and analyses response from server.
  *
  * @param input user input command
- * @param fd_udp file descriptor that has an udp connection
  */
-void Manager::doUnsubscribe(const string& input, const int& fd_udp) {
+void Manager::doUnsubscribe(const string& input) {
+
+    vector<string> inputs;  /* Holds a list of strings with the inputs from our user */
+    string req;  /* Holds request that is going to be sent to the server */
+
+    /* Splits msg by the spaces and returns an array with everything */
+    split(input, inputs);
+
+    /* Verifies if the user input a valid command and that this command can be issued */
+    validate_(inputs.size() == 2, "User did not input group ID")
+    validate_(isNumber(inputs[1]), "Group ID is not a number")
+    validate_(inputs[1].size() <= 2, "Group ID isn't a 2 digit-number")
+    validate_(this->getUser().getLoggedStatus(), "Client is not logged in")
+
+    /* Transforms user input into a valid command to be sent to the server */
+    req = "GUR " + this->getUser().getUserID() + " " + inputs[1] + "\n";
+
+//    con = UDP;  /* Sets connection type to be used by the client to connect to the server */
     
 }
 
@@ -182,9 +273,23 @@ void Manager::doUnsubscribe(const string& input, const int& fd_udp) {
  * @brief Mounts and sends a my groups command and analyses response from server.
  *
  * @param input user input command
- * @param fd_udp file descriptor that has an udp connection
  */
-void Manager::doMyGroups(const string& input, const int& fd_udp) {
+void Manager::doMyGroups(const string& input) {
+
+    vector<string> inputs;  /* Holds a list of strings with the inputs from our user */
+    string req;  /* Holds request that is going to be sent to the server */
+
+    /* Splits msg by the spaces and returns an array with everything */
+    split(input, inputs);
+
+    /* Verifies if the user input a valid command and that this command can be issued */
+    validate_(inputs.size() == 1, "Too many arguments")
+    validate_(this->getUser().getLoggedStatus(), "Client is not logged in")
+
+    /* Transforms user input into a valid command to be sent to the server */
+    req = "GLM " + this->getUser().getUserID() + "\n";
+
+//    con = UDP;  /* Sets connection type to be used by the client to connect to the server */
     
 }
 
@@ -195,6 +300,21 @@ void Manager::doMyGroups(const string& input, const int& fd_udp) {
  * @param input user input command
  */
 void Manager::doSelect(const string& input) {
+
+    vector<string> inputs;  /* Holds a list of strings with the inputs from our user */
+    string req;  /* Holds request that is going to be sent to the server */
+
+    /* Splits msg by the spaces and returns an array with everything */
+    split(input, inputs);
+
+    /* Verifies if the user input a valid command and that this command can be issued */
+    validate_(inputs.size() == 2, "User did not input group ID")
+    validate_(isNumber(inputs[1]), "Group ID is not a number")
+    validate_(inputs[1].size() <= 2, "Group ID isn't a 2 digit-number")
+    validate_(this->getUser().getLoggedStatus(), "Client is not logged in")
+
+    /* Saves selected group locally */
+    this->getUser().setUserSelectedGroupID(inputs[1]);
     
 }
 
@@ -205,6 +325,20 @@ void Manager::doSelect(const string& input) {
  * @param input user input command
  */
 void Manager::doShowGID(const string& input) {
+
+    vector<string> inputs;  /* Holds a list of strings with the inputs from our user */
+    string req;  /* Holds request that is going to be sent to the server */
+
+    /* Splits msg by the spaces and returns an array with everything */
+    split(input, inputs);
+
+    /* Verifies if the user input a valid command and that this command can be issued */
+    validate_(inputs.size() == 1, "Too many arguments")
+    validate_(this->getUser().getLoggedStatus(), "Client is not logged in")
+    validate_(!this->getUser().getSelectedGroupID().empty(), "No selected group")
+
+    /* Shows the client its currently selected group */
+    cout << this->getUser().getSelectedGroupID() << endl;
     
 }
 
@@ -213,9 +347,24 @@ void Manager::doShowGID(const string& input) {
  * @brief Mounts and sends an user list command and analyses response from server.
  *
  * @param input user input command
- * @param fd_tcp file descriptor that has an tcp connection
  */
-void Manager::doUserList(const string& input, const int& fd_tcp) {
+void Manager::doUserList(const string& input) {
+
+    vector<string> inputs;  /* Holds a list of strings with the inputs from our user */
+    string req;  /* Holds request that is going to be sent to the server */
+
+    /* Splits msg by the spaces and returns an array with everything */
+    split(input, inputs);
+
+    /* Verifies if the user input a valid command and that this command can be issued */
+    validate_(inputs.size() == 1, "Too many arguments")
+    validate_(this->getUser().getLoggedStatus(), "Client is not logged in")
+    validate_(!this->getUser().getSelectedGroupID().empty(), "No selected group")
+
+    /* Transforms user input into a valid command to be sent to the server */
+    req = "ULS " + this->getUser().getSelectedGroupID() +  "\n";
+
+//    con = TCP;  /* Sets connection type to be used by the client to connect to the server */
     
 }
 
@@ -224,9 +373,13 @@ void Manager::doUserList(const string& input, const int& fd_tcp) {
  * @brief Mounts and sends a post command and analyses response from server.
  *
  * @param input user input command
- * @param fd_tcp file descriptor that has an tcp connection
  */
-void Manager::doPost(const string& input, const int& fd_tcp) {
+void Manager::doPost(const string& input) {
+
+    vector<string> inputs;  /* Holds a list of strings with the inputs from our user */
+    string req;  /* Holds request that is going to be sent to the server */
+
+    // TODO: @Sofia-Morgado -> Copy your implementation
     
 }
 
@@ -235,8 +388,12 @@ void Manager::doPost(const string& input, const int& fd_tcp) {
  * @brief Mounts and sends a retrieve command and analyses response from server.
  *
  * @param input user input command
- * @param fd_tcp file descriptor that has an tcp connection
  */
-void Manager::doRetrieve(const string& input, const int& fd_tcp) {
+void Manager::doRetrieve(const string& input) {
+
+    vector<string> inputs;  /* Holds a list of strings with the inputs from our user */
+    string req;  /* Holds request that is going to be sent to the server */
+
+    // TODO: @Sofia-Morgado -> Copy your implementation
     
 }

@@ -3,6 +3,7 @@
 
 #include "../misc/helpers.h"
 #include "user.h"
+#include "connect.h"
 
 #include <string>
 #include <iostream>
@@ -25,12 +26,19 @@ class Manager {
          */
         User _user;
 
+        /**
+         * @brief Connection to the server.
+         */
+         Connect _connect;
+
     public:
         
         /**
          * @brief Manager class constructor.
+         *
+         * @param connect connection to our server
          */
-        explicit Manager();
+        explicit Manager(Connect& connect);
 
         /**
          * @brief Gets manager's user.
@@ -43,33 +51,29 @@ class Manager {
          * @brief Mounts and sends a register command and analyses response from server.
          *
          * @param input user input command
-         * @param fd_udp file descriptor that has an udp connection
          */
-        void doRegister(const string& input, const int& fd_udp);
+        void doRegister(const string& input);
 
         /**
          * @brief Mounts and sends an unregister command and analyses response from server.
          *
          * @param input user input command
-         * @param fd_udp file descriptor that has an udp connection
          */
-        void doUnregister(const string& input, const int& fd_udp);
+        void doUnregister(const string& input);
 
         /**
          * @brief Mounts and sends a login command and analyses response from server.
          *
          * @param input user input command
-         * @param fd_udp file descriptor that has an udp connection
          */
-        void doLogin(const string& input, const int& fd_udp);
+        void doLogin(const string& input);
 
         /**
          * @brief Mounts and sends a logout command and analyses response from server.
          *
          * @param input user input command
-         * @param fd_udp file descriptor that has an udp connection
          */
-        void doLogout(const string& input, const int& fd_udp);
+        void doLogout(const string& input);
 
         /**
          * @brief Mounts and performs a show UID command.
@@ -82,41 +86,36 @@ class Manager {
          * @brief Mounts and performs an exit command by also logging out the user from the server.
          *
          * @param input user input command
-         * @param fd_udp file descriptor that has an udp connection
          */
-        void doExit(const string& input, const int& fd_udp);
+        void doExit(const string& input);
 
         /**
          * @brief Mounts and sends a list groups command and analyses response from server.
          *
          * @param input user input command
-         * @param fd_udp file descriptor that has an udp connection
          */
-        void doListGroups(const string& input, const int& fd_udp);
+        void doListGroups(const string& input);
 
         /**
          * @brief Mounts and sends a subscribe command and analyses response from server.
          *
          * @param input user input command
-         * @param fd_udp file descriptor that has an udp connection
          */
-        void doSubscribe(const string& input, const int& fd_udp);
+        void doSubscribe(const string& input);
 
         /**
          * @brief Mounts and sends an unsubscribe command and analyses response from server.
          *
          * @param input user input command
-         * @param fd_udp file descriptor that has an udp connection
          */
-        void doUnsubscribe(const string& input, const int& fd_udp);
+        void doUnsubscribe(const string& input);
 
         /**
          * @brief Mounts and sends a my groups command and analyses response from server.
          *
          * @param input user input command
-         * @param fd_udp file descriptor that has an udp connection
          */
-        void doMyGroups(const string& input, const int& fd_udp);
+        void doMyGroups(const string& input);
 
         /**
          * @brief Mounts and performs a select command.
@@ -136,26 +135,23 @@ class Manager {
          * @brief Mounts and sends an user list command and analyses response from server.
          *
          * @param input user input command
-         * @param fd_tcp file descriptor that has an tcp connection
          */
-        void doUserList(const string& input, const int& fd_tcp);
+        void doUserList(const string& input);
 
         /**
          * @brief Mounts and sends a post command and analyses response from server.
          *
          * @param input user input command
-         * @param fd_tcp file descriptor that has an tcp connection
          */
-        void doPost(const string& input, const int& fd_tcp);
+        void doPost(const string& input);
 
         /**
          * @brief Mounts and sends a retrieve command and analyses response from server.
          *
          * @param input user input command
-         * @param fd_tcp file descriptor that has an tcp connection
          */
-        void doRetrieve(const string& input, const int& fd_tcp);
+        void doRetrieve(const string& input);
 
 };
 
-#endif //PROJETO_RC_39_V2_MANAGER_H
+#endif

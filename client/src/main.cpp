@@ -20,8 +20,6 @@ using namespace std;
 #define LOCAL_IP "localhost"
 #define MSG_MAX_SIZE 300
 #define EXIT_CMD "exit"
-#define UDP_N_TRIES 3
-#define TIMEOUT_TIME_S 5
 
 
 /*-------------------------------------- Server global vars --------------------------------------*/
@@ -37,12 +35,7 @@ struct addrinfo *res;  /* Stores result from getaddrinfo and uses it to set up o
 ssize_t n;  /* Holds number of bytes read/sent or -1 in case of error */
 socklen_t addrlen;  /* Holds size of message sent from sender */
 struct sockaddr_in addr;  /* Describes internet socket address. Holds sender info */
-char in_buffer[MSG_MAX_SIZE];  /* Holds user input */
-char res_buffer[MSG_MAX_SIZE];  /* Holds current message received in this socket */
-
-enum con_type {TCP, UDP, NO_CON};  /* Decides how to send message to server (by udp or tcp) */
-
-Manager manager;  /* Allows connecting and sending information to the server */
+char buffer[MSG_MAX_SIZE];  /* Holds user input */
 
 string ds_port{PORT};  /* Holds server port */
 string ds_ip{LOCAL_IP};  /* Holds server ip */
@@ -176,256 +169,33 @@ string get_command(const string& str) {
 
 
 /**
- * Verifies if a message that the user input is valid. Also populates "req" with the request that is
- * going to be sent to the server.
+ * Tells manager to process user's input. It will verify if it is valid, rearranges it to be sent to
+ * the server, sends our request and analyses response.
  *
  * @param msg input from user
- * @param out server request
- * @return bool values
  */
-bool preprocessing(const string& msg, string& out, con_type& con) {
+void manageUserInput(const string& msg, Manager& manager) {
 
     vector<string> inputs;  /* Holds a list of strings with the inputs from our user */
     string cmd = get_command(msg);
 
     /* Verifies if the user requested a valid command */
-    if (cmd == "reg") {
-        manager.doRegister(msg, fd_udp);
-    } else if (cmd == "unr" || cmd == "unregister") {
-        manager.doUnregister(msg, fd_udp)
-    } else if (cmd == "login") {
-
-
-
-        return true;  /* Since everything was ok, we return true */
-
-    } else if (cmd == "logout") {
-
-        /* Splits msg by the spaces and returns an array with everything */
-        split(msg, inputs);
-
-        /* Verifies if the user input a valid command and that this command can be issued */
-        validate_(inputs.size() == 1, "Too many arguments")
-        validate_(user.is_logged, "Client needs to be logged in")
-
-        /* Transforms user input into a valid command to be sent to the server */
-        out = "OUT " + user.uid + " " + user.pass + "\n";
-
-        con = UDP;  /* Sets connection type to be used by the client to connect to the server */
-
-        return true;  /* Since everything was ok, we return true */
-
-    } else if (cmd == "showuid" || cmd == "su") {
-
-        /* Splits msg by the spaces and returns an array with everything */
-        split(msg, inputs);
-
-        /* Verifies if the user input a valid command and that this command can be issued */
-        validate_(inputs.size() == 1, "Too many arguments")
-        validate_(user.is_logged, "No client logged in")
-
-        cout << user.uid << endl;
-
-        return true;  /* Since everything was ok, we return true */
-
-    } else if (cmd == "exit") {
-
-        /* Splits msg by the spaces and returns an array with everything */
-        split(msg, inputs);
-
-        /* Verifies if the user input a valid command and that this command can be issued */
-        validate_(inputs.size() == 1, "Too many arguments")
-
-        /* Still needs to log out user if he is logged in */
-        if (user.is_logged) {
-            out = "OUT " + user.uid + " " + user.pass + "\n";
-            con = UDP;
-        }
-
-        return true;
-
-    } else if (cmd == "groups" || cmd == "gl") {
-
-        /* Splits msg by the spaces and returns an array with everything */
-        split(msg, inputs);
-
-        /* Verifies if the user input a valid command and that this command can be issued */
-        validate_(inputs.size() == 1, "Too many arguments")
-
-        /* Transforms user input into a valid command to be sent to the server */
-        out = "GLS\n";
-
-        con = UDP;  /* Sets connection type to be used by the client to connect to the server */
-
-        return true;  /* Since everything was ok, we return true */
-
-    } else if (cmd == "subscribe" || cmd == "s") {
-
-        /* Splits msg by the spaces and returns an array with everything */
-        split(msg, inputs);
-
-        /* Verifies if the user input a valid command and that this command can be issued */
-        validate_(inputs.size() == 3, "User did not input group ID and/or group name")
-        validate_(inputs[1].size() <= 2, "Group ID isn't 2 digit-number")
-        validate_(isNumber(inputs[1]), "Group ID is not a number")
-        validate_(inputs[2].size() <= 24, "Group name limited to 24 characters")
-        validate_(isAlphaNumericPlus(inputs[2]), "Group name should have only alphanumerical characters plus '-' and "
-                                                 "'_'")
-        validate_(user.is_logged, "Client is not logged in")
-
-        /* Transforms user input into a valid command to be sent to the server */
-        out = "GSR " + user.uid + " " + inputs[1] + " " + inputs[2] + "\n";
-
-        con = UDP;  /* Sets connection type to be used by the client to connect to the server */
-
-        return true;  /* Since everything was ok, we return true */
-
-    } else if (cmd == "unsubscribe" || cmd == "u") {
-
-        /* Splits msg by the spaces and returns an array with everything */
-        split(msg, inputs);
-
-        /* Verifies if the user input a valid command and that this command can be issued */
-        validate_(inputs.size() == 2, "User did not input group ID")
-        validate_(isNumber(inputs[1]), "Group ID is not a number")
-        validate_(inputs[1].size() <= 2, "Group ID isn't a 2 digit-number")
-        validate_(user.is_logged, "Client is not logged in")
-
-        /* Transforms user input into a valid command to be sent to the server */
-        out = "GUR " + user.uid + " " + inputs[1] + "\n";
-
-        con = UDP;  /* Sets connection type to be used by the client to connect to the server */
-
-        return true;  /* Since everything was ok, we return true */
-
-    } else if (cmd == "my_groups" || cmd == "mgl") {
-
-        /* Splits msg by the spaces and returns an array with everything */
-        split(msg, inputs);
-
-        /* Verifies if the user input a valid command and that this command can be issued */
-        validate_(inputs.size() == 1, "Too many arguments")
-        validate_(user.is_logged, "Client is not logged in")
-
-        /* Transforms user input into a valid command to be sent to the server */
-        out = "GLM " + user.uid + "\n";
-
-        con = UDP;  /* Sets connection type to be used by the client to connect to the server */
-
-        return true;  /* Since everything was ok, we return true */
-
-    //FIXME: @Sofia-Morgado -> não está no enunciado, mas deviamos de alguma forma verificar se o grupo a selecionar    existe
-    } else if (cmd == "select" || cmd == "sag") {
-
-        /* Splits msg by the spaces and returns an array with everything */
-        split(msg, inputs);
-
-        /* Verifies if the user input a valid command and that this command can be issued */
-        validate_(inputs.size() == 2, "User did not input group ID")
-        validate_(isNumber(inputs[1]), "Group ID is not a number")
-        validate_(inputs[1].size() <= 2, "Group ID isn't a 2 digit-number")
-        validate_(user.is_logged, "Client is not logged in")
-
-        /* Saves selected group locally */
-        user.selected_group = inputs[1];
-
-        return true;  /* Since everything was ok, we return true */
-
-    } else if (cmd == "showgid" || cmd == "sg") {
-
-        /* Splits msg by the spaces and returns an array with everything */
-        split(msg, inputs);
-
-        /* Verifies if the user input a valid command and that this command can be issued */
-        validate_(inputs.size() == 1, "Too many arguments")
-        validate_(user.is_logged, "Client is not logged in")
-        validate_(!user.selected_group.empty(), "No selected group")
-
-        cout << user.selected_group << endl;
-
-        return true;  /* Since everything was ok, we return true */
-
-    } else if (cmd == "ulist" || cmd == "ul") {
-
-        /* Splits msg by the spaces and returns an array with everything */
-        split(msg, inputs);
-
-        /* Verifies if the user input a valid command and that this command can be issued */
-        validate_(inputs.size() == 1, "Too many arguments")
-        validate_(user.is_logged, "Client is not logged in")
-        validate_(!user.selected_group.empty(), "No selected group")
-
-        /* Transforms user input into a valid command to be sent to the server */
-        out = "ULS " + user.selected_group +  "\n";
-
-        con = TCP;  /* Sets connection type to be used by the client to connect to the server */
-
-        return true;
-
-    } else if (cmd == "post") {
-
-        char text[MSG_MAX_SIZE];  /* Will hold user input text */
-        string file;  /* Will hold the input file */
-        memset(text, 0, MSG_MAX_SIZE);
-        char c;  /* Used to check if the user did not input a file */
-
-        assert_(sscanf(msg.c_str(), R"(%*s "%240[^"]" %c)", text, &c) == 1, "Invalid format")
-//        assert_(sscanf(msg.c_str(), R"(%*s "%*s" %[^\n])", file) == 1, "Invalid format")
-//
-//        for (auto x = msg.end(); x >= msg.begin(); x--) {
-//            file.append(msg[x]);
-//        }
-//
-//        while ()
-
-        //cout << file << endl;
-
-
-        //inputs[1] = text;
-        //if (c != '\n') inputs[2] = file;
-
-        /* Verifies if the user input a valid command and that this command can be issued */
-        //validate_(inputs.size() >= 2, "Invalid number of arguments")
-        validate_(user.is_logged, "Client is not logged in")
-        validate_(!user.selected_group.empty(), "No selected group")
-        //validate_((inputs[1].length() - 2) <= 240, "Text is limited to 240 characters")
-
-        string len = to_string(strlen(text));
-
-        /* Transforms user input into a valid command to be sent to the server */
-        out = "PST " + user.uid + " " + user.selected_group + " " + len + " " + "\"" + text + "\"\n";
-
-        //cout << out << endl;
-
-        /*if (inputs.size() == 3) {
-            ifstream file(inputs[2], ifstream::ate | ifstream::binary);
-            out += " " + inputs[2] + " " + to_string(file.tellg());
-        } else { out += "\n"; }*/
-
-        con = TCP;  /* Sets connection type to be used by the client to connect to the server */
-
-        return true;
-
-    } else if (cmd == "retrieve" || cmd == "r") {
-        /* Splits msg by the spaces and returns an array with everything */
-        split(msg, inputs);
-
-        /* Verifies if the user input a valid command and that this command can be issued */
-        validate_(inputs.size() == 2, "Invalid number of arguments")
-        validate_(user.is_logged, "Client is not logged in")
-        validate_(!user.selected_group.empty(), "No selected group")
-
-        out = "RTV " + user.uid + " " + user.selected_group + " " + inputs[1] + "\n";
-
-        con = TCP;
-
-        return true;
-    }
-
-    /* TODO: implement rest of TCP */
-
-    cout << "Invalid command" << endl;
-    return false;  /* Since no command was chosen, the user did not input a valid command */
+    if (cmd == "reg") manager.doRegister(msg);
+    else if (cmd == "unr" || cmd == "unregister") manager.doUnregister(msg);
+    else if (cmd == "login") manager.doLogin(msg);
+    else if (cmd == "logout") manager.doLogout(msg);
+    else if (cmd == "showuid" || cmd == "su") manager.doShowUID(msg);
+    else if (cmd == "exit") manager.doExit(msg);
+    else if (cmd == "groups" || cmd == "gl") manager.doListGroups(msg);
+    else if (cmd == "subscribe" || cmd == "s") manager.doSubscribe(msg);
+    else if (cmd == "unsubscribe" || cmd == "u") manager.doUnsubscribe(msg);
+    else if (cmd == "my_groups" || cmd == "mgl") manager.doMyGroups(msg);
+    else if (cmd == "select" || cmd == "sag") manager.doSelect(msg);
+    else if (cmd == "showgid" || cmd == "sg") manager.doShowGID(msg);
+    else if (cmd == "ulist" || cmd == "ul") manager.doUserList(msg);
+    else if (cmd == "post") manager.doPost(msg);
+    else if (cmd == "retrieve" || cmd == "r") manager.doRetrieve(msg);
+    else cout << "Invalid command" << endl;
 
 }
 
@@ -445,101 +215,20 @@ int main(int argc, char const *argv[]) {
         else if (strcmp(argv[i], "-n") == 0) { string s(argv[i + 1]); ds_ip = s; }
     }
 
-    /* Initializes and setups fd_udp to be a valid socket */
-    init_socket_udp();
+    /* Creates connection with server and manager to execute commands */
+    Connect connect(ds_ip, ds_port);
+    Manager manager(connect);
 
     do {
 
-        memset(in_buffer, 0, MSG_MAX_SIZE);  /* Cleans in_buffer before receiving user input */
-        cin.getline(in_buffer, MSG_MAX_SIZE);  /* Gets the command that the user input */
+        memset(buffer, 0, MSG_MAX_SIZE);  /* Cleans buffer before receiving user input */
+        cin.getline(buffer, MSG_MAX_SIZE);  /* Gets the command that the user input */
 
         string req{};  /* Holds the request message that is going to be sent to the server */
-        con_type con = NO_CON;  /* Holds the protocol used to perform this request to the server */
 
-        /* Verify if message has correct formatting. If not, displays error to user and continues */
-        /* Also populates "req" with a valid request and con with how to connect to the server */
-        if (! preprocessing(in_buffer, req, con)) {
-            memset(in_buffer, 0, MSG_MAX_SIZE);  /* Cleans in_buffer to prevent infinite loop */
-            cin.getline(in_buffer, MSG_MAX_SIZE);
-            continue;
-        }
+        manageUserInput(req, manager);  /* Processes user's input */
 
-        if (con == UDP) {  /* Connects to server by UDP */
-
-            int tries = UDP_N_TRIES;
-            bool try_again;
-            do {  /* We use a loop to allow retrying to send the message in case it fails */
-
-                /* Sends message to server */
-                n = sendto(fd_udp, req.c_str(), req.length(), 0, res->ai_addr, res->ai_addrlen);
-                assert_(n != -1, "Failed to send message with UDP")
-
-                /* Clears previous iteration's information */
-                bzero(&addr, sizeof(struct sockaddr_in));
-                addrlen = sizeof(addr);
-
-                TimerON(fd_udp);
-                n = recvfrom(fd_udp, res_buffer, MSG_MAX_SIZE, 0, (struct sockaddr *) &addr, &addrlen);
-                TimerOFF(fd_udp);
-
-                if (n == -1) {
-                    try_again = true;
-                    tries --;
-                    cout << "Retrying to send message..." << endl;
-                } else {
-                    try_again = false;
-                }
-
-                /* We tried 3 times before and was not able to send our message to the client */
-                if (try_again && tries == 0) {
-                    cerr << "Connection timed out and was not able to send the message." << endl;
-                    con = NO_CON;  // This is used to bypass the selector function down below
-                }
-
-            } while (try_again && tries > 0);
-
-
-        } else if (con == TCP) {  /* Connects to server by TCP */
-
-            /* Initializes and setups fd_udp to be a valid socket */
-            init_socket_tcp();
-
-            /* Creates connection between server and client */
-            assert_(connect(fd_tcp, res->ai_addr, res->ai_addrlen) != -1, "Could not connect to sever")
-
-            uint16_t nw;  /* Used to keep track of how many bytes we have sent to the server */
-            n = (ssize_t) req.length();  /* Sends request size */
-
-            /* Keeps sending messages to sever until everything is sent */
-            char* ptr = &req[0];
-            while (n > 0) {
-                assert_((nw = write(fd_tcp, ptr, MSG_MAX_SIZE)) > 0, "Could not send message to server")
-                n -= nw; ptr += nw;
-            }
-
-            /* Keeps on reading until everything has been read from the server */
-            while ((n = read(fd_tcp, res_buffer, MSG_MAX_SIZE)) != 0) {
-                assert_(n != -1, "Failed to retrieve response from server")
-            }
-
-            /* Closes TCP connection */
-            close(fd_tcp);
-
-        }
-
-        if (con == UDP || con == TCP) {
-
-            /* Removes \n at the end of the in_buffer. Makes things easier down the line */
-            res_buffer[strlen(res_buffer) - 1] = '\0';
-
-            /* Based on the message sent by the server, display a message to the user */
-            selector(res_buffer);
-
-            /* Cleans response buffer before receiving another response */
-            memset(res_buffer, 0, MSG_MAX_SIZE);
-        }
-
-    } while (strcmp(in_buffer, EXIT_CMD) != 0);
+   } while (strcmp(buffer, EXIT_CMD) != 0);
 
     /* Closes client socket */
     freeaddrinfo(res);
