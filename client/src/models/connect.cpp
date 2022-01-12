@@ -142,23 +142,25 @@ int Connect::getSocketTCP() {
  *
  * @return server's response
  */
-string sendByUDP(const string& request) {
+string Connect::sendByUDP(const string& request) {
 
-    int tries = UDP_N_TRIES;
-    bool try_again;
+    int tries = UDP_N_TRIES;  /* Number of tries that are going to be executed */
+    bool try_again;  /* Checks if we should try again */
+    char buffer[100];  /* Holds temporarily the information sent to the socket */
+    string response{};  /* Used to build the server's response */
+
     do {  /* We use a loop to allow retrying to send the message in case it fails */
 
         /* Sends message to server */
-        n = sendto(fd_udp, req.c_str(), req.length(), 0, res->ai_addr, res->ai_addrlen);
+        ssize_t n = sendto(this->getSocketUDP(), request.c_str(), request.length(), 0, res->ai_addr, res->ai_addrlen);
         assert_(n != -1, "Failed to send message with UDP")
 
-        /* Clears previous iteration's information */
-        bzero(&addr, sizeof(struct sockaddr_in));
-        addrlen = sizeof(addr);
-
-        TimerON(fd_udp);
-        n = recvfrom(fd_udp, res_buffer, MSG_MAX_SIZE, 0, (struct sockaddr *) &addr, &addrlen);
-        TimerOFF(fd_udp);
+        /* Read from socket until it finds an \n and stores it in response */
+        Connect::TimerON(this->getSocketUDP());
+        n = recvfrom(this->getSocketUDP(), buffer, sizeof buffer, 0, nullptr, nullptr);
+        Connect::TimerOFF(this->getSocketUDP());
+        response.append(buffer);
+        memset(buffer, 0, sizeof buffer);
 
         if (n == -1) {
             try_again = true;
@@ -171,14 +173,15 @@ string sendByUDP(const string& request) {
         /* We tried 3 times before and was not able to send our message to the client */
         if (try_again && tries == 0) {
             cerr << "Connection timed out and was not able to send the message." << endl;
-            con = NO_CON;  // This is used to bypass the selector function down below
+            return "INVALID";  // TODO: do this better
         }
 
-    } while (try_again && tries > 0);
+    } while (response.back() != '\n' && try_again && tries > 0);
 
-    res_buffer[strlen(res_buffer) - 1] = '\0';
+    /* Removes \n from end of response. Makes things easier down the line */
+    response[response.length() - 1] = '\0';
 
-    return res_buffer;
+    return response;
 
 }
 
@@ -190,34 +193,48 @@ string sendByUDP(const string& request) {
  *
  * @return server's response
  */
-string sendByTCP(const string& request) {
+string Connect::sendByTCP(const string& request) {
+
+    char buffer[100];  /* Holds temporarily the information sent to the socket */
+    string response{};  /* Used to build the server's response */
 
     /* Initializes and setups fd_udp to be a valid socket */
     init_socket_tcp();
 
     /* Creates connection between server and client */
-    assert_(connect(fd_tcp, res->ai_addr, res->ai_addrlen) != -1, "Could not connect to sever")
+    assert_(connect(this->getSocketTCP(), res->ai_addr, res->ai_addrlen) != -1, "Could not connect to sever")
 
     uint16_t nw;  /* Used to keep track of how many bytes we have sent to the server */
-    n = (ssize_t) req.length();  /* Sends request size */
+    auto n = (ssize_t) request.length();  /* Sends request size */
 
     /* Keeps sending messages to sever until everything is sent */
-    char* ptr = &req[0];
+    char* ptr = const_cast<char *>(&request[0]);
     while (n > 0) {
-        assert_((nw = write(fd_tcp, ptr, MSG_MAX_SIZE)) > 0, "Could not send message to server")
+        assert_((nw = write(this->getSocketTCP(), ptr, sizeof buffer)) > 0, "Could not send message to server")
         n -= nw; ptr += nw;
     }
 
     /* Keeps on reading until everything has been read from the server */
-    while ((n = read(fd_tcp, res_buffer, MSG_MAX_SIZE)) != 0) {
+    while ((n = read(this->getSocketTCP(), buffer, sizeof buffer)) != 0) {
         assert_(n != -1, "Failed to retrieve response from server")
     }
 
-    res_buffer[strlen(res_buffer) - 1] = '\0';
+    /* Removes \n from end of response. Makes things easier down the line */
+    response[response.length() - 1] = '\0';
 
     /* Closes TCP connection */
-    close(fd_tcp);
+    close(this->getSocketTCP());
 
-    return res_buffer;
+    return response;
 
+}
+
+
+/**
+ * @brief Cleans and frees everything related to the Connection.
+ */
+void Connect::clean() {
+    freeaddrinfo(this->res);
+    close(this->getSocketTCP());  // It is not needed per se but should not hurt to be sure
+    close(this->getSocketUDP());
 }

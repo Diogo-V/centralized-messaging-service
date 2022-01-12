@@ -23,6 +23,24 @@ User Manager::getUser() {
 
 
 /**
+ * @brief Gets manager's connection to the server.
+ *
+ * @return connection model
+ */
+Connect Manager::getConnection() {
+    return this->_connect;
+}
+
+
+/**
+ * @brief Cleans everything related to the Manager.
+ */
+void Manager::clean() {
+    this->getConnection().clean();
+}
+
+
+/**
  * @brief Mounts and sends a register command and analyses response from server.
  *
  * @param input user input command
@@ -46,7 +64,18 @@ void Manager::doRegister(const string& input) {
     /* Transforms user input into a valid command to be sent to the server */
     req = "REG " + inputs[1] + " " + inputs[2] + "\n";
 
+    /* Sends request to server by UDP and gets response */
+    string response = this->getConnection().sendByUDP(req);
 
+    /* Splits response to be analysed */
+    vector<string> outputs;
+    split(response, outputs);
+
+    /* Analyses response and informs the user of the result */
+    if (outputs[1] == "OK") cout << "User registered successfully" << endl;
+    else if (outputs[1] == "DUP") cerr << "Failed. User has already registered" << endl;
+    else if (outputs[1] == "NOK") cerr << "Failed. Too many users already registered " << endl;
+    else cerr << "Invalid status" << endl;
 
 }
 
@@ -72,12 +101,24 @@ void Manager::doUnregister(const string& input) {
     validate_(inputs[2].size() == 8, "User password should have 8 alphanumerical characters")
     validate_(isAlphaNumeric(inputs[2]), "User password should have only alphanumerical characters")
 
-    // Updates login status
-    if (this->getUser().getUserID() == inputs[1] && this->getUser().getLoggedStatus())
-        bool logouts = true;
-
     /* Transforms user input into a valid command to be sent to the server */
     req = "UNR " + inputs[1] + " " + inputs[2] + "\n";
+
+    /* Sends request to server by UDP and gets response */
+    string response = this->getConnection().sendByUDP(req);
+
+    /* Splits response to be analysed */
+    vector<string> outputs;
+    split(response, outputs);
+
+    /* Analyses response and informs the user of the result */
+    if (outputs[1] == "OK"){
+        cout << "User unregistered successfully" << endl;
+        /*Logouts the user if the user was logged in*/
+        if (this->getUser().getLoggedStatus()) this->getUser().resetUser();
+    }
+    else if (outputs[1] == "NOK") cerr << "Failed. Invalid user id or incorrect password." << endl;
+    else cerr << "Invalid status" << endl;
 
 }
 
@@ -107,11 +148,22 @@ void Manager::doLogin(const string& input) {
     /* Transforms user input into a valid command to be sent to the server */
     req = "LOG " + inputs[1] + " " + inputs[2] + "\n";
 
+    /* Sends request to server by UDP and gets response */
+    string response = this->getConnection().sendByUDP(req);
 
+    /* Splits response to be analysed */
+    vector<string> outputs;
+    split(response, outputs);
 
-    /* Updates user's info */
-    this->getUser().setUserID( inputs[1]);
-    this->getUser().setUserPassword(inputs[2]);
+    /* Analyses response and informs the user of the result */
+    if (outputs[1] == "OK") {
+        cout << "User logged in successfully" << endl;
+        this->getUser().toggleLoggedStatus();
+        this->getUser().setUserID( inputs[1]);
+        this->getUser().setUserPassword(inputs[2]);
+    }
+    else if (outputs[1] == "NOK") cerr << "Failed. Invalid user id or incorrect password." << endl;
+    else cerr << "Invalid status" << endl;
 
 }
 
@@ -136,7 +188,20 @@ void Manager::doLogout(const string& input) {
     /* Transforms user input into a valid command to be sent to the server */
     req = "OUT " + this->getUser().getUserID() + " " + this->getUser().getUserPassword() + "\n";
 
-//    con = UDP;  /* Sets connection type to be used by the client to connect to the server */
+    /* Sends request to server by UDP and gets response */
+    string response = this->getConnection().sendByUDP(req);
+
+    /* Splits response to be analysed */
+    vector<string> outputs;
+    split(response, outputs);
+
+    /* Analyses response and informs the user of the result */
+    if (outputs[1] == "OK") {
+        cout << "User logged out successfully" << endl;
+        this->getUser().resetUser();
+    }
+    else if (outputs[1] == "NOK") cerr << "Failed. Invalid user id or incorrect password." << endl;
+    else cerr << "Invalid status" << endl;
 
 }
 
@@ -181,9 +246,28 @@ void Manager::doExit(const string& input) {
 
     /* Still needs to log out user if he is logged in */
     if (this->getUser().getLoggedStatus()) {
+
+        /* Transforms user input into a valid command to be sent to the server */
         req = "OUT " + this->getUser().getUserID() + " " + this->getUser().getUserPassword() + "\n";
-//        con = UDP;
+
+        /* Sends request to server by UDP and gets response */
+        string response = this->getConnection().sendByUDP(req);
+
+        /* Splits response to be analysed */
+        vector<string> outputs;
+        split(response, outputs);
+
+        /* Analyses response and informs the user of the result */
+        if (outputs[1] == "OK") {
+            cout << "User logged out successfully" << endl;
+            this->getUser().resetUser();
+        }
+        else if (outputs[1] == "NOK") cerr << "Failed. Invalid user id or incorrect password." << endl;
+        else cerr << "Invalid status" << endl;
+
     }
+
+    cout << "Exit successful" << endl;
 
 }
 
@@ -207,7 +291,18 @@ void Manager::doListGroups(const string& input) {
     /* Transforms user input into a valid command to be sent to the server */
     req = "GLS\n";
 
-//    con = UDP;  /* Sets connection type to be used by the client to connect to the server */
+    /* Sends request to server by UDP and gets response */
+    string response = this->getConnection().sendByUDP(req);
+
+    /* Splits response to be shown */
+    vector<string> outputs;
+    split(response, outputs);
+
+    /* Prints response to the user */
+    if (outputs[1] != "0") {
+        for (auto i = outputs.begin() + 2; i != outputs.end() - 1; ++i) cout << *i << " ";
+        cout << *(outputs.end() - 1);
+    }
 
 }
 
@@ -237,8 +332,23 @@ void Manager::doSubscribe(const string& input) {
     /* Transforms user input into a valid command to be sent to the server */
     req = "GSR " + this->getUser().getUserID() + " " + inputs[1] + " " + inputs[2] + "\n";
 
-//    con = UDP;  /* Sets connection type to be used by the client to connect to the server */
-    
+    /* Sends request to server by UDP and gets response */
+    string response = this->getConnection().sendByUDP(req);
+
+    /* Splits response to be analysed */
+    vector<string> outputs;
+    split(response, outputs);
+
+    /* Analyses response and informs the user of the result */
+    if (outputs[1] == "OK") cout << "User subscribed successfully." << endl;
+    else if (outputs[1] == "NEW") cout << "New group created. User subscribed successfully." << endl;
+    else if (outputs[1] == "E_USR") cerr << "Failed. Invalid user id." << endl;
+    else if (outputs[1] == "E_GRP") cerr << "Failed. Invalid group id." << endl;
+    else if (outputs[1] == "E_GNAME") cerr << "Failed. Invalid group name." << endl;
+    else if (outputs[1] == "E_FULL") cerr << "Failed. Couldn't create new group." << endl;
+    else if (outputs[1] == "NOK") cerr << "Failed. Unkown reasons." << endl;
+    else cerr << "Invalid status" << endl;
+
 }
 
 
@@ -264,8 +374,20 @@ void Manager::doUnsubscribe(const string& input) {
     /* Transforms user input into a valid command to be sent to the server */
     req = "GUR " + this->getUser().getUserID() + " " + inputs[1] + "\n";
 
-//    con = UDP;  /* Sets connection type to be used by the client to connect to the server */
-    
+    /* Sends request to server by UDP and gets response */
+    string response = this->getConnection().sendByUDP(req);
+
+    /* Splits response to be analysed */
+    vector<string> outputs;
+    split(response, outputs);
+
+    /* Analyses response and informs the user of the result */
+    if (outputs[1] == "OK") cout << "User unsubscribed successfully" << endl;
+    else if (outputs[1] == "E_USR") cerr << "Failed. Invalid user id.";
+    else if (outputs[1] == "E_GRP") cerr << "Failed. Invalid group id." << endl;
+    else if (outputs[1] == "NOK") cerr << "Failed. Unkown reason." << endl;
+    else cerr << "Invalid status" << endl;
+
 }
 
 
@@ -289,8 +411,19 @@ void Manager::doMyGroups(const string& input) {
     /* Transforms user input into a valid command to be sent to the server */
     req = "GLM " + this->getUser().getUserID() + "\n";
 
-//    con = UDP;  /* Sets connection type to be used by the client to connect to the server */
-    
+    /* Sends request to server by UDP and gets response */
+    string response = this->getConnection().sendByUDP(req);
+
+    /* Splits response to be shown */
+    vector<string> outputs;
+    split(response, outputs);
+
+    /* Analyses response and shows it to the user */
+    if (outputs[1] != "0") {
+        for (auto i = outputs.begin() + 2; i != outputs.end() - 1; ++i) cout << *i << " ";
+        cout << *(outputs.end() - 1);
+    }
+
 }
 
 
@@ -364,8 +497,20 @@ void Manager::doUserList(const string& input) {
     /* Transforms user input into a valid command to be sent to the server */
     req = "ULS " + this->getUser().getSelectedGroupID() +  "\n";
 
-//    con = TCP;  /* Sets connection type to be used by the client to connect to the server */
-    
+    /* Sends request to server by UDP and gets response */
+    string response = this->getConnection().sendByTCP(req);
+
+    /* Splits response to be analysed */
+    vector<string> outputs;
+    split(response, outputs);
+
+    /* Analyses response and informs the user of the result */
+    if (outputs[1] == "NOK") cerr << "Failed. Group doesn't exist." << endl;
+    else if (outputs[1] == "OK") {
+        for (auto i = outputs.begin() + 2; i != outputs.end() - 1; ++i) cout << *i << " ";
+        cout << *(outputs.end() - 1);
+    } else cerr << "Invalid status" << endl;
+
 }
 
 
@@ -380,6 +525,18 @@ void Manager::doPost(const string& input) {
     string req;  /* Holds request that is going to be sent to the server */
 
     // TODO: @Sofia-Morgado -> Copy your implementation
+
+    /* Sends request to server by UDP and gets response */
+    string response = this->getConnection().sendByTCP(req);  // TODO: Has to be another TCP in case of file
+
+    /* Splits response to be analysed */
+    vector<string> outputs;
+    split(response, outputs);
+
+    /* Analyses response and informs the user of the result */
+    if (outputs[1] == "NOK") cerr << "Failed. Message couldn't be posted" << endl;
+    else if (isNumber(outputs[1])) cout << outputs[1] << endl;
+    else cerr << "Invalid status" << endl;
     
 }
 
@@ -395,5 +552,20 @@ void Manager::doRetrieve(const string& input) {
     string req;  /* Holds request that is going to be sent to the server */
 
     // TODO: @Sofia-Morgado -> Copy your implementation
+
+    /* Sends request to server by UDP and gets response */
+    string response = this->getConnection().sendByTCP(req);  // TODO: Has to be another TCP in case of file
+
+    /* Splits response to be analysed */
+    vector<string> outputs;
+    split(response, outputs);
+
+    /* Analyses response and informs user of the result */
+    if (outputs[1] == "NOK") cerr << "Failed. Couldn't retrieve messages" << endl;
+    else if (outputs[1] == "EOF") cout << "No messages available" << endl;
+    else if (outputs[1] == "OK") {
+        for (auto i = outputs.begin() + 2; i != outputs.end() - 1; ++i) cout << *i << " ";
+        cout << *(outputs.end() - 1);
+    } else cerr << "Invalid status" << endl;
     
 }

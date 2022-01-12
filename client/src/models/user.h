@@ -90,6 +90,11 @@ class User {
          */
         void setUserSelectedGroupID(const string& group_id);
 
+        /**
+         * @brief Resets user info.
+         */
+        void resetUser();
+
 };
 
 #endif

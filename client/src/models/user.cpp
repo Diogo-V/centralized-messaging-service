@@ -77,3 +77,14 @@ void User::toggleLoggedStatus() {
 void User::setUserSelectedGroupID(const string& group_id) {
     this->_selected_group_id = group_id;
 }
+
+
+/**
+ * @brief Resets user info.
+ */
+void User::resetUser() {
+    this->setUserSelectedGroupID("");
+    this->setUserPassword("");
+    this->setUserID("");
+    this->toggleLoggedStatus();
+}

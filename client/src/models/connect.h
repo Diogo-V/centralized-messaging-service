@@ -10,6 +10,7 @@
 #include <netdb.h>
 #include <string>
 #include <cstring>
+#include <unistd.h>
 
 #define TIMEOUT_TIME_S 5
 #define UDP_N_TRIES 3
@@ -137,6 +138,11 @@ class Connect {
          * @return server's response
          */
         string sendByTCP(const string& request);
+
+        /**
+         * @brief Cleans and frees everything related to the Connection.
+         */
+        void clean();
 
 };
 

@@ -48,6 +48,18 @@ class Manager {
         User getUser();
 
         /**
+         * @brief Gets manager's connection to the server.
+         *
+         * @return connection model
+         */
+        Connect getConnection();
+
+        /**
+         * @brief Cleans and frees everything related to the Manager.
+         */
+        void clean();
+
+        /**
          * @brief Mounts and sends a register command and analyses response from server.
          *
          * @param input user input command
