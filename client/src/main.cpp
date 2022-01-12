@@ -1,5 +1,7 @@
 /*------------------------------------- Standard definitions -------------------------------------*/
 
+#include "models/manager.h"
+
 #include <iostream>
 #include <unistd.h>
 #include <cstdio>
@@ -21,12 +23,6 @@ using namespace std;
 #define UDP_N_TRIES 3
 #define TIMEOUT_TIME_S 5
 
-/* If condition is false displays msg and interrupts execution */
-#define assert_(cond, msg) if(! (cond)) { fprintf(stderr, msg); exit(EXIT_FAILURE); }
-
-/* If condition is false displays msg and returns with false bool value */
-#define validate_(cond, msg) do { if (! (cond)) { cerr << (msg) << endl; return false; } } while(0);
-
 
 /*-------------------------------------- Server global vars --------------------------------------*/
 
@@ -46,15 +42,7 @@ char res_buffer[MSG_MAX_SIZE];  /* Holds current message received in this socket
 
 enum con_type {TCP, UDP, NO_CON};  /* Decides how to send message to server (by udp or tcp) */
 
-typedef struct user {  /* Represents current client's user */
-    string uid;
-    string pass;
-    bool is_logged;
-    string selected_group;
-    user() { uid = ""; pass = ""; is_logged = false; selected_group = ""; }
-} User;
-
-User user;
+Manager manager;  /* Allows connecting and sending information to the server */
 
 string ds_port{PORT};  /* Holds server port */
 string ds_ip{LOCAL_IP};  /* Holds server ip */
@@ -65,98 +53,6 @@ bool logouts = false;
 
 
 /*----------------------------------------- Functions --------------------------------------------*/
-
-
-/**
- * Verifies if input string translates to a number.
- *
- * @param line string to be validated
- * @return boolean value
- */
-bool isNumber(const string& line) { char* p; strtod(line.c_str(), &p); return *p == 0; }
-
-
-/**
- * Verifies if input string translates to alphanumeric characters.
- * @param line string to be validated
- * @return boolean value
- */
-bool isAlphaNumeric(const string& line){
-    uint8_t i = 0, len = line.length();
-
-    while (isalnum(line[i])) i++;
-
-    return i == len;
-}
-
-
-/**
- * Verifies if input string translates to alphanumeric characters plus '-' and '_'.
- * @param line string to be validated
- * @return boolean value
- */
-bool isAlphaNumericPlus(const string& line){
-    uint8_t i = 0, len = line.length();
-    while (isalnum(line[i]) || (line[i] == '-') || (line[i] == '_')) i++;
-    return i == len;
-}
-
-
-/**
- * @brief Activates a timer to wait about 5 seconds. It is used as a measure of backup in case UDP
- * is not able to send the message to our server.
- *
- * @param sd socket to be timed
- *
- * @return manipulates socket options
- */
-int TimerON(int sd) {
-    struct timeval timeval{};
-    memset((char *) &timeval, 0, sizeof(timeval)); /* clear time structure */
-    timeval.tv_sec = TIMEOUT_TIME_S; /* Wait for 5 sec for a reply from server. */
-    return(setsockopt(sd, SOL_SOCKET, SO_RCVTIMEO,
-                      (struct timeval *)&timeval, sizeof(struct timeval)));
-}
-
-
-/**
- * @brief Disables a timer previously activated for an input socket.
- *
- * @param sd socket that was timed
- *
- * @return manipulates socket options
- */
-int TimerOFF(int sd) {
-    struct timeval timeval{};
-    memset((char *) &timeval, 0, sizeof(timeval)); /* Clear time structure */
-    return(setsockopt(sd, SOL_SOCKET, SO_RCVTIMEO,
-                      (struct timeval *) &timeval, sizeof(struct timeval)));
-}
-
-
-/*
- * Transforms a string with spaces in a vector with substring tokenized by the spaces.
- *
- * @param str string which is going to be separated
- * @param out vector with substrings
- */
-void split(string const &str, vector<string> &out) {
-    stringstream ss(str); string s; const char delim = (const char)* " ";
-    while (getline(ss, s, delim)) out.push_back(s);
-}
-
-
-/*
- * Gets user input command by reading until first space.
- *
- * @param str user input command
- *
- * @return requested command
- */
-string get_command(const string& str) {
-    stringstream ss(str); string s; char delim = ' '; string cmd;
-    getline(ss, cmd, delim); return cmd;
-}
 
 
 /**
@@ -266,6 +162,19 @@ void selector(const string& msg) {
 }
 
 
+/*
+ * Gets user input command by reading until first space.
+ *
+ * @param str user input command
+ *
+ * @return requested command
+ */
+string get_command(const string& str) {
+    stringstream ss(str); string s; char delim = ' '; string cmd;
+    getline(ss, cmd, delim); return cmd;
+}
+
+
 /**
  * Verifies if a message that the user input is valid. Also populates "req" with the request that is
  * going to be sent to the server.
@@ -281,65 +190,12 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
     /* Verifies if the user requested a valid command */
     if (cmd == "reg") {
-
-        /* Splits msg by the spaces and returns an array with everything */
-        split(msg, inputs);
-
-        /* Verifies if the user input a valid command */
-        validate_(inputs.size() == 3, "User did not input user ID and/or password")
-        validate_(inputs[1].size() == 5, "User ID should have 5 numbers")
-        validate_(isNumber(inputs[1]), "User ID is not a number")
-        validate_(inputs[2].size() == 8, "User password should have 8 alphanumerical characters")
-        validate_(isAlphaNumeric(inputs[2]), "User password should have only alphanumerical characters")
-
-        /* Transforms user input into a valid command to be sent to the server */
-        out = "REG " + inputs[1] + " " + inputs[2] + "\n";
-
-        con = UDP;  /* Sets connection type to be used by the client to connect to the server */
-
-        return true;  /* Since everything was ok, we return true */
-
+        manager.doRegister(msg, fd_udp);
     } else if (cmd == "unr" || cmd == "unregister") {
-
-        /* Splits msg by the spaces and returns an array with everything */
-        split(msg, inputs);
-
-        /* Verifies if the user input a valid command */
-        validate_(inputs.size() == 3, "User did not input user ID and/or password")
-        validate_(inputs[1].size() == 5, "User ID should have 5 numbers")
-        validate_(isNumber(inputs[1]), "User ID is not a number")
-        validate_(inputs[2].size() == 8, "User password should have 8 alphanumerical characters")
-        validate_(isAlphaNumeric(inputs[2]), "User password should have only alphanumerical characters")
-
-        if (user.uid == inputs[1] && user.is_logged) logouts = true;
-
-        /* Transforms user input into a valid command to be sent to the server */
-        out = "UNR " + inputs[1] + " " + inputs[2] + "\n";
-
-        con = UDP;  /* Sets connection type to be used by the client to connect to the server */
-
-        return true;  /* Since everything was ok, we return true */
-
+        manager.doUnregister(msg, fd_udp)
     } else if (cmd == "login") {
 
-        /* Splits msg by the spaces and returns an array with everything */
-        split(msg, inputs);
 
-        /* Verifies if the user input a valid command and that this command can be issued */
-        validate_(inputs.size() == 3, "User did not input user ID and/or password")
-        validate_(inputs[1].size() == 5, "User ID should have 5 numbers")
-        validate_(isNumber(inputs[1]), "User ID is not a number")
-        validate_(inputs[2].size() == 8, "User password should have 8 alphanumerical characters")
-        validate_(isAlphaNumeric(inputs[2]), "User password should have only alphanumerical characters")
-        validate_(!user.is_logged, "Client is already logged in")
-
-        /* Transforms user input into a valid command to be sent to the server */
-        out = "LOG " + inputs[1] + " " + inputs[2] + "\n";
-
-        con = UDP;  /* Sets connection type to be used by the client to connect to the server */
-
-        user.uid = inputs[1];  /* Sets tmp_user's uid */
-        user.pass = inputs[2];  /* Saves tmp_user's password locally */
 
         return true;  /* Since everything was ok, we return true */
 
@@ -570,51 +426,6 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
     cout << "Invalid command" << endl;
     return false;  /* Since no command was chosen, the user did not input a valid command */
-
-}
-
-
-/**
- * Setups our socket "fd_udp".
- */
-void init_socket_udp() {
-
-    /* Creates udp socket for internet */
-    fd_udp = socket(AF_INET, SOCK_DGRAM, 0);
-    assert_(fd_udp != -1, "Could not create socket")
-
-    /* Inits UDP server's struct to access the DNS */
-    memset(&hints, 0, sizeof hints);
-    hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_DGRAM;
-
-    /* Uses its URL to consult DNS and get the server to which we want to send messages */
-    errcode = getaddrinfo(ds_ip.c_str(), ds_port.c_str(), &hints, &res);
-    assert_(errcode == 0, "Failed getaddrinfo call")
-
-}
-
-
-/**
- * @brief Setups our socket "fd_tcp".
- */
-void init_socket_tcp() {
-
-    /* Creates tcp subgroup for internet */
-    fd_tcp = socket(AF_INET, SOCK_STREAM, 0);
-    assert_(fd_tcp != -1, "Could not create tcp socket")
-
-    /* Inits TCP server's struct to access the DNS */
-    memset(&hints, 0, sizeof hints);
-    hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_flags = AI_PASSIVE;
-
-    /* Uses its URL to consult DNS and get a TCP server's IP address */
-    errcode = getaddrinfo(ds_ip.c_str(), ds_port.c_str(), &hints, &res);
-    assert_(errcode == 0, "Failed getaddrinfo call for tcp")
-
-
 
 }
 
