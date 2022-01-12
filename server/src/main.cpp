@@ -26,6 +26,8 @@ using namespace std;
 /* Const definitions */
 #define PORT "58011"
 #define MSG_MAX_SIZE 300
+#define TEXT_MAX_SIZE 240
+#define FILENAME_MAX_SIZE 24
 #define TCP_N_CONNECTIONS 5
 
 /* If condition is false displays msg and interrupts execution */
@@ -180,12 +182,24 @@ string selector(const string& msg) {
 
         verbose_(isVerbose, "UID: " + inputs[1] + "GID: " + inputs[2] + " | IP: " + ip + " | PORT: " + port)
 
-        char text[MSG_MAX_SIZE];  /* Will hold user input text */
+        char text[TEXT_MAX_SIZE];  /* Will hold user input text */
+        char file_name[FILENAME_MAX_SIZE]; /* Will hold the input file */
         string file;  /* Will hold the input file */
         memset(text, 0, MSG_MAX_SIZE);
-        char c;  /* Used to check if the user did not input a file */
+        int checker, file_size, n1;  /* Used to check if the user did not input a file */
+        bool file_flag = false;
 
-        sscanf(msg.c_str(), R"(%*s %*s %*s %*s "%240[^"]")", text, &c);
+        sscanf(msg.c_str(), R"(%*s %*s %*s %*s "%240[^"]" %n)", text, &checker);
+
+        if (checker == 0 || msg[checker] != '\0'){
+            assert_(sscanf(msg.c_str(), R"(%*s %*s %*s %*s %*s "%*240[^"]" %s %n1 %d)", file_name, &n1, &file_size) == 1, "Invalid format\n")
+            file_flag = true;
+
+            for (int i = 0; i < file_size; i++){
+                /*Read data */
+                cout << msg[n1 + 1 + i] << endl;
+            }
+        }
 
         /* receives status from call function*/
         status = post_message(&groups, &users, inputs[1], inputs[2], inputs[3], text);

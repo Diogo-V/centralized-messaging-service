@@ -10,6 +10,7 @@
 #include <cstring>
 #include <vector>
 #include <sstream>
+#include <fstream>
 
 using namespace std;
 
@@ -17,6 +18,8 @@ using namespace std;
 #define PORT "58011"
 #define LOCAL_IP "localhost"
 #define MSG_MAX_SIZE 300
+#define TEXT_MAX_SIZE 240
+#define FILENAME_MAX_SIZE 24
 #define EXIT_CMD "exit"
 #define UDP_N_TRIES 3
 #define TIMEOUT_TIME_S 5
@@ -62,6 +65,9 @@ string ds_ip{LOCAL_IP};  /* Holds server ip */
 /** Flag to represent the need to logout the user when unregister the user has been successful and this user is the
  the currently logged in user */
 bool logouts = false;
+
+//TODO: @Sofia-Morgado-> shitty solution
+bool post_file = false;
 
 
 /*----------------------------------------- Functions --------------------------------------------*/
@@ -410,7 +416,7 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         /* Verifies if the user input a valid command and that this command can be issued */
         validate_(inputs.size() == 3, "User did not input group ID and/or group name")
-        validate_(inputs[1].size() <= 2, "Group ID isn't 2 digit-number")
+        validate_(inputs[1].size() == 2, "Group ID isn't 2 digit-number")
         validate_(isNumber(inputs[1]), "Group ID is not a number")
         validate_(inputs[2].size() <= 24, "Group name limited to 24 characters")
         validate_(isAlphaNumericPlus(inputs[2]), "Group name should have only alphanumerical characters plus '-' and "
@@ -467,7 +473,7 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
         /* Verifies if the user input a valid command and that this command can be issued */
         validate_(inputs.size() == 2, "User did not input group ID")
         validate_(isNumber(inputs[1]), "Group ID is not a number")
-        validate_(inputs[1].size() <= 2, "Group ID isn't a 2 digit-number")
+        validate_(inputs[1].size() == 2, "Group ID isn't a 2 digit-number")
         validate_(user.is_logged, "Client is not logged in")
 
         /* Saves selected group locally */
@@ -508,43 +514,71 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
     } else if (cmd == "post") {
 
-        char text[MSG_MAX_SIZE];  /* Will hold user input text */
-        string file;  /* Will hold the input file */
-        memset(text, 0, MSG_MAX_SIZE);
-        char c;  /* Used to check if the user did not input a file */
+        char text[TEXT_MAX_SIZE];  /* Will hold user input text */
+        char file_name[FILENAME_MAX_SIZE]; /* Will hold the input file */
+        char data_buffer[MSG_MAX_SIZE];  /* Holds file's data */
+        memset(text, 0, TEXT_MAX_SIZE);
+        memset(file_name, 0, FILENAME_MAX_SIZE);
+        memset(data_buffer, 0, FILENAME_MAX_SIZE);
+        //TODO: @Sofia-Morgado -> mudar o nome desta variável
+        int checker; /* Used to check if the user did not input a file */
+        bool file_flag = false;
 
-        assert_(sscanf(msg.c_str(), R"(%*s "%240[^"]" %c)", text, &c) == 1, "Invalid format")
-//        assert_(sscanf(msg.c_str(), R"(%*s "%*s" %[^\n])", file) == 1, "Invalid format")
-//
-//        for (auto x = msg.end(); x >= msg.begin(); x--) {
-//            file.append(msg[x]);
-//        }
-//
-//        while ()
+        assert_(sscanf(msg.c_str(), R"(%*s "%240[^"]" %n)", text, &checker) == 1, "Invalid format\n")
 
-        //cout << file << endl;
+        if (checker == 0 || msg[checker] != '\0'){
+            assert_(sscanf(msg.c_str(), R"(%*s "%*240[^"]" %s)", file_name) == 1, "Invalid format\n")
+            file_flag = true;
+        }
 
-
-        //inputs[1] = text;
-        //if (c != '\n') inputs[2] = file;
 
         /* Verifies if the user input a valid command and that this command can be issued */
         //validate_(inputs.size() >= 2, "Invalid number of arguments")
         validate_(user.is_logged, "Client is not logged in")
         validate_(!user.selected_group.empty(), "No selected group")
+        validate_(strlen(file_name) <= 24, "File name name up to 24 characters, including the dot and the file type")
+        //TODO: @Sofia-Morgado -> melhorar esta verificação
+        //validate_(file_flag || (file_name[strlen(file_name) - 4] == '.'), "File name is of type: nn(...)nn.xxx")
         //validate_((inputs[1].length() - 2) <= 240, "Text is limited to 240 characters")
 
         string len = to_string(strlen(text));
 
         /* Transforms user input into a valid command to be sent to the server */
-        out = "PST " + user.uid + " " + user.selected_group + " " + len + " " + "\"" + text + "\"\n";
+        out = "PST " + user.uid + " " + user.selected_group + " " + len + " " + "\"" + text + "\"";
 
-        //cout << out << endl;
+        if (file_flag) {
 
-        /*if (inputs.size() == 3) {
-            ifstream file(inputs[2], ifstream::ate | ifstream::binary);
-            out += " " + inputs[2] + " " + to_string(file.tellg());
-        } else { out += "\n"; }*/
+            post_file = true;
+
+            /* Gets the current directory of the project*/
+            char *project_directory = get_current_dir_name();
+            string file_path = string(project_directory) + "/client/bin/" + file_name ;
+
+            ifstream file(string(file_path), ifstream::in | ifstream::binary);
+
+            out += " " + string(file_name) + " " + to_string(file.tellg());
+
+            int file_length = file.tellg();  /* Sends request size */
+            int bytes_sent;
+
+            /* Keeps sending messages to sever until everything is sent */
+            filebuf* pbuf = file.rdbuf();
+
+            /* Sends first the out then the data*/
+            assert_((bytes_sent = write(fd_tcp, &out, MSG_MAX_SIZE)) > 0, "Could not send message to server")
+
+            /* Then sends the data*/
+            while (n > 0) {
+                assert_((bytes_sent = write(fd_tcp, pbuf, MSG_MAX_SIZE)) > 0, "Could not send message to server")
+                file_length -= bytes_sent; pbuf += bytes_sent;
+            }
+
+            /* Close file*/
+            file.close();
+
+        } else { out += "\n"; }
+
+        cout << out << endl;
 
         con = TCP;  /* Sets connection type to be used by the client to connect to the server */
 
@@ -556,6 +590,7 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         /* Verifies if the user input a valid command and that this command can be issued */
         validate_(inputs.size() == 2, "Invalid number of arguments")
+        validate_(inputs[1].size() == 4, "Message id isn't a 4 digit number")
         validate_(user.is_logged, "Client is not logged in")
         validate_(!user.selected_group.empty(), "No selected group")
 
@@ -649,7 +684,7 @@ int main(int argc, char const *argv[]) {
         /* Also populates "req" with a valid request and con with how to connect to the server */
         if (! preprocessing(in_buffer, req, con)) {
             memset(in_buffer, 0, MSG_MAX_SIZE);  /* Cleans in_buffer to prevent infinite loop */
-            cin.getline(in_buffer, MSG_MAX_SIZE);
+            //cin.getline(in_buffer, MSG_MAX_SIZE);
             continue;
         }
 
@@ -657,7 +692,7 @@ int main(int argc, char const *argv[]) {
 
             int tries = UDP_N_TRIES;
             bool try_again;
-            do {  /* We use a loop to allow retrying to send the message in case it fails */
+            /*do {*/  /* We use a loop to allow retrying to send the message in case it fails */
 
                 /* Sends message to server */
                 n = sendto(fd_udp, req.c_str(), req.length(), 0, res->ai_addr, res->ai_addrlen);
@@ -667,25 +702,27 @@ int main(int argc, char const *argv[]) {
                 bzero(&addr, sizeof(struct sockaddr_in));
                 addrlen = sizeof(addr);
 
-                TimerON(fd_udp);
+                //TimerON(fd_udp);
                 n = recvfrom(fd_udp, res_buffer, MSG_MAX_SIZE, 0, (struct sockaddr *) &addr, &addrlen);
-                TimerOFF(fd_udp);
+                //TimerOFF(fd_udp);
 
+                /*
                 if (n == -1) {
                     try_again = true;
                     tries --;
                     cout << "Retrying to send message..." << endl;
                 } else {
                     try_again = false;
-                }
+                }*/
 
                 /* We tried 3 times before and was not able to send our message to the client */
-                if (try_again && tries == 0) {
+                /* if (try_again && tries == 0) {
                     cerr << "Connection timed out and was not able to send the message." << endl;
                     con = NO_CON;  // This is used to bypass the selector function down below
                 }
+                */
 
-            } while (try_again && tries > 0);
+            /*} while (try_again && tries > 0); */
 
 
         } else if (con == TCP) {  /* Connects to server by TCP */
@@ -701,9 +738,13 @@ int main(int argc, char const *argv[]) {
 
             /* Keeps sending messages to sever until everything is sent */
             char* ptr = &req[0];
-            while (n > 0) {
-                assert_((nw = write(fd_tcp, ptr, MSG_MAX_SIZE)) > 0, "Could not send message to server")
-                n -= nw; ptr += nw;
+
+            if(!post_file) {
+                while (n > 0) {
+                    assert_((nw = write(fd_tcp, ptr, MSG_MAX_SIZE)) > 0, "Could not send message to server")
+                    n -= nw;
+                    ptr += nw;
+                }
             }
 
             /* Keeps on reading until everything has been read from the server */
