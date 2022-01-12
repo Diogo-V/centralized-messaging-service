@@ -2,40 +2,15 @@
 
 #include "models/manager.h"
 
-#include <iostream>
-#include <unistd.h>
-#include <cstdio>
-#include <cstdlib>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <cstring>
-#include <vector>
-#include <sstream>
 
 using namespace std;
+
 
 /* Const definitions */
 #define PORT "58011"
 #define LOCAL_IP "localhost"
 #define MSG_MAX_SIZE 300
 #define EXIT_CMD "exit"
-
-
-/*-------------------------------------- Server global vars --------------------------------------*/
-
-
-int fd_udp;  /* Holds server udp socket file descriptor */
-int fd_tcp;  /* Holds server tcp socket file descriptor */
-int errcode;  /* Holds current error */
-
-struct addrinfo hints;  /* Used to request info from DNS to get our "endpoint" */
-struct addrinfo *res;  /* Stores result from getaddrinfo and uses it to set up our socket */
-
-char buffer[MSG_MAX_SIZE];  /* Holds user input */
-
-string ds_port{PORT};  /* Holds server port */
-string ds_ip{LOCAL_IP};  /* Holds server ip */
 
 
 /*----------------------------------------- Functions --------------------------------------------*/
@@ -95,6 +70,11 @@ void manageUserInput(const string& msg, Manager& manager) {
  */
 int main(int argc, char const *argv[]) {
 
+    char buffer[MSG_MAX_SIZE];  /* Holds user input */
+
+    string ds_port{PORT};  /* Holds server port */
+    string ds_ip{LOCAL_IP};  /* Holds server ip */
+
     /* Goes over all the flags and setups port and ip address to connect to server */
     for (int i = 1; i < argc; i += 2) {
         if (strcmp(argv[i], "-p") == 0) { string s(argv[i + 1]); ds_port = s; }
@@ -118,11 +98,6 @@ int main(int argc, char const *argv[]) {
 
     /* Cleans everything related to the manager */
     manager.clean();
-
-    /* Closes client socket */
-    freeaddrinfo(res);
-    close(fd_udp);
-    close(fd_tcp);
 
     return EXIT_SUCCESS;
 

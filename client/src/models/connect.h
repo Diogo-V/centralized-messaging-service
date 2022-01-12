@@ -29,12 +29,12 @@ class Connect {
         /**
          * @brief File descriptor for a tcp connection.
          */
-        int _fd_tcp;
+        int _fd_tcp{};
 
         /**
          * @brief File descriptor for a udp connection.
          */
-        int _fd_udp;
+        int _fd_udp{};
 
         /**
          * @brief Server's ip address.
@@ -49,7 +49,7 @@ class Connect {
         /**
          * @brief Stores result from getaddrinfo and uses it to set up our socket
          */
-        struct addrinfo *res;
+        struct addrinfo *res{};
 
     private:
 
@@ -112,14 +112,14 @@ class Connect {
          *
          * @return udp socket
          */
-        int getSocketUDP();
+        int getSocketUDP() const;
 
         /**
          * @brief Gets tcp socket used to communicate with the server.
          *
          * @return tcp socket
          */
-        int getSocketTCP();
+        int getSocketTCP() const;
 
         /**
          * @brief Sends a valid command by UDP to our server and gets a response.

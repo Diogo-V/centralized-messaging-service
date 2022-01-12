@@ -346,7 +346,7 @@ void Manager::doSubscribe(const string& input) {
     else if (outputs[1] == "E_GRP") cerr << "Failed. Invalid group id." << endl;
     else if (outputs[1] == "E_GNAME") cerr << "Failed. Invalid group name." << endl;
     else if (outputs[1] == "E_FULL") cerr << "Failed. Couldn't create new group." << endl;
-    else if (outputs[1] == "NOK") cerr << "Failed. Unkown reasons." << endl;
+    else if (outputs[1] == "NOK") cerr << "Failed. Unknown reasons." << endl;
     else cerr << "Invalid status" << endl;
 
 }
@@ -385,7 +385,7 @@ void Manager::doUnsubscribe(const string& input) {
     if (outputs[1] == "OK") cout << "User unsubscribed successfully" << endl;
     else if (outputs[1] == "E_USR") cerr << "Failed. Invalid user id.";
     else if (outputs[1] == "E_GRP") cerr << "Failed. Invalid group id." << endl;
-    else if (outputs[1] == "NOK") cerr << "Failed. Unkown reason." << endl;
+    else if (outputs[1] == "NOK") cerr << "Failed. Unknown reason." << endl;
     else cerr << "Invalid status" << endl;
 
 }
@@ -524,7 +524,7 @@ void Manager::doPost(const string& input) {
     vector<string> inputs;  /* Holds a list of strings with the inputs from our user */
     string req;  /* Holds request that is going to be sent to the server */
 
-    // TODO: @Sofia-Morgado -> Copy your implementation
+    // TODO: @Sofia -> Copy your implementation
 
     /* Sends request to server by UDP and gets response */
     string response = this->getConnection().sendByTCP(req);  // TODO: Has to be another TCP in case of file
@@ -551,7 +551,7 @@ void Manager::doRetrieve(const string& input) {
     vector<string> inputs;  /* Holds a list of strings with the inputs from our user */
     string req;  /* Holds request that is going to be sent to the server */
 
-    // TODO: @Sofia-Morgado -> Copy your implementation
+    // TODO: @Sofia -> Copy your implementation
 
     /* Sends request to server by UDP and gets response */
     string response = this->getConnection().sendByTCP(req);  // TODO: Has to be another TCP in case of file

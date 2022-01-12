@@ -55,7 +55,7 @@ class User {
          *
          * @return user's status
          */
-        bool getLoggedStatus();
+        bool getLoggedStatus() const;
 
         /**
          * @brief Gets user's currently selected group.

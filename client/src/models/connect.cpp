@@ -120,7 +120,7 @@ string Connect::getPort() {
  *
  * @return udp socket
  */
-int Connect::getSocketUDP() {
+int Connect::getSocketUDP() const {
     return this->_fd_udp;
 }
 
@@ -130,7 +130,7 @@ int Connect::getSocketUDP() {
  *
  * @return tcp socket
  */
-int Connect::getSocketTCP() {
+int Connect::getSocketTCP() const {
     return this->_fd_tcp;
 }
 
