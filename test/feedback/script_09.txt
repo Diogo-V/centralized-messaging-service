@@ -1,4 +1,123 @@
-When used after script_01.txt (should create groups 01 to 09 by user 10001):
+When used after script_01.txt (should create groups 01 to 09 by user 10001): ***NOT THE EXPECTED OUTCOME***
+---------------------------
+Wed, 12 Jan 2022 12:25:27 GMT
+
+COMMAND: login 10001 pword001
+Login successful (RLO OK)
+---------------------------
+Wed, 12 Jan 2022 12:25:27 GMT
+
+COMMAND: subscribe 00 Two-messages-text-only
+Wrong format reported by server (RGS NOK)
+---------------------------
+Wed, 12 Jan 2022 12:25:27 GMT
+
+COMMAND: subscribe 00 One-msg-text-and-photo
+Wrong format reported by server (RGS NOK)
+---------------------------
+Wed, 12 Jan 2022 12:25:27 GMT
+
+COMMAND: subscribe 00 Two-msg-Text-Photo
+Wrong format reported by server (RGS NOK)
+---------------------------
+Wed, 12 Jan 2022 12:25:27 GMT
+
+COMMAND: subscribe 00 Supersonic-planes
+Wrong format reported by server (RGS NOK)
+---------------------------
+Wed, 12 Jan 2022 12:25:27 GMT
+
+COMMAND: subscribe 00 Great-Battles
+Wrong format reported by server (RGS NOK)
+---------------------------
+Wed, 12 Jan 2022 12:25:27 GMT
+
+COMMAND: subscribe 00 Great-Battles-Pics-ODD
+Wrong format reported by server (RGS NOK)
+---------------------------
+Wed, 12 Jan 2022 12:25:27 GMT
+
+COMMAND: subscribe 00 Great-Battles-Pics-EVEN
+Wrong format reported by server (RGS NOK)
+---------------------------
+Wed, 12 Jan 2022 12:25:27 GMT
+
+COMMAND: subscribe 00 Battle-of-Lake-Peipus
+Wrong format reported by server (RGS NOK)
+---------------------------
+Wed, 12 Jan 2022 12:25:27 GMT
+
+COMMAND: subscribe 00 9
+Wrong format reported by server (RGS NOK)
+---------------------------
+Wed, 12 Jan 2022 12:25:27 GMT
+
+COMMAND: logout
+Logout user 10001 successful (ROU OK)
+---------------------------
+Wed, 12 Jan 2022 12:25:27 GMT
+
+COMMAND: exit
+
 
 
 When used without precedent (should fail due to user 10001 not being registered):
+---------------------------
+Wed, 12 Jan 2022 12:24:33 GMT
+
+COMMAND: login 10001 pword001
+Login error (RLO NOK)
+---------------------------
+Wed, 12 Jan 2022 12:24:33 GMT
+
+COMMAND: subscribe 00 Two-messages-text-only
+No user logged in
+---------------------------
+Wed, 12 Jan 2022 12:24:33 GMT
+
+COMMAND: subscribe 00 One-msg-text-and-photo
+No user logged in
+---------------------------
+Wed, 12 Jan 2022 12:24:33 GMT
+
+COMMAND: subscribe 00 Two-msg-Text-Photo
+No user logged in
+---------------------------
+Wed, 12 Jan 2022 12:24:33 GMT
+
+COMMAND: subscribe 00 Supersonic-planes
+No user logged in
+---------------------------
+Wed, 12 Jan 2022 12:24:33 GMT
+
+COMMAND: subscribe 00 Great-Battles
+No user logged in
+---------------------------
+Wed, 12 Jan 2022 12:24:33 GMT
+
+COMMAND: subscribe 00 Great-Battles-Pics-ODD
+No user logged in
+---------------------------
+Wed, 12 Jan 2022 12:24:33 GMT
+
+COMMAND: subscribe 00 Great-Battles-Pics-EVEN
+No user logged in
+---------------------------
+Wed, 12 Jan 2022 12:24:33 GMT
+
+COMMAND: subscribe 00 Battle-of-Lake-Peipus
+No user logged in
+---------------------------
+Wed, 12 Jan 2022 12:24:33 GMT
+
+COMMAND: subscribe 00 9
+No user logged in
+---------------------------
+Wed, 12 Jan 2022 12:24:33 GMT
+
+COMMAND: logout
+Not logged in
+---------------------------
+Wed, 12 Jan 2022 12:24:33 GMT
+
+COMMAND: exit
