@@ -155,7 +155,7 @@ string subscribe(unordered_map<string, Group>* groups, unordered_map<string, Use
 
     //FIXME: @Sofia-Morgado -> visto que isto é um erro de não existirem grupos ou users, o erro é NOK ou E_USR?
     /* Verifies if there are users registered or if there are groups to subscribe. This is for safety measure s*/
-    if(users->empty() || (groups->empty() && gid != "0")) {
+    if(users->empty() || (groups->empty() && gid != "00")) {
         return "NOK";
 
     /* UID doesn't exist or isn't logged in*/
@@ -163,21 +163,21 @@ string subscribe(unordered_map<string, Group>* groups, unordered_map<string, Use
         return "E_USR";
 
     /* Want to create a new group, but there are already 99 groups*/
-    } else if (gid == "0" && groups->size() == 99) {
+    } else if (gid == "00" && groups->size() == 99) {
         return "E_FULL";
 
     /* Group doesn't exist*/
-    } else if (gid != "0" && groups->count(gid) == 0) {
+    } else if (gid != "00" && groups->count(gid) == 0) {
         return "E_GRP";
 
     /* Group name is incorrect */
-    } else if (gid != "0" && groups->at(gid).getName() != group_name) {
+    } else if (gid != "00" && groups->at(gid).getName() != group_name) {
         return "E_GNAME";
 
     /* Everything is fine */
     } else {
 
-        if (gid == "0") {
+        if (gid == "00") {
 
             /* Formats group id to hold 2 chars */
             sprintf(new_gid, "%02lu", groups->size() + 1);
