@@ -14,7 +14,7 @@
 using namespace std;
 
 /* Const definitions */
-#define PORT "58039"
+#define PORT "58011"
 #define LOCAL_IP "localhost"
 #define MSG_MAX_SIZE 240
 #define EXIT_CMD "exit"

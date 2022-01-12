@@ -24,7 +24,7 @@
 using namespace std;
 
 /* Const definitions */
-#define PORT "58039"
+#define PORT "58011"
 #define MSG_MAX_SIZE 240
 #define TCP_N_CONNECTIONS 5
 
