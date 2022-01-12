@@ -147,7 +147,7 @@ string selector(const string& msg) {
         /* Splits msg by the spaces and returns an array with everything */
         split(msg, inputs);
 
-        verbose_(isVerbose, "UID: " + inputs[1] + "GID: " + inputs[2] + " | IP: " + ip + " | PORT: " + port)
+        verbose_(isVerbose, "UID: " + inputs[1] + " GID: " + inputs[2] + " | IP: " + ip + " | PORT: " + port)
         status = subscribe(&groups, &users, inputs[1], inputs[2], inputs[3]);
         return "RGS " + status + "\n";
 
@@ -155,7 +155,7 @@ string selector(const string& msg) {
         /* Splits msg by the spaces and returns an array with everything */
         split(msg, inputs);
 
-        verbose_(isVerbose, "UID: " + inputs[1] + "GID: " + inputs[2] + " | IP: " + ip + " | PORT: " + port)
+        verbose_(isVerbose, "UID: " + inputs[1] + " GID: " + inputs[2] + " | IP: " + ip + " | PORT: " + port)
         status = unsubscribe(&groups, &users, inputs[1], inputs[2]);
         return "RGU " + status + "\n";
 
