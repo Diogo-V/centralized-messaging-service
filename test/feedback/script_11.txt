@@ -1,0 +1,10 @@
+When used after script_06.txt and script_09.txt (should subscribe user 10002 to group 02):
+
+
+When used after script_06.txt (should fail due to group 02 not being created):
+
+
+When used after script_09.txt (should fail due to user 10002 not being registered):
+
+
+When used without precedent (should fail due group 02 not being created and user 10002 not being registered):

@@ -1,0 +1,4 @@
+When used after script_01.txt (should fail due to user 10001's password not being correct):
+
+
+When used without precedent (should fail due to user 10001 not being registered):

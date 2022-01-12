@@ -1,0 +1,7 @@
+When used after script_01.txt (should login user 10001):
+
+
+When used without precedent (should fail due to user 10001 not being registered):
+
+
+When used twice after script_01.txt (should login user 10001 two times):

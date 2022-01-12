@@ -1,0 +1,4 @@
+When used once (should register user 10001 with password pword001):
+
+
+When used twice (should fail due to user already being registered):

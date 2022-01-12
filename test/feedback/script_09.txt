@@ -1,0 +1,4 @@
+When used after script_01.txt (should create groups 01 to 09 by user 10001):
+
+
+When used without precedent (should fail due to user 10001 not being registered):

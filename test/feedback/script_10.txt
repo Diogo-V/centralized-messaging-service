@@ -1,0 +1,4 @@
+When used after script_09.txt (should list groups):
+
+
+When used without precedent (should list no groups):

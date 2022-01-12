@@ -1,0 +1,4 @@
+When used after script_01.txt (should login and logout user 10001):
+
+
+When used without precedent (should fail both login and logout due to user 10001 not being registered):

@@ -1,0 +1,10 @@
+When used after script_06.txt, script_09.txt and script_11.txt (should list groups, login user 10002 and list groups user 10002 is subscribed to):
+
+
+When used after script_06.txt and script_09.txt (should list groups, login user 10002 and list groups user 10002 is subscribed to - none):
+
+
+When used after script_06.txt (should list no groups, login user 10002 and list groups user 10002 is subscribed to - none):
+
+
+When used without precedent (should fail due user 10002 not being registered):

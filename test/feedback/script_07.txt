@@ -1,0 +1,10 @@
+When used after script_01.txt (should unregister user 10001 and fail to unregister users 10002 to 10009):
+
+
+When used after script_06.txt (should unregister users 10001 to 10009):
+
+
+When used without precedent (should fail due to users 10001 to 10009 not being registered):
+
+
+WHEN USED TO CHECK IF USERS ARE UNSUBSCRIBED FROM THEIR GROUP:
