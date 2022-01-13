@@ -559,6 +559,7 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
             out += " " + string(file_name) + " " + to_string(file.tellg());
 
+            //TODO: mudar o nome da variável
             int file_length = file.tellg();  /* Sends request size */
             int bytes_sent;
 
