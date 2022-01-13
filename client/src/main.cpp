@@ -607,7 +607,7 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         int bytes_sent;
         do {
-            assert_((bytes_sent = write(fd_tcp, &out, out.length())) > 0, "Could not send message to server oh noooo")
+            assert_((bytes_sent = write(fd_tcp, out.c_str(), out.length())) > 0, "Could not send message to server oh noooo")
             bytes_to_send -= bytes_sent;
         } while (bytes_to_send > 0);
 
