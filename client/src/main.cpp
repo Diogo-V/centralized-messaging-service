@@ -543,9 +543,13 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         string len = to_string(strlen(text));
 
-        //TODO: @Sofia->Morgado: enviar já este out
         /* Transforms user input into a valid command to be sent to the server */
+
         out = "PST " + user.uid + " " + user.selected_group + " " + len + " " + "\"" + text + "\"";
+
+        if (!file_flag){
+            out += "\n";
+        }
 
         /* Sends first the out then the data */
         ulong bytes_to_send = out.length();
@@ -555,9 +559,8 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
             bytes_to_send -= bytes_sent;
         } while (bytes_to_send > 0);
 
-        if (file_flag) {
 
-            post_file = true;
+        if (file_flag) {
 
             /* Gets the current directory of the project*/
             char *project_directory = get_current_dir_name();
@@ -594,6 +597,8 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
         cout << out << endl;
 
         con = TCP;  /* Sets connection type to be used by the client to connect to the server */
+
+        post = true;
 
         return true;
 
@@ -767,6 +772,8 @@ int main(int argc, char const *argv[]) {
 
             /* Closes TCP connection */
             close(fd_tcp);
+
+            post = false;
 
         }
 
