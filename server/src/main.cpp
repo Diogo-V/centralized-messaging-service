@@ -3,245 +3,37 @@
 #include "models/user.h"
 #include "models/group.h"
 #include "models/message.h"
-#include "api.h"
+#include "models/manager.h"
+#include "models/connect.h"
+#include "misc/helpers.h"
 
-#include <iostream>
 #include <unistd.h>
 #include <cstdio>
 #include <cstdlib>
-#include <ctime>
 #include <sys/types.h>
-#include <sys/socket.h>
 #include <csignal>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
 #include <cstring>
-#include <vector>
-#include <sstream>
 #include <dirent.h>
-#include <fstream>
+#include <memory>
+
 
 using namespace std;
 
+
 /* Const definitions */
 #define PORT "58011"
-#define MSG_MAX_SIZE 300
-#define TEXT_MAX_SIZE 240
-#define FILENAME_MAX_SIZE 24
-#define TCP_N_CONNECTIONS 5
-
-/* If condition is false displays msg and interrupts execution */
-#define assert_(cond, msg) if(! (cond)) { cerr << (msg) << endl; exit(EXIT_FAILURE); }
-
-/* If server is verbose, output message to the screen */
-#define verbose_(cond, msg) if((cond)) { cout << (msg) << endl; }
 
 
 /*-------------------------------------- Server global vars --------------------------------------*/
 
 
-int fd_udp;  /* Holds server udp socket file descriptor */
-int fd_tcp;  /* Holds server tcp socket file descriptor */
-int errcode;  /* Holds current error */
-fd_set fds;  /* Holds file descriptors in select */
-
-struct addrinfo hints;  /* Used to request info from DNS to get our "endpoint" */
-struct addrinfo *res;  /* Stores result from getaddrinfo and uses it to set up our socket */
-
-ssize_t n, nw, nr;  /* Holds number of bytes read/sent or -1 in case of error */
-socklen_t addrlen;  /* Holds size of message sent from sender */
-struct sockaddr_in addr;  /* Describes internet socket address. Holds sender info */
-char in_buffer[MSG_MAX_SIZE];  /* Holds current message received in this socket */
-
 bool isVerbose = false;  /* Is true if the server is set to verbose mode */
-string ds_port{PORT};  /* Holds server port */
 
-unordered_map<string, User> users;  /* Holds all users in our server. Key is user's id*/
-unordered_map<string, Group> groups;  /* Holds all groups in our server. Key is group's id */
+/* Creates unique pointer to manager */
+unique_ptr<Manager> manager;
 
 
 /*----------------------------------------- Functions --------------------------------------------*/
-//TODO: @Sogia-Morgado-> colocar split e command num outro file, porque está repetido no client
-
-/**
- * Transforms a string with spaces in a vector with substring tokenized by the spaces.
- *
- * @param str string which is going to be separated
- * @param out vector with substrings
- */
-void split(string const &str, vector<string> &out) {
-    stringstream ss(str); string s; const char delim = (const char)* " ";
-    while (getline(ss, s, delim)) out.push_back(s);
-}
-
-/*
- * Gets user input command by reading until first space.
- *
- * @param str user input command
- *
- * @return requested command
- */
-string get_command(const string& str) {
-    stringstream ss(str); string s; char delim = ' '; string cmd;
-    getline(ss, cmd, delim); return cmd;
-}
-
-
-/**
- * Receives message sent from user and decides based on the first 3 chars which action to take.
- * Also sends a report back to client.
- *
- * @param msg message sent by user
- */
-string selector(const string& msg) {
-
-    vector<string> inputs;  /* Holds a list of strings with the inputs from our user */
-    string status{};
-    string cmd = get_command(msg);
-
-    /* Gets client's ip and port to be logged */
-    string ip(inet_ntoa(addr.sin_addr));
-    string port{to_string(ntohs(addr.sin_port))};
-
-    if (cmd == "REG") {  /* Registers user */
-        /* Splits msg by the spaces and returns an array with everything */
-        split(msg, inputs);
-
-        verbose_(isVerbose, "UID: " + inputs[1] + " | IP: " + ip + " | PORT: " + port)
-        status = register_user(&users, inputs[1], inputs[2]);
-        return "RRG " + status + "\n";
-
-    } else if (cmd == "UNR") {  /* Unregisters user */
-        /* Splits msg by the spaces and returns an array with everything */
-        split(msg, inputs);
-
-        verbose_(isVerbose, "UID: " + inputs[1] + " | IP: " + ip + " | PORT: " + port)
-        status = unregister_user(&users, &groups, inputs[1], inputs[2]);
-        return "RUN " + status + "\n";
-
-    } else if (cmd == "LOG") {  /* Signs in user */
-        /* Splits msg by the spaces and returns an array with everything */
-        split(msg, inputs);
-
-        verbose_(isVerbose, "UID: " + inputs[1] + " | IP: " + ip + " | PORT: " + port)
-        status = login_user(&users, inputs[1], inputs[2]);
-        return "RLO " + status + "\n";
-
-    } else if (cmd == "OUT") {  /* Logout user */
-        /* Splits msg by the spaces and returns an array with everything */
-        split(msg, inputs);
-
-        verbose_(isVerbose, "UID: " + inputs[1] + " | IP: " + ip + " | PORT: " + port)
-        status = logout_user(&users, inputs[1] , inputs[2]);
-        return "ROU " + status + "\n";
-
-    } else if (cmd == "GLS") {  /* Requested list of existing groups */
-        /* Splits msg by the spaces and returns an array with everything */
-        split(msg, inputs);
-
-        verbose_(isVerbose, "IP: " + ip + " | PORT: " + port)
-        status = list_groups(&groups);
-        return "RGL " + to_string(groups.size()) + " " + status + "\n";
-
-    } else if (cmd == "GSR") {  /* Join group */
-        /* Splits msg by the spaces and returns an array with everything */
-        split(msg, inputs);
-
-        verbose_(isVerbose, "UID: " + inputs[1] + " GID: " + inputs[2] + " | IP: " + ip + " | PORT: " + port)
-        status = subscribe(&groups, &users, inputs[1], inputs[2], inputs[3]);
-        return "RGS " + status + "\n";
-
-    } else if (cmd == "GUR") {  /* Unsubscribe to group */
-        /* Splits msg by the spaces and returns an array with everything */
-        split(msg, inputs);
-
-        verbose_(isVerbose, "UID: " + inputs[1] + " GID: " + inputs[2] + " | IP: " + ip + " | PORT: " + port)
-        status = unsubscribe(&groups, &users, inputs[1], inputs[2]);
-        return "RGU " + status + "\n";
-
-    } else if (cmd == "GLM") {  /* Get list of user's groups */
-        /* Splits msg by the spaces and returns an array with everything */
-        split(msg, inputs);
-
-        verbose_(isVerbose, "UID: " + inputs[1] + " | IP: " + ip + " | PORT: " + port)
-        status = groups_subscribed(&groups, &users, inputs[1]);
-        return "RGM " + status + "\n";
-
-    } else if (cmd == "ULS"){ /* Get list of users subscribed to this group */
-        /* Splits msg by the spaces and returns an array with everything */
-        split(msg, inputs);
-
-        verbose_(isVerbose, "GID: " + inputs[1] + "GID: " + inputs[2] + " | IP: " + ip + " | PORT: " + port)
-        status = users_subscribed(&groups, &users, inputs[1]);
-        return "RUL " + status + "\n";
-
-
-    } else if (cmd == "PST") { /* Receives a text and optionally also a file*/
-        /* Splits msg by the spaces and returns an array with everything */
-        split(msg, inputs);
-
-        verbose_(isVerbose, "POST| UID: " + inputs[1] + "GID: " + inputs[2] + " | IP: " + ip + " | PORT: " + port)
-
-        char text[TEXT_MAX_SIZE];  /* Will hold user input text */
-        char file_name[FILENAME_MAX_SIZE]; /* Will hold the input file */
-        string file;  /* Will hold the input file */
-        memset(text, 0, TEXT_MAX_SIZE);
-        memset(file_name, 0, FILENAME_MAX_SIZE);
-        int checker, file_size, pointer;  /* Used to check if the user did not input a file */
-        bool file_flag = false;
-
-        sscanf(msg.c_str(), R"(%*s %*s %*s %*s "%240[^"]" %n)", text, &checker);
-
-
-        if (checker == 0 || msg[checker] != '\0'){
-            printf("Chegou 3\n");
-            assert_(sscanf(msg.c_str(), R"(%*s %*s %*s %*s "%*240[^"]" %s %d %n)", file_name, &file_size, &pointer) == 1, "Invalid format\n")
-            file_flag = true;
-
-            printf("Chegou 1\n");
-
-            /* Gets the current directory of the project*/
-            char *project_directory = get_current_dir_name();
-            string new_file_path = string(project_directory) + "/server/files/" + file_name ;
-
-            /* Creates a new file*/
-            ofstream file(string(new_file_path), ofstream::out | ofstream::binary);
-
-            printf("Chegou 2\n");
-
-            file.write(&msg[pointer], file_size);
-
-            printf("Chegou aqui\n");
-
-            file.close();
-
-        }
-
-        printf("também chegou aqui\n");
-
-        /* receives status from call function*/
-        status = post_message(&groups, &users, inputs[1], inputs[2], inputs[3], text);
-
-        return "RPT " + status + "\n";
-
-    } else if (cmd == "RTV") { /* Retrieves a message and optionally a file */
-        /* Splits msg by the spaces and returns an array with everything */
-        split(msg, inputs);
-
-        verbose_(isVerbose, "UID: " + inputs[1] + "GID: " + inputs[2] + "MID: " + inputs[3] + " | IP: " + ip + " | PORT: " + port)
-
-        /* receives status from call function*/
-        status = retrieve_message(&groups, inputs[2], inputs[3]);
-
-        return "RRT " + status + "\n";
-
-    } else {
-            cout << inputs[0] << endl;
-            return "ERR";
-    }
-
-}
 
 
 /**
@@ -276,10 +68,7 @@ void termination_handler(int sig_type) {
     /* Closes the directory*/
     closedir(dp);
 
-    /* Closes the server socket*/
-    freeaddrinfo(res);
-    close(fd_udp);
-    close(fd_tcp);
+    manager->clean();  /* Cleans manager's memory */
 
     /* Ends program */
     exit(EXIT_SUCCESS);
@@ -291,12 +80,13 @@ void termination_handler(int sig_type) {
  */
 void initialize_interrupters() {
 
-    struct sigaction sa_1, sa_2;
+    struct sigaction sa_1{}, sa_2{};
     sigset_t block_mask;
 
     /*Creating space for the sa and filling the struct. We are setting the handler to termination handlers function,
      * that will close all the sockets and erase files.*/
     memset(&sa_1,0,sizeof sa_1);
+
     /* Blocks signal quit (CTRL+Q) and signal stop (CTRL+Z) while handling signal interruption (CTRL + C). Only here
      * for safety*/
     //TODO: @Sofia-Morgado devia colocar mais sinais a bloquear?
@@ -311,63 +101,8 @@ void initialize_interrupters() {
     sa_2.sa_handler = SIG_IGN;
 
     /* Setting the sa_1 to the SIGPIPE and sa_1 to SIGINT*/
-    if(sigaction(SIGPIPE,&sa_2,nullptr) == -1 || sigaction(SIGINT, &sa_1, nullptr) == -1)
+    if (sigaction(SIGPIPE,&sa_2,nullptr) == -1 || sigaction(SIGINT, &sa_1, nullptr) == -1)
         exit(EXIT_FAILURE);
-}
-
-
-/**
- * @brief Setups our socket "fd_udp"
- */
-void init_udp_socket() {
-
-    /* Creates udp subgroup for internet */
-    fd_udp = socket(AF_INET, SOCK_DGRAM, 0);
-    assert_(fd_udp != -1, "Could not create udp socket")
-
-    /* Inits UDP server's struct to access the DNS */
-    memset(&hints, 0, sizeof hints);
-    hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_DGRAM;
-    hints.ai_flags = AI_PASSIVE;
-
-    /* Uses its URL to consult DNS and get a UDP server's IP address */
-    errcode = getaddrinfo(nullptr, ds_port.c_str(), &hints, &res);
-    assert_(errcode == 0, "Failed getaddrinfo call for udp socket")
-
-    /* Binds sockets to our specified port and tells our SO that this channel if for this program */
-    int err = bind(fd_udp, res->ai_addr, res->ai_addrlen);
-    assert_(err == 0, "Failed to bind udp socket")
-
-}
-
-
-/**
- * @brief Setups our socket "fd_tcp".
- */
-void init_tcp_socket() {
-
-    /* Creates tcp subgroup for internet */
-    fd_tcp = socket(AF_INET, SOCK_STREAM, 0);
-    assert_(fd_tcp != -1, "Could not create tcp socket")
-
-    /* Inits TCP server's struct to access the DNS */
-    memset(&hints, 0, sizeof hints);
-    hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_flags = AI_PASSIVE;
-
-    /* Uses its URL to consult DNS and get a TCP server's IP address */
-    errcode = getaddrinfo(nullptr, ds_port.c_str(), &hints, &res);
-    assert_(errcode == 0, "Failed getaddrinfo call for tcp")
-
-    /* Binds sockets to our specified port and tells our SO that this channel if for this program */
-    int err = bind(fd_tcp, res->ai_addr, res->ai_addrlen);
-    assert_(err == 0, "Failed to bind tcp socket")
-
-    /* Prepares socket to receive connections */
-    assert_(listen(fd_tcp,TCP_N_CONNECTIONS) != -1, "Could not prepare tcp socket")
-
 }
 
 
@@ -380,6 +115,8 @@ void init_tcp_socket() {
  */
 int main(int argc, char const *argv[]) {
 
+    string ds_port{PORT};  /* Holds server port */
+
     /* Initializes signal interrupters treatment */
     initialize_interrupters();
 
@@ -389,79 +126,15 @@ int main(int argc, char const *argv[]) {
         else if (strcmp(argv[i], "-v") == 0) { isVerbose = true; }
     }
 
-    /* Initializes both sockets */
-    init_udp_socket();
-    init_tcp_socket();
+    /* Create structures that will allow us to run the server */
+    unordered_map<string, User> users;
+    unordered_map<string, Group> groups;
+    Connect connect(ds_port);
 
-    /* Inits server connection loop */
-	while (true) {
+    /* Creates manager that will control our server */
+    manager = make_unique<Manager>(&users, &groups, connect, isVerbose);
 
-        FD_ZERO(&fds);  // Clears all file descriptors
-        FD_SET(fd_udp, &fds);  // Adds socket to selector
-        FD_SET(fd_tcp, &fds);  // Adds socket to selector
-
-        /* Blocks until one of the descriptors, previously set in are ready to by read. Returns number of file descriptors ready */
-        uint8_t counter = select(fd_tcp + 1,&fds,(fd_set*) nullptr,(fd_set*) nullptr,(struct timeval *) nullptr);
-        assert_(counter > 0, "Select threw an error");
-
-        /* Cleans previous iteration so that it does not bug */
-        bzero(&addr, sizeof(struct sockaddr_in));
-        addrlen = sizeof(addr);
-
-        if (FD_ISSET(fd_udp, &fds)) {  /* Checks if udp socket activated */
-
-            /* Receives message from client */
-            n = recvfrom(fd_udp, in_buffer, MSG_MAX_SIZE, 0, (struct sockaddr*) &addr, &addrlen);
-            assert_(n != -1, "Failed to receive message")
-
-            /* Removes \n at the end of the in_buffer. Makes things easier down the line */
-            in_buffer[strlen(in_buffer) - 1] = '\0';
-
-            /* Process client's message and decides what to do with it based on the passed code */
-            string response = selector(in_buffer);
-
-            /* Sends response back t client */
-            n = sendto(fd_udp, response.c_str(), response.size(), 0, (struct sockaddr*) &addr, addrlen);
-            assert_(n != -1, "Failed to send message")
-
-        } else if (FD_ISSET(fd_tcp, &fds)) {  /* Checks if tcp socket activated */
-
-            n = 0;  /* Clears previous connection's number of bytes before proceeding */
-
-            /* Creates temporary socket to connect to client. Keeps main channel active */
-            int tmp_fd = accept(fd_tcp,(struct sockaddr*) &addr, &addrlen);
-            assert_(tmp_fd != -1, "Could not create temporary tcp socket")
-
-            /* Keeps on reading until everything has been read from the client */
-            do {
-                nr = read(tmp_fd, in_buffer, MSG_MAX_SIZE);
-                assert_(nr != -1, "Failed to read from temporary socket")
-                if (nr == 0) break;  /* If a client closes a socket, we need to ignore */
-                n += nr;
-            } while (n < MSG_MAX_SIZE);
-            if (nr == 0) break;  /* If a client closes a socket, we need to ignore */
-
-            /* Removes \n at the end of the in_buffer. Makes things easier down the line */
-            in_buffer[strlen(in_buffer) - 1] = '\0';
-
-            /* Process client's message and decides what to do with it based on the passed code */
-            string response = selector(in_buffer);
-
-            /* Keeps sending messages to client until everything is sent */
-            char* ptr = &response[0];
-            while (n > 0) {
-                assert_((nw = write(tmp_fd, ptr, n)) > 0, "Could not send message to client")
-                n -= nw; ptr += nw;
-            }
-
-            close(tmp_fd);  /* Closes file descriptor to avoid errors */
-
-        } else {
-            assert_(false, "No correct file descriptor was activated in select")
-        }
-
-        memset(in_buffer, 0, MSG_MAX_SIZE);  /* Cleans in_buffer for new iteration */
-
-	}
+    /* Inits main server loop */
+    manager->start_server();
 
 }
