@@ -603,7 +603,7 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
         }
 
         /* Sends first the out then the data */
-        ulong bytes_to_send = out.length();
+        int bytes_to_send = (int) out.length();
 
         int bytes_sent;
         do {
