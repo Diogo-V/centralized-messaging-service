@@ -67,7 +67,7 @@ string ds_ip{LOCAL_IP};  /* Holds server ip */
 bool logouts = false;
 
 //TODO: @Sofia-Morgado-> shitty solution
-bool post_file = false;
+bool post = false;
 
 
 /*----------------------------------------- Functions --------------------------------------------*/
@@ -547,6 +547,14 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
         /* Transforms user input into a valid command to be sent to the server */
         out = "PST " + user.uid + " " + user.selected_group + " " + len + " " + "\"" + text + "\"";
 
+        /* Sends first the out then the data */
+        ulong bytes_to_send = out.length();
+        int bytes_sent;
+        do {
+            assert_((bytes_sent = write(fd_tcp, &out, MSG_MAX_SIZE)) > 0, "Could not send message to server")
+            bytes_to_send -= bytes_sent;
+        } while (bytes_to_send > 0);
+
         if (file_flag) {
 
             post_file = true;
@@ -561,12 +569,11 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
             //TODO: mudar o nome da variável
             int file_length = file.tellg();  /* Sends request size */
-            int bytes_sent;
 
             /* Keeps sending messages to sever until everything is sent */
             filebuf* pbuf = file.rdbuf();
 
-            /* Sends first the out then the data */
+            /* Sends Filename and filesize */
             ulong bytes_to_send = out.length();
             do {
                 assert_((bytes_sent = write(fd_tcp, &out, MSG_MAX_SIZE)) > 0, "Could not send message to server")

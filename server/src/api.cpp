@@ -175,7 +175,7 @@ string subscribe(unordered_map<string, Group>* groups, unordered_map<string, Use
         return "E_GNAME";
 
     /* Group already exists and user has already subscribed*/
-    } else if (gid == "00" && groups->at(gid).getUsers().count(uid) != 0) {
+    } else if (gid == "00" && groups->count(gid) != 0 && groups->at(gid).getUsers().count(uid) != 0) {
         return "OK";
 
     /* Everything is fine */
