@@ -129,7 +129,7 @@ string list_groups(unordered_map<string, Group>* groups) {
 
     for (auto & itr : *groups) {
         mid = itr.second.getMid() == 0 ? "0000" : to_string(itr.second.getMid()) ;
-        group = itr.first + " " + itr.second.getName() + " " + mid + "\n";
+        group = itr.first + " " + itr.second.getName() + " " + mid + " ";
         list.append(group);
     }
 
@@ -173,6 +173,10 @@ string subscribe(unordered_map<string, Group>* groups, unordered_map<string, Use
     /* Group name is incorrect */
     } else if (gid != "00" && groups->at(gid).getName() != group_name) {
         return "E_GNAME";
+
+    /* Group already exists and user has already subscribed*/
+    } else if (gid == "00" && groups->count(gid) != 0 && groups->at(gid).getUsers().count(uid) != 0) {
+        return "OK";
 
     /* Everything is fine */
     } else {
@@ -246,13 +250,14 @@ string groups_subscribed(unordered_map<string, Group>* groups, unordered_map<str
     } else {
         user_groups = users->at(uid).getUserGroups();
 
+        //TODO: @Sofia-Morgado-> isto vai ter consequências no código
         for (auto & itr : user_groups ) {
             mid = groups->at(itr).getMid() == 0 ? "0000" : to_string(groups->at(itr).getMid()) ;
-            group = groups->at(itr).getGroupId() + " " + groups->at(itr).getName() + " " + mid + "\n";
+            group = groups->at(itr).getGroupId() + " " + groups->at(itr).getName() + " " + mid + " ";
             out.append(group);
         }
 
-        return to_string(user_groups.size()) + " " + out;
+        return to_string(user_groups.size()) + " " + out + "\n";
     }
 
 }
