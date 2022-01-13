@@ -2,6 +2,7 @@
 #define PROJETO_RC_39_V2_MANAGER_H
 
 #include "user.h"
+#include "../misc/helpers.h"
 #include "group.h"
 #include "connect.h"
 #include "../api.h"

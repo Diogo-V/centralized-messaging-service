@@ -33,7 +33,7 @@ void Manager::start_server() {
         /* Blocks until one of the descriptors, previously set in are ready to by read. Returns number of file descriptors ready */
         uint8_t counter = select(this->getConnection().getSocketTCP() + 1,this->getConnection().getFDS(),
                                  (fd_set*) nullptr,(fd_set*) nullptr,(struct timeval *) nullptr);
-        assert_(counter > 0, "Select threw an error");
+        assert_(counter > 0, "Select threw an error")
 
         /* Cleans previous iteration so that it does not bug */
         this->getConnection().cleanAddr();
@@ -47,31 +47,23 @@ void Manager::start_server() {
             /* Process client's message and decides what to do with it based on the passed code */
             string response = this->process_request(request);
 
-            /* Sends response back t client */
+            /* Sends response back to client */
             this->getConnection().replyByUDP(response);
 
         /* Checks if tcp socket activated */
         } else if (FD_ISSET(this->getConnection().getSocketTCP(), this->getConnection().getFDS())) {
 
-
+            string request = this->getConnection().receiveByTCP();  // TODO: implement files
 
             /* Process client's message and decides what to do with it based on the passed code */
-            string response = selector(in_buffer);
+            string response = this->process_request(request);
 
-            /* Keeps sending messages to client until everything is sent */
-            char* ptr = &response[0];
-            while (n > 0) {
-                assert_((nw = write(tmp_fd, ptr, n)) > 0, "Could not send message to client")
-                n -= nw; ptr += nw;
-            }
-
-            close(tmp_fd);  /* Closes file descriptor to avoid errors */
+            /* Sends response back to client */
+            this->getConnection().replyByTCP(response);
 
         } else {
             assert_(false, "No correct file descriptor was activated in select")
         }
-
-        memset(in_buffer, 0, MSG_MAX_SIZE);  /* Cleans in_buffer for new iteration */
 
     }
 

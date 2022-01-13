@@ -215,12 +215,12 @@ string Connect::sendByTCP(const string& request) {
     }
 
     /* Keeps on reading until everything has been read from the server */
-    n = 0;
     do {
-        n += read(this->getSocketTCP(), buffer, MAX_REQUEST_SIZE);
+        ssize_t nr = read(this->getSocketTCP(), buffer, MAX_REQUEST_SIZE);
         assert_(n != -1, "Failed to retrieve response from server")
-        response.append(buffer);
-    } while (n < MAX_REQUEST_SIZE);
+        if (nr == 0) return "CONNECTION CLOSED";  /* If a client closes a socket, we need to ignore */
+        response.append(buffer, strlen(buffer));
+    } while (buffer[strlen(buffer) - 1] != '\n');
 
     /* Removes \n from end of response. Makes things easier down the line */
     response[response.length() - 1] = '\0';
