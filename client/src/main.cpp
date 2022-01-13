@@ -559,6 +559,8 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
             bytes_to_send -= bytes_sent;
         } while (bytes_to_send > 0);
 
+        cout << out << endl;
+
 
         if (file_flag) {
 
@@ -568,7 +570,9 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
             ifstream file(string(file_path), ifstream::in | ifstream::binary);
 
-            out += " " + string(file_name) + " " + to_string(file.tellg());
+            out = " " + string(file_name) + " " + to_string(file.tellg());
+
+            cout << out << endl;
 
             //TODO: mudar o nome da variável
             int file_length = file.tellg();  /* Sends request size */
@@ -577,24 +581,18 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
             filebuf* pbuf = file.rdbuf();
 
             /* Sends Filename and filesize */
-            ulong bytes_to_send = out.length();
-            do {
-                assert_((bytes_sent = write(fd_tcp, &out, MSG_MAX_SIZE)) > 0, "Could not send message to server")
-                bytes_to_send -= bytes_sent;
-            } while (bytes_to_send > 0);
+            assert_((bytes_sent = write(fd_tcp, &out, MSG_MAX_SIZE)) > 0, "Could not send message to server")
 
             /* Then sends the data*/
             while (file_length > 0) {
-                assert_((bytes_sent = write(fd_tcp, pbuf, MSG_MAX_SIZE)) > 0, "Could not send message to server")
+                assert_((bytes_sent = write(fd_tcp, pbuf, MSG_MAX_SIZE)) > 0, "Could not send data message to server")
                 file_length -= bytes_sent; pbuf += bytes_sent;
             }
 
             /* Close file*/
             file.close();
 
-        } else { out += "\n"; }
-
-        cout << out << endl;
+        }
 
         con = TCP;  /* Sets connection type to be used by the client to connect to the server */
 

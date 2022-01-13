@@ -250,13 +250,14 @@ string groups_subscribed(unordered_map<string, Group>* groups, unordered_map<str
     } else {
         user_groups = users->at(uid).getUserGroups();
 
+        //TODO: @Sofia-Morgado-> isto vai ter consequências no código
         for (auto & itr : user_groups ) {
             mid = groups->at(itr).getMid() == 0 ? "0000" : to_string(groups->at(itr).getMid()) ;
-            group = groups->at(itr).getGroupId() + " " + groups->at(itr).getName() + " " + mid + "\n";
+            group = groups->at(itr).getGroupId() + " " + groups->at(itr).getName() + " " + mid + " ";
             out.append(group);
         }
 
-        return to_string(user_groups.size()) + " " + out;
+        return to_string(user_groups.size()) + " " + out + "\n";
     }
 
 }
