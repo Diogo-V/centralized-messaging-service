@@ -578,6 +578,8 @@ void Manager::doPost(const string& input) {
     vector<string> outputs;
     split(response, outputs);
 
+    cout << response << endl;
+
     /* Analyses response and informs the user of the result */
     if (strcmp(outputs[0].c_str(), "RPT") != 0) cerr << "Response command is not related to the sent command" << endl;
     else if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Failed. Message couldn't be posted" << endl;

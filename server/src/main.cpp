@@ -25,7 +25,7 @@ using namespace std;
 
 /* Const definitions */
 #define PORT "58011"
-#define MSG_MAX_SIZE 300
+#define MAX_REQUEST_SIZE 300
 #define TEXT_MAX_SIZE 240
 #define FILENAME_MAX_SIZE 24
 #define TCP_N_CONNECTIONS 5
@@ -51,7 +51,7 @@ struct addrinfo *res;  /* Stores result from getaddrinfo and uses it to set up o
 ssize_t n, nw, nr;  /* Holds number of bytes read/sent or -1 in case of error */
 socklen_t addrlen;  /* Holds size of message sent from sender */
 struct sockaddr_in addr;  /* Describes internet socket address. Holds sender info */
-char in_buffer[MSG_MAX_SIZE];  /* Holds current message received in this socket */
+char in_buffer[MAX_REQUEST_SIZE];  /* Holds current message received in this socket */
 
 bool isVerbose = false;  /* Is true if the server is set to verbose mode */
 string ds_port{PORT};  /* Holds server port */
@@ -395,7 +395,7 @@ int main(int argc, char const *argv[]) {
         if (FD_ISSET(fd_udp, &fds)) {  /* Checks if udp socket activated */
 
             /* Receives message from client */
-            n = recvfrom(fd_udp, in_buffer, MSG_MAX_SIZE, 0, (struct sockaddr*) &addr, &addrlen);
+            n = recvfrom(fd_udp, in_buffer, MAX_REQUEST_SIZE, 0, (struct sockaddr*) &addr, &addrlen);
             assert_(n != -1, "Failed to receive message")
 
             /* Removes \n at the end of the in_buffer. Makes things easier down the line */
@@ -418,11 +418,11 @@ int main(int argc, char const *argv[]) {
 
             /* Keeps on reading until everything has been read from the client */
             do {
-                nr = read(tmp_fd, in_buffer, MSG_MAX_SIZE);
+                nr = read(tmp_fd, in_buffer, MAX_REQUEST_SIZE);
                 assert_(nr != -1, "Failed to read from temporary socket")
                 if (nr == 0) break;  /* If a client closes a socket, we need to ignore */
                 n += nr;
-            } while (n < MSG_MAX_SIZE);
+            } while (n < MAX_REQUEST_SIZE);
             if (nr == 0) break;  /* If a client closes a socket, we need to ignore */
 
             /* Removes \n at the end of the in_buffer. Makes things easier down the line */
@@ -444,7 +444,7 @@ int main(int argc, char const *argv[]) {
             assert_(false, "No correct file descriptor was activated in select")
         }
 
-        memset(in_buffer, 0, MSG_MAX_SIZE);  /* Cleans in_buffer for new iteration */
+        memset(in_buffer, 0, MAX_REQUEST_SIZE);  /* Cleans in_buffer for new iteration */
 
 	}
 

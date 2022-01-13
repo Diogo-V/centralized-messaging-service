@@ -195,7 +195,7 @@ string Connect::sendByUDP(const string& request) {
  */
 string Connect::sendByTCP(const string& request) {
 
-    char buffer[100];  /* Holds temporarily the information sent to the socket */
+    char buffer[MAX_REQUEST_SIZE];  /* Holds temporarily the information sent to the socket */
     string response{};  /* Used to build the server's response */
 
     /* Initializes and setups fd_udp to be a valid socket */
@@ -210,14 +210,17 @@ string Connect::sendByTCP(const string& request) {
     /* Keeps sending messages to sever until everything is sent */
     char* ptr = const_cast<char *>(&request[0]);
     while (n > 0) {
-        assert_((nw = write(this->getSocketTCP(), ptr, sizeof buffer)) > 0, "Could not send message to server")
+        assert_((nw = write(this->getSocketTCP(), ptr, MAX_REQUEST_SIZE)) > 0, "Could not send message to server")
         n -= nw; ptr += nw;
     }
 
     /* Keeps on reading until everything has been read from the server */
-    while ((n = read(this->getSocketTCP(), buffer, sizeof buffer)) != 0) {
+    n = 0;
+    do {
+        n += read(this->getSocketTCP(), buffer, MAX_REQUEST_SIZE);
         assert_(n != -1, "Failed to retrieve response from server")
-    }
+        response.append(buffer);
+    } while (n < MAX_REQUEST_SIZE);
 
     /* Removes \n from end of response. Makes things easier down the line */
     response[response.length() - 1] = '\0';
@@ -256,7 +259,7 @@ string Connect::sendByTCPWithFile(const string& initial_request, const string& f
     /* Keeps sending messages to sever until everything is sent. Only sends initial request */
     char* ptr = const_cast<char *>(&initial_request[0]);
     while (n > 0) {
-        assert_((nw = write(this->getSocketTCP(), ptr, n)) > 0, "Could not send message to server")
+        assert_((nw = write(this->getSocketTCP(), ptr, MAX_REQUEST_SIZE)) > 0, "Could not send message to server")
         n -= nw; ptr += nw;
     }
 
@@ -273,7 +276,7 @@ string Connect::sendByTCPWithFile(const string& initial_request, const string& f
 
     /* Sends Filename and filesize */
     int bytes_sent;
-    assert_((bytes_sent = write(this->getSocketTCP(), req.c_str(), req.length())) > 0, "Could not send message to server")
+    assert_((bytes_sent = write(this->getSocketTCP(), req.c_str(), MAX_REQUEST_SIZE)) > 0, "Could not send message to server")
 
     /* Then sends the data*/
     while (file_length > 0) {
@@ -284,11 +287,13 @@ string Connect::sendByTCPWithFile(const string& initial_request, const string& f
     /* Close file*/
     file.close();
 
-
     /* Keeps on reading until everything has been read from the server */
-    while ((n = read(this->getSocketTCP(), buffer, sizeof buffer)) != 0) {
+    n = 0;
+    do {
+        n += read(this->getSocketTCP(), buffer, sizeof buffer);
         assert_(n != -1, "Failed to retrieve response from server")
-    }
+        response.append(buffer);
+    } while (n < MAX_REQUEST_SIZE);
 
     /* Removes \n from end of response. Makes things easier down the line */
     response[response.length() - 1] = '\0';
