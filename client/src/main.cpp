@@ -566,11 +566,15 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
             /* Keeps sending messages to sever until everything is sent */
             filebuf* pbuf = file.rdbuf();
 
-            /* Sends first the out then the data*/
-            assert_((bytes_sent = write(fd_tcp, &out, MSG_MAX_SIZE)) > 0, "Could not send message to server")
+            /* Sends first the out then the data */
+            ulong bytes_to_send = out.length();
+            do {
+                assert_((bytes_sent = write(fd_tcp, &out, MSG_MAX_SIZE)) > 0, "Could not send message to server")
+                bytes_to_send -= bytes_sent;
+            } while (bytes_to_send > 0);
 
             /* Then sends the data*/
-            while (n > 0) {
+            while (file_length > 0) {
                 assert_((bytes_sent = write(fd_tcp, pbuf, MSG_MAX_SIZE)) > 0, "Could not send message to server")
                 file_length -= bytes_sent; pbuf += bytes_sent;
             }
