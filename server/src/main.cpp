@@ -180,7 +180,7 @@ string selector(const string& msg) {
         /* Splits msg by the spaces and returns an array with everything */
         split(msg, inputs);
 
-        verbose_(isVerbose, "UID: " + inputs[1] + "GID: " + inputs[2] + " | IP: " + ip + " | PORT: " + port)
+        verbose_(isVerbose, " POST| UID: " + inputs[1] + "GID: " + inputs[2] + " | IP: " + ip + " | PORT: " + port)
 
         char text[TEXT_MAX_SIZE];  /* Will hold user input text */
         char file_name[FILENAME_MAX_SIZE]; /* Will hold the input file */

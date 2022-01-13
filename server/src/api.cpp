@@ -133,7 +133,7 @@ string list_groups(unordered_map<string, Group>* groups) {
         list.append(group);
     }
 
-    return list + "\n";
+    return list;
 }
 
 //TODO: @Sofia-Morgado -> caso o user já esteja subscrito, devia dar erro

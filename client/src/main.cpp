@@ -604,9 +604,10 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         /* Sends first the out then the data */
         ulong bytes_to_send = out.length();
+
         int bytes_sent;
         do {
-            assert_((bytes_sent = write(fd_tcp, &out, MSG_MAX_SIZE)) > 0, "Could not send message to server")
+            assert_((bytes_sent = write(fd_tcp, &out, out.length())) > 0, "Could not send message to server oh noooo")
             bytes_to_send -= bytes_sent;
         } while (bytes_to_send > 0);
 
@@ -644,6 +645,8 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
         con = TCP;  /* Sets connection type to be used by the client to connect to the server */
 
         post = true;
+
+        printf("here\n");
 
         return true;
 
@@ -767,6 +770,8 @@ int main(int argc, char const *argv[]) {
                     ptr += nw;
                 }
             }
+
+            printf("here 1\n");
 
             /* Keeps on reading until everything has been read from the server */
             while ((n = read(fd_tcp, res_buffer, MSG_MAX_SIZE)) != 0) {
