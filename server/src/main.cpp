@@ -191,6 +191,8 @@ string selector(const string& msg) {
 
         sscanf(msg.c_str(), R"(%*s %*s %*s %*s "%240[^"]" %n)", text, &checker);
 
+        printf("here here \n");
+
         if (checker == 0 || msg[checker] != '\0'){
             assert_(sscanf(msg.c_str(), R"(%*s %*s %*s %*s %*s "%*240[^"]" %s %n1 %d)", file_name, &n1, &file_size) == 1, "Invalid format\n")
             file_flag = true;
