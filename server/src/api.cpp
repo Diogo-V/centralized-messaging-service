@@ -129,11 +129,11 @@ string list_groups(unordered_map<string, Group>* groups) {
 
     for (auto & itr : *groups) {
         mid = itr.second.getMid() == 0 ? "0000" : to_string(itr.second.getMid()) ;
-        group = itr.first + " " + itr.second.getName() + " " + mid + "\n";
+        group = itr.first + " " + itr.second.getName() + " " + mid + " ";
         list.append(group);
     }
 
-    return list;
+    return list + "\n";
 }
 
 //TODO: @Sofia-Morgado -> caso o user já esteja subscrito, devia dar erro

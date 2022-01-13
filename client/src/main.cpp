@@ -139,6 +139,49 @@ int TimerOFF(int sd) {
                       (struct timeval *) &timeval, sizeof(struct timeval)));
 }
 
+/**
+ * Setups our socket "fd_udp".
+ */
+void init_socket_udp() {
+
+    /* Creates udp socket for internet */
+    fd_udp = socket(AF_INET, SOCK_DGRAM, 0);
+    assert_(fd_udp != -1, "Could not create socket")
+
+    /* Inits UDP server's struct to access the DNS */
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_DGRAM;
+
+    /* Uses its URL to consult DNS and get the server to which we want to send messages */
+    errcode = getaddrinfo(ds_ip.c_str(), ds_port.c_str(), &hints, &res);
+    assert_(errcode == 0, "Failed getaddrinfo call")
+
+}
+
+
+/**
+ * @brief Setups our socket "fd_tcp".
+ */
+void init_socket_tcp() {
+
+    /* Creates tcp subgroup for internet */
+    fd_tcp = socket(AF_INET, SOCK_STREAM, 0);
+    assert_(fd_tcp != -1, "Could not create tcp socket")
+
+    /* Inits TCP server's struct to access the DNS */
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE;
+
+    /* Uses its URL to consult DNS and get a TCP server's IP address */
+    errcode = getaddrinfo(ds_ip.c_str(), ds_port.c_str(), &hints, &res);
+    assert_(errcode == 0, "Failed getaddrinfo call for tcp")
+
+
+
+}
 
 /*
  * Transforms a string with spaces in a vector with substring tokenized by the spaces.
@@ -524,6 +567,14 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
         int checker; /* Used to check if the user did not input a file */
         bool file_flag = false;
 
+        /* INICIALIZAR TCP*/
+        /* Initializes and setups fd_udp to be a valid socket */
+        init_socket_tcp();
+
+        /* Creates connection between server and client */
+        assert_(connect(fd_tcp, res->ai_addr, res->ai_addrlen) != -1, "Could not connect to sever")
+
+
         assert_(sscanf(msg.c_str(), R"(%*s "%240[^"]" %n)", text, &checker) == 1, "Invalid format\n")
 
         if (checker == 0 || msg[checker] != '\0'){
@@ -559,8 +610,6 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
             bytes_to_send -= bytes_sent;
         } while (bytes_to_send > 0);
 
-        cout << out << endl;
-
 
         if (file_flag) {
 
@@ -571,8 +620,6 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
             ifstream file(string(file_path), ifstream::in | ifstream::binary);
 
             out = " " + string(file_name) + " " + to_string(file.tellg());
-
-            cout << out << endl;
 
             //TODO: mudar o nome da variável
             int file_length = file.tellg();  /* Sends request size */
@@ -625,49 +672,6 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 }
 
 
-/**
- * Setups our socket "fd_udp".
- */
-void init_socket_udp() {
-
-    /* Creates udp socket for internet */
-    fd_udp = socket(AF_INET, SOCK_DGRAM, 0);
-    assert_(fd_udp != -1, "Could not create socket")
-
-    /* Inits UDP server's struct to access the DNS */
-    memset(&hints, 0, sizeof hints);
-    hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_DGRAM;
-
-    /* Uses its URL to consult DNS and get the server to which we want to send messages */
-    errcode = getaddrinfo(ds_ip.c_str(), ds_port.c_str(), &hints, &res);
-    assert_(errcode == 0, "Failed getaddrinfo call")
-
-}
-
-
-/**
- * @brief Setups our socket "fd_tcp".
- */
-void init_socket_tcp() {
-
-    /* Creates tcp subgroup for internet */
-    fd_tcp = socket(AF_INET, SOCK_STREAM, 0);
-    assert_(fd_tcp != -1, "Could not create tcp socket")
-
-    /* Inits TCP server's struct to access the DNS */
-    memset(&hints, 0, sizeof hints);
-    hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_flags = AI_PASSIVE;
-
-    /* Uses its URL to consult DNS and get a TCP server's IP address */
-    errcode = getaddrinfo(ds_ip.c_str(), ds_port.c_str(), &hints, &res);
-    assert_(errcode == 0, "Failed getaddrinfo call for tcp")
-
-
-
-}
 
 
 /**
@@ -743,6 +747,8 @@ int main(int argc, char const *argv[]) {
 
         } else if (con == TCP) {  /* Connects to server by TCP */
 
+            if(!post) {
+
             /* Initializes and setups fd_udp to be a valid socket */
             init_socket_tcp();
 
@@ -755,7 +761,6 @@ int main(int argc, char const *argv[]) {
             /* Keeps sending messages to sever until everything is sent */
             char* ptr = &req[0];
 
-            if(!post) {
                 while (n > 0) {
                     assert_((nw = write(fd_tcp, ptr, MSG_MAX_SIZE)) > 0, "Could not send message to server")
                     n -= nw;
