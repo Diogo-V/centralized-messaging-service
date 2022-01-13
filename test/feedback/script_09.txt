@@ -1,4 +1,4 @@
-When used after script_01.txt (should create groups 01 to 09 by user 10001): ***NOT SURE IF EXPECTED OUTCOME SINCE THERE IS NO REPLY (THE GROUPS ARE CREATED NEVERTHELESS)*** 
+When used after script_01.txt (should create groups 01 to 09 by user 10001):
 ---------------------------
 Wed, 12 Jan 2022 22:50:16 GMT
 
