@@ -10,6 +10,9 @@
 #include <vector>
 #include <sstream>
 
+#define TEXT_MAX_SIZE 240
+#define FILENAME_MAX_SIZE 24
+
 
 using namespace std;
 

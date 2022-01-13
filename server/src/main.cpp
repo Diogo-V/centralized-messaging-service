@@ -185,7 +185,8 @@ string selector(const string& msg) {
         char text[TEXT_MAX_SIZE];  /* Will hold user input text */
         char file_name[FILENAME_MAX_SIZE]; /* Will hold the input file */
         string file;  /* Will hold the input file */
-        memset(text, 0, MSG_MAX_SIZE);
+        memset(text, 0, TEXT_MAX_SIZE);
+        memset(file_name, 0, FILENAME_MAX_SIZE);
         int checker, file_size, n1;  /* Used to check if the user did not input a file */
         bool file_flag = false;
 

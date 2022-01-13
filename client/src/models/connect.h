@@ -11,9 +11,11 @@
 #include <string>
 #include <cstring>
 #include <unistd.h>
+#include <fstream>
 
 #define TIMEOUT_TIME_S 15
 #define UDP_N_TRIES 3
+#define MAX_SENT_FILE_DATA 300
 
 
 using namespace std;
@@ -138,6 +140,17 @@ class Connect {
          * @return server's response
          */
         string sendByTCP(const string& request);
+
+        /**
+         * @brief Sends a valid command by TCP with a file to our server and gets a response.
+         *
+         * @param request request to be sent to the server
+         * @param filepath path to the file that is going to be sent
+         * @param filename name of the file to be sent
+         *
+         * @return server's response
+         */
+        string sendByTCPWithFile(const string& request, const string& filepath, const string& filename);
 
         /**
          * @brief Cleans and frees everything related to the Connection.

@@ -231,6 +231,75 @@ string Connect::sendByTCP(const string& request) {
 
 
 /**
+ * @brief Sends a valid command by TCP with a file to our server and gets a response.
+ *
+ * @param request request to be sent to the server
+ * @param filepath path to the file that is going to be sent
+ * @param filename name of the file to be sent
+ *
+ * @return server's response
+ */
+string Connect::sendByTCPWithFile(const string& initial_request, const string& filepath, const string& filename) {
+
+    char buffer[100];  /* Holds temporarily the information sent to the socket */
+    string response{};  /* Used to build the server's response */
+
+    /* Initializes and setups fd_udp to be a valid socket */
+    init_socket_tcp();
+
+    /* Creates connection between server and client */
+    assert_(connect(this->getSocketTCP(), res->ai_addr, res->ai_addrlen) != -1, "Could not connect to sever")
+
+    uint16_t nw;  /* Used to keep track of how many bytes we have sent to the server */
+    auto n = (ssize_t) initial_request.length();  /* Sends request size */
+
+    /* Keeps sending messages to sever until everything is sent. Only sends initial request */
+    char* ptr = const_cast<char *>(&initial_request[0]);
+    while (n > 0) {
+        assert_((nw = write(this->getSocketTCP(), ptr, n)) > 0, "Could not send message to server")
+        n -= nw; ptr += nw;
+    }
+
+    /* Since we have already finished sending the initial request to the server, we have to send
+     * the input file now */
+    ifstream file(string(filepath), ifstream::in | ifstream::binary);
+
+    string req = " " + string(filename) + " " + to_string(file.tellg());
+
+    int file_length = (int) file.tellg();  /* Sends request size */
+
+    /* Keeps sending messages to sever until everything is sent */
+    filebuf* file_p = file.rdbuf();
+
+    /* Sends Filename and filesize */
+    int bytes_sent;
+    assert_((bytes_sent = write(this->getSocketTCP(), req.c_str(), req.length())) > 0, "Could not send message to server")
+
+    /* Then sends the data*/
+    while (file_length > 0) {
+        assert_((bytes_sent = write(this->getSocketTCP(), file_p, MAX_SENT_FILE_DATA)) > 0, "Could not send data message to server")
+        file_length -= bytes_sent; file_p += bytes_sent;
+    }
+
+    /* Close file*/
+    file.close();
+
+
+    /* Keeps on reading until everything has been read from the server */
+    while ((n = read(this->getSocketTCP(), buffer, sizeof buffer)) != 0) {
+        assert_(n != -1, "Failed to retrieve response from server")
+    }
+
+    /* Removes \n from end of response. Makes things easier down the line */
+    response[response.length() - 1] = '\0';
+
+    /* Closes TCP connection */
+    close(this->getSocketTCP());
+
+}
+
+
+/**
  * @brief Cleans and frees everything related to the Connection.
  */
 void Connect::clean() {

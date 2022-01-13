@@ -529,11 +529,50 @@ void Manager::doPost(const string& input) {
 
     vector<string> inputs;  /* Holds a list of strings with the inputs from our user */
     string req;  /* Holds request that is going to be sent to the server */
+    string response;  /* Holds server's response */
 
-    // TODO: @Sofia -> Copy your implementation
+    char text[TEXT_MAX_SIZE];  /* Will hold user input text */
+    char file_name[FILENAME_MAX_SIZE]; /* Will hold the input file */
+    memset(text, 0, TEXT_MAX_SIZE);
+    memset(file_name, 0, FILENAME_MAX_SIZE);
+    int check_if_file; /* Used to check if the user did not input a file */
 
-    /* Sends request to server by UDP and gets response */
-    string response = this->getConnection().sendByTCP(req);  // TODO: Has to be another TCP in case of file
+    /* Gets post message */
+    assert_(sscanf(input.c_str(), R"(%*s "%240[^"]" %n)", text, &check_if_file) == 1, "Invalid format\n")
+
+    /* Verifies if the user input a valid command and that this command can be issued */
+    //validate_(inputs.size() >= 2, "Invalid number of arguments")
+    validate_(this->getUser()->getLoggedStatus(), "Client is not logged in")
+    validate_(!this->getUser()->getSelectedGroupID().empty(), "No selected group")
+    validate_(strlen(file_name) <= 24, "File name name up to 24 characters, including the dot and the file type")
+    //TODO: @Sofia-Morgado -> melhorar esta verificação
+    //validate_(file_flag || (file_name[strlen(file_name) - 4] == '.'), "File name is of type: nn(...)nn.xxx")
+    //validate_((inputs[1].length() - 2) <= 240, "Text is limited to 240 characters")
+
+    string len = to_string(strlen(text));
+
+    /* Transforms user input into a valid command to be sent to the server */
+    req = "PST " + this->getUser()->getUserID() + " " + this->getUser()->getSelectedGroupID() + " " + len + " " + "\"" + text + "\"";
+
+    /* Checks if the user input a file path */
+    if (check_if_file == 0 || input[check_if_file] != '\0') {
+
+        assert_(sscanf(input.c_str(), R"(%*s "%*240[^"]" %s)", file_name) == 1, "Invalid format\n")
+
+        /* Gets the current directory of the project*/
+        char *project_directory = get_current_dir_name();
+        string file_path = string(project_directory) + "/client/bin/" + file_name ;
+
+        this->getConnection().sendByTCPWithFile(req, file_path, file_name);
+
+    } else {
+
+        req += "\n";  // Appends \n to request to tell server that we finished sending
+
+        /* Sends post message to server and gets response */
+        response = this->getConnection().sendByTCP(req);
+
+    }
 
     /* Splits response to be analysed */
     vector<string> outputs;
@@ -559,6 +598,8 @@ void Manager::doRetrieve(const string& input) {
     string req;  /* Holds request that is going to be sent to the server */
 
     // TODO: @Sofia -> Copy your implementation
+
+    req = "RTV " + this->getUser()->getUserID() + " " + this->getUser()->getSelectedGroupID() + " " + inputs[1] + "\n";
 
     /* Sends request to server by UDP and gets response */
     string response = this->getConnection().sendByTCP(req);  // TODO: Has to be another TCP in case of file
