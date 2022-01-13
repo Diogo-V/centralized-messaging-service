@@ -12,7 +12,7 @@
 #include <cstring>
 #include <unistd.h>
 
-#define TIMEOUT_TIME_S 5
+#define TIMEOUT_TIME_S 15
 #define UDP_N_TRIES 3
 
 

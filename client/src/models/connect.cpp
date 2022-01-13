@@ -146,7 +146,7 @@ string Connect::sendByUDP(const string& request) {
 
     int tries = UDP_N_TRIES;  /* Number of tries that are going to be executed */
     bool try_again;  /* Checks if we should try again */
-    char buffer[100];  /* Holds temporarily the information sent to the socket */
+    char buffer[100]{'\0'};  /* Holds temporarily the information sent to the socket */
     string response{};  /* Used to build the server's response */
 
     do {  /* We use a loop to allow retrying to send the message in case it fails */

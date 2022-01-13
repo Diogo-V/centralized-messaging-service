@@ -26,7 +26,7 @@ string User::getUserPassword() {
  * 
  * @return user's status
  */
-bool User::getLoggedStatus() const {
+bool User::getLoggedStatus() {
     return this->_is_logged;
 }
 
@@ -63,9 +63,11 @@ void User::setUserPassword(const string& password) {
 
 /**
  * @brief Sets user's identifier.
+ *
+ * @param state new user logged state
  */
-void User::toggleLoggedStatus() {
-    this->_is_logged = ! this->_is_logged;
+void User::setLoggedStatus(bool state) {
+    this->_is_logged = state;
 }
 
 
@@ -86,5 +88,5 @@ void User::resetUser() {
     this->setUserSelectedGroupID("");
     this->setUserPassword("");
     this->setUserID("");
-    this->toggleLoggedStatus();
+    this->setLoggedStatus(false);
 }

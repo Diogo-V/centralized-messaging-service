@@ -55,7 +55,7 @@ class User {
          *
          * @return user's status
          */
-        bool getLoggedStatus() const;
+        bool getLoggedStatus();
 
         /**
          * @brief Gets user's currently selected group.
@@ -80,8 +80,10 @@ class User {
 
         /**
          * @brief Sets user's identifier.
+         *
+         * @param state new user logged state
          */
-        void toggleLoggedStatus();
+        void setLoggedStatus(bool state);
 
         /**
          * @brief Sets user's identifier.

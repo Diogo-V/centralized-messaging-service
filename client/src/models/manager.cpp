@@ -72,9 +72,10 @@ void Manager::doRegister(const string& input) {
     split(response, outputs);
 
     /* Analyses response and informs the user of the result */
-    if (outputs[1] == "OK") cout << "User registered successfully" << endl;
-    else if (outputs[1] == "DUP") cerr << "Failed. User has already registered" << endl;
-    else if (outputs[1] == "NOK") cerr << "Failed. Too many users already registered " << endl;
+    if (strcmp(outputs[0].c_str(), "RRG") != 0) cerr << "Response command is not related to the sent command" << endl;
+    else if (strcmp(outputs[1].c_str(), "OK") == 0) cout << "User registered successfully" << endl;
+    else if (strcmp(outputs[1].c_str(), "DUP") == 0) cerr << "Failed. User has already registered" << endl;
+    else if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Failed. Too many users already registered " << endl;
     else cerr << "Invalid status" << endl;
 
 }
@@ -112,12 +113,13 @@ void Manager::doUnregister(const string& input) {
     split(response, outputs);
 
     /* Analyses response and informs the user of the result */
-    if (outputs[1] == "OK"){
+    if (strcmp(outputs[0].c_str(), "RUN") != 0) cerr << "Response command is not related to the sent command" << endl;
+    else if (strcmp(outputs[1].c_str(), "OK") == 0) {
         cout << "User unregistered successfully" << endl;
         /*Logouts the user if the user was logged in*/
         if (this->getUser().getLoggedStatus()) this->getUser().resetUser();
     }
-    else if (outputs[1] == "NOK") cerr << "Failed. Invalid user id or incorrect password." << endl;
+    else if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Failed. Invalid user id or incorrect password." << endl;
     else cerr << "Invalid status" << endl;
 
 }
@@ -156,14 +158,18 @@ void Manager::doLogin(const string& input) {
     split(response, outputs);
 
     /* Analyses response and informs the user of the result */
-    if (outputs[1] == "OK") {
+    if (strcmp(outputs[0].c_str(), "RLO") != 0) cerr << "Response command is not related to the sent command" << endl;
+    else if (strcmp(outputs[1].c_str(), "OK") == 0) {
         cout << "User logged in successfully" << endl;
-        this->getUser().toggleLoggedStatus();
+        this->getUser().setLoggedStatus(true);
         this->getUser().setUserID( inputs[1]);
         this->getUser().setUserPassword(inputs[2]);
     }
-    else if (outputs[1] == "NOK") cerr << "Failed. Invalid user id or incorrect password." << endl;
+    else if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Failed. Invalid user id or incorrect password." << endl;
     else cerr << "Invalid status" << endl;
+
+    cout << this->getUser().getLoggedStatus() << endl;
+    cout << this->getUser().getUserID() << endl;
 
 }
 
@@ -196,11 +202,12 @@ void Manager::doLogout(const string& input) {
     split(response, outputs);
 
     /* Analyses response and informs the user of the result */
-    if (outputs[1] == "OK") {
+    if (strcmp(outputs[0].c_str(), "ROU") != 0) cerr << "Response command is not related to the sent command" << endl;
+    else if (strcmp(outputs[1].c_str(), "OK") == 0) {
         cout << "User logged out successfully" << endl;
         this->getUser().resetUser();
     }
-    else if (outputs[1] == "NOK") cerr << "Failed. Invalid user id or incorrect password." << endl;
+    else if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Failed. Invalid user id or incorrect password." << endl;
     else cerr << "Invalid status" << endl;
 
 }
@@ -258,11 +265,12 @@ void Manager::doExit(const string& input) {
         split(response, outputs);
 
         /* Analyses response and informs the user of the result */
-        if (outputs[1] == "OK") {
+        if (strcmp(outputs[0].c_str(), "ROU") != 0) cerr << "Response command is not related to the sent command" << endl;
+        else if (strcmp(outputs[1].c_str(), "OK") == 0) {
             cout << "User logged out successfully" << endl;
             this->getUser().resetUser();
         }
-        else if (outputs[1] == "NOK") cerr << "Failed. Invalid user id or incorrect password." << endl;
+        else if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Failed. Invalid user id or incorrect password." << endl;
         else cerr << "Invalid status" << endl;
 
     }
@@ -299,7 +307,8 @@ void Manager::doListGroups(const string& input) {
     split(response, outputs);
 
     /* Prints response to the user */
-    if (outputs[1] != "0") {
+    if (strcmp(outputs[0].c_str(), "RGL") != 0) cerr << "Response command is not related to the sent command" << endl;
+    else if (strcmp(outputs[1].c_str(), "0") != 0) {
         for (auto i = outputs.begin() + 2; i != outputs.end() - 1; ++i) cout << *i << " ";
         cout << *(outputs.end() - 1);
     }
@@ -325,8 +334,7 @@ void Manager::doSubscribe(const string& input) {
     validate_(inputs[1].size() <= 2, "Group ID isn't 2 digit-number")
     validate_(isNumber(inputs[1]), "Group ID is not a number")
     validate_(inputs[2].size() <= 24, "Group name limited to 24 characters")
-    validate_(isAlphaNumericPlus(inputs[2]), "Group name should have only alphanumerical characters plus '-' and "
-                                             "'_'")
+    validate_(isAlphaNumericPlus(inputs[2]), "Group name should have only alphanumerical characters plus '-' and '_'")
     validate_(this->getUser().getLoggedStatus(), "Client is not logged in")
 
     /* Transforms user input into a valid command to be sent to the server */
@@ -340,13 +348,14 @@ void Manager::doSubscribe(const string& input) {
     split(response, outputs);
 
     /* Analyses response and informs the user of the result */
-    if (outputs[1] == "OK") cout << "User subscribed successfully." << endl;
-    else if (outputs[1] == "NEW") cout << "New group created. User subscribed successfully." << endl;
-    else if (outputs[1] == "E_USR") cerr << "Failed. Invalid user id." << endl;
-    else if (outputs[1] == "E_GRP") cerr << "Failed. Invalid group id." << endl;
-    else if (outputs[1] == "E_GNAME") cerr << "Failed. Invalid group name." << endl;
-    else if (outputs[1] == "E_FULL") cerr << "Failed. Couldn't create new group." << endl;
-    else if (outputs[1] == "NOK") cerr << "Failed. Unknown reasons." << endl;
+    if (strcmp(outputs[0].c_str(), "RGS") != 0) cerr << "Response command is not related to the sent command" << endl;
+    else if (strcmp(outputs[1].c_str(), "OK") == 0) cout << "User subscribed successfully." << endl;
+    else if (strcmp(outputs[1].c_str(), "NEW") == 0) cout << "New group created. User subscribed successfully." << endl;
+    else if (strcmp(outputs[1].c_str(), "E_USR") == 0) cerr << "Failed. Invalid user id." << endl;
+    else if (strcmp(outputs[1].c_str(), "E_GRP") == 0) cerr << "Failed. Invalid group id." << endl;
+    else if (strcmp(outputs[1].c_str(), "E_GNAME") == 0) cerr << "Failed. Invalid group name." << endl;
+    else if (strcmp(outputs[1].c_str(), "E_FULL") == 0) cerr << "Failed. Couldn't create new group." << endl;
+    else if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Failed. Unknown reasons." << endl;
     else cerr << "Invalid status" << endl;
 
 }
@@ -382,10 +391,11 @@ void Manager::doUnsubscribe(const string& input) {
     split(response, outputs);
 
     /* Analyses response and informs the user of the result */
-    if (outputs[1] == "OK") cout << "User unsubscribed successfully" << endl;
-    else if (outputs[1] == "E_USR") cerr << "Failed. Invalid user id.";
-    else if (outputs[1] == "E_GRP") cerr << "Failed. Invalid group id." << endl;
-    else if (outputs[1] == "NOK") cerr << "Failed. Unknown reason." << endl;
+    if (strcmp(outputs[0].c_str(), "RGU") != 0) cerr << "Response command is not related to the sent command" << endl;
+    else if (strcmp(outputs[1].c_str(), "OK") == 0) cout << "User unsubscribed successfully" << endl;
+    else if (strcmp(outputs[1].c_str(), "E_USR") == 0) cerr << "Failed. Invalid user id.";
+    else if (strcmp(outputs[1].c_str(), "E_GRP") == 0) cerr << "Failed. Invalid group id." << endl;
+    else if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Failed. Unknown reason." << endl;
     else cerr << "Invalid status" << endl;
 
 }
@@ -419,7 +429,8 @@ void Manager::doMyGroups(const string& input) {
     split(response, outputs);
 
     /* Analyses response and shows it to the user */
-    if (outputs[1] != "0") {
+    if (strcmp(outputs[0].c_str(), "RGM") != 0) cerr << "Response command is not related to the sent command" << endl;
+    else if (strcmp(outputs[1].c_str(), "0") != 0) {
         for (auto i = outputs.begin() + 2; i != outputs.end() - 1; ++i) cout << *i << " ";
         cout << *(outputs.end() - 1);
     }
@@ -505,8 +516,9 @@ void Manager::doUserList(const string& input) {
     split(response, outputs);
 
     /* Analyses response and informs the user of the result */
-    if (outputs[1] == "NOK") cerr << "Failed. Group doesn't exist." << endl;
-    else if (outputs[1] == "OK") {
+    if (strcmp(outputs[0].c_str(), "RUL") != 0) cerr << "Response command is not related to the sent command" << endl;
+    else if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Failed. Group doesn't exist." << endl;
+    else if (strcmp(outputs[1].c_str(), "OK") == 0) {
         for (auto i = outputs.begin() + 2; i != outputs.end() - 1; ++i) cout << *i << " ";
         cout << *(outputs.end() - 1);
     } else cerr << "Invalid status" << endl;
@@ -534,7 +546,8 @@ void Manager::doPost(const string& input) {
     split(response, outputs);
 
     /* Analyses response and informs the user of the result */
-    if (outputs[1] == "NOK") cerr << "Failed. Message couldn't be posted" << endl;
+    if (strcmp(outputs[0].c_str(), "RPT") != 0) cerr << "Response command is not related to the sent command" << endl;
+    else if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Failed. Message couldn't be posted" << endl;
     else if (isNumber(outputs[1])) cout << outputs[1] << endl;
     else cerr << "Invalid status" << endl;
     
@@ -561,9 +574,10 @@ void Manager::doRetrieve(const string& input) {
     split(response, outputs);
 
     /* Analyses response and informs user of the result */
-    if (outputs[1] == "NOK") cerr << "Failed. Couldn't retrieve messages" << endl;
-    else if (outputs[1] == "EOF") cout << "No messages available" << endl;
-    else if (outputs[1] == "OK") {
+    if (strcmp(outputs[0].c_str(), "RRT") != 0) cerr << "Response command is not related to the sent command" << endl;
+    else if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Failed. Couldn't retrieve messages" << endl;
+    else if (strcmp(outputs[1].c_str(), "EOF") == 0) cout << "No messages available" << endl;
+    else if (strcmp(outputs[1].c_str(), "OK") == 0) {
         for (auto i = outputs.begin() + 2; i != outputs.end() - 1; ++i) cout << *i << " ";
         cout << *(outputs.end() - 1);
     } else cerr << "Invalid status" << endl;
