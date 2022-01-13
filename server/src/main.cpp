@@ -20,12 +20,13 @@
 #include <vector>
 #include <sstream>
 #include <dirent.h>
+#include <fstream>
 
 using namespace std;
 
 /* Const definitions */
 #define PORT "58011"
-#define MAX_REQUEST_SIZE 300
+#define MSG_MAX_SIZE 300
 #define TEXT_MAX_SIZE 240
 #define FILENAME_MAX_SIZE 24
 #define TCP_N_CONNECTIONS 5
@@ -51,7 +52,7 @@ struct addrinfo *res;  /* Stores result from getaddrinfo and uses it to set up o
 ssize_t n, nw, nr;  /* Holds number of bytes read/sent or -1 in case of error */
 socklen_t addrlen;  /* Holds size of message sent from sender */
 struct sockaddr_in addr;  /* Describes internet socket address. Holds sender info */
-char in_buffer[MAX_REQUEST_SIZE];  /* Holds current message received in this socket */
+char in_buffer[MSG_MAX_SIZE];  /* Holds current message received in this socket */
 
 bool isVerbose = false;  /* Is true if the server is set to verbose mode */
 string ds_port{PORT};  /* Holds server port */
@@ -61,7 +62,7 @@ unordered_map<string, Group> groups;  /* Holds all groups in our server. Key is 
 
 
 /*----------------------------------------- Functions --------------------------------------------*/
-
+//TODO: @Sogia-Morgado-> colocar split e command num outro file, porque está repetido no client
 
 /**
  * Transforms a string with spaces in a vector with substring tokenized by the spaces.
@@ -180,29 +181,44 @@ string selector(const string& msg) {
         /* Splits msg by the spaces and returns an array with everything */
         split(msg, inputs);
 
-        verbose_(isVerbose, " POST| UID: " + inputs[1] + "GID: " + inputs[2] + " | IP: " + ip + " | PORT: " + port)
+        verbose_(isVerbose, "POST| UID: " + inputs[1] + "GID: " + inputs[2] + " | IP: " + ip + " | PORT: " + port)
 
         char text[TEXT_MAX_SIZE];  /* Will hold user input text */
         char file_name[FILENAME_MAX_SIZE]; /* Will hold the input file */
         string file;  /* Will hold the input file */
         memset(text, 0, TEXT_MAX_SIZE);
         memset(file_name, 0, FILENAME_MAX_SIZE);
-        int checker, file_size, n1;  /* Used to check if the user did not input a file */
+        int checker, file_size, pointer;  /* Used to check if the user did not input a file */
         bool file_flag = false;
 
         sscanf(msg.c_str(), R"(%*s %*s %*s %*s "%240[^"]" %n)", text, &checker);
 
-        printf("here here \n");
 
         if (checker == 0 || msg[checker] != '\0'){
-            assert_(sscanf(msg.c_str(), R"(%*s %*s %*s %*s %*s "%*240[^"]" %s %n1 %d)", file_name, &n1, &file_size) == 1, "Invalid format\n")
+            printf("Chegou 3\n");
+            assert_(sscanf(msg.c_str(), R"(%*s %*s %*s %*s "%*240[^"]" %s %d %n)", file_name, &file_size, &pointer) == 1, "Invalid format\n")
             file_flag = true;
 
-            for (int i = 0; i < file_size; i++){
-                /*Read data */
-                cout << msg[n1 + 1 + i] << endl;
-            }
+            printf("Chegou 1\n");
+
+            /* Gets the current directory of the project*/
+            char *project_directory = get_current_dir_name();
+            string new_file_path = string(project_directory) + "/server/files/" + file_name ;
+
+            /* Creates a new file*/
+            ofstream file(string(new_file_path), ofstream::out | ofstream::binary);
+
+            printf("Chegou 2\n");
+
+            file.write(&msg[pointer], file_size);
+
+            printf("Chegou aqui\n");
+
+            file.close();
+
         }
+
+        printf("também chegou aqui\n");
 
         /* receives status from call function*/
         status = post_message(&groups, &users, inputs[1], inputs[2], inputs[3], text);
@@ -395,7 +411,7 @@ int main(int argc, char const *argv[]) {
         if (FD_ISSET(fd_udp, &fds)) {  /* Checks if udp socket activated */
 
             /* Receives message from client */
-            n = recvfrom(fd_udp, in_buffer, MAX_REQUEST_SIZE, 0, (struct sockaddr*) &addr, &addrlen);
+            n = recvfrom(fd_udp, in_buffer, MSG_MAX_SIZE, 0, (struct sockaddr*) &addr, &addrlen);
             assert_(n != -1, "Failed to receive message")
 
             /* Removes \n at the end of the in_buffer. Makes things easier down the line */
@@ -418,11 +434,11 @@ int main(int argc, char const *argv[]) {
 
             /* Keeps on reading until everything has been read from the client */
             do {
-                nr = read(tmp_fd, in_buffer, MAX_REQUEST_SIZE);
+                nr = read(tmp_fd, in_buffer, MSG_MAX_SIZE);
                 assert_(nr != -1, "Failed to read from temporary socket")
                 if (nr == 0) break;  /* If a client closes a socket, we need to ignore */
                 n += nr;
-            } while (n < MAX_REQUEST_SIZE);
+            } while (n < MSG_MAX_SIZE);
             if (nr == 0) break;  /* If a client closes a socket, we need to ignore */
 
             /* Removes \n at the end of the in_buffer. Makes things easier down the line */
@@ -444,7 +460,7 @@ int main(int argc, char const *argv[]) {
             assert_(false, "No correct file descriptor was activated in select")
         }
 
-        memset(in_buffer, 0, MAX_REQUEST_SIZE);  /* Cleans in_buffer for new iteration */
+        memset(in_buffer, 0, MSG_MAX_SIZE);  /* Cleans in_buffer for new iteration */
 
 	}
 
