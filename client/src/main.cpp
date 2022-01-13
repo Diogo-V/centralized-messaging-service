@@ -559,10 +559,8 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         char text[TEXT_MAX_SIZE];  /* Will hold user input text */
         char file_name[FILENAME_MAX_SIZE]; /* Will hold the input file */
-        char data_buffer[MSG_MAX_SIZE];  /* Holds file's data */
         memset(text, 0, TEXT_MAX_SIZE);
         memset(file_name, 0, FILENAME_MAX_SIZE);
-        memset(data_buffer, 0, FILENAME_MAX_SIZE);
         //TODO: @Sofia-Morgado -> mudar o nome desta variável
         int checker; /* Used to check if the user did not input a file */
         bool file_flag = false;

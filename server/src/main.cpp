@@ -180,7 +180,7 @@ string selector(const string& msg) {
         /* Splits msg by the spaces and returns an array with everything */
         split(msg, inputs);
 
-        verbose_(isVerbose, " POST| UID: " + inputs[1] + "GID: " + inputs[2] + " | IP: " + ip + " | PORT: " + port)
+        verbose_(isVerbose, "POST| UID: " + inputs[1] + "GID: " + inputs[2] + " | IP: " + ip + " | PORT: " + port)
 
         char text[TEXT_MAX_SIZE];  /* Will hold user input text */
         char file_name[FILENAME_MAX_SIZE]; /* Will hold the input file */
@@ -202,6 +202,8 @@ string selector(const string& msg) {
                 cout << msg[n1 + 1 + i] << endl;
             }
         }
+
+        printf("também chegou aqui\n");
 
         /* receives status from call function*/
         status = post_message(&groups, &users, inputs[1], inputs[2], inputs[3], text);
