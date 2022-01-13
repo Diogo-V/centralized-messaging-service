@@ -61,7 +61,7 @@ unordered_map<string, Group> groups;  /* Holds all groups in our server. Key is 
 
 
 /*----------------------------------------- Functions --------------------------------------------*/
-//TODO: @Sogia-Morgado-> colocar split e command num outro file, porque está repetido no client
+
 
 /**
  * Transforms a string with spaces in a vector with substring tokenized by the spaces.
