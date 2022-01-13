@@ -90,9 +90,7 @@ int main(int argc, char const *argv[]) {
         memset(buffer, 0, MSG_MAX_SIZE);  /* Cleans buffer before receiving user input */
         cin.getline(buffer, MSG_MAX_SIZE);  /* Gets the command that the user input */
 
-        string req{};  /* Holds the request message that is going to be sent to the server */
-
-        manageUserInput(req, manager);  /* Processes user's input */
+        manageUserInput(buffer, manager);  /* Processes user's input */
 
     } while (strcmp(buffer, EXIT_CMD) != 0);
 
