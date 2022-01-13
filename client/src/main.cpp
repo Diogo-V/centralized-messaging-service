@@ -81,9 +81,10 @@ int main(int argc, char const *argv[]) {
         else if (strcmp(argv[i], "-n") == 0) { string s(argv[i + 1]); ds_ip = s; }
     }
 
-    /* Creates connection with server and manager to execute commands */
+    /* Creates connection with server, user and manager to execute commands */
     Connect connect(ds_ip, ds_port);
-    Manager manager(connect);
+    User user;
+    Manager manager(connect, user);
 
      do {
 

@@ -26,7 +26,7 @@ string User::getUserPassword() {
  * 
  * @return user's status
  */
-bool User::getLoggedStatus() {
+bool User::getLoggedStatus() const {
     return this->_is_logged;
 }
 

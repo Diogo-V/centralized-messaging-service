@@ -6,10 +6,7 @@
  *
  * @param connect connection to our server
  */
-Manager::Manager(Connect& connect) : _connect(connect) {
-    User user;
-    this->_user = user;
-}
+Manager::Manager(Connect& connect, User& user) : _connect(connect), _user(&user) {}
 
 
 /**
@@ -17,7 +14,7 @@ Manager::Manager(Connect& connect) : _connect(connect) {
  *
  * @return user
  */
-User Manager::getUser() {
+User* Manager::getUser() {
     return this->_user;
 }
 
@@ -117,7 +114,7 @@ void Manager::doUnregister(const string& input) {
     else if (strcmp(outputs[1].c_str(), "OK") == 0) {
         cout << "User unregistered successfully" << endl;
         /*Logouts the user if the user was logged in*/
-        if (this->getUser().getLoggedStatus()) this->getUser().resetUser();
+        if (this->getUser()->getLoggedStatus()) this->getUser()->resetUser();
     }
     else if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Failed. Invalid user id or incorrect password." << endl;
     else cerr << "Invalid status" << endl;
@@ -145,7 +142,7 @@ void Manager::doLogin(const string& input) {
     validate_(isNumber(inputs[1]), "User ID is not a number")
     validate_(inputs[2].size() == 8, "User password should have 8 alphanumerical characters")
     validate_(isAlphaNumeric(inputs[2]), "User password should have only alphanumerical characters")
-    validate_(!this->getUser().getLoggedStatus(), "Client is already logged in")
+    validate_(!this->getUser()->getLoggedStatus(), "Client is already logged in")
 
     /* Transforms user input into a valid command to be sent to the server */
     req = "LOG " + inputs[1] + " " + inputs[2] + "\n";
@@ -161,15 +158,15 @@ void Manager::doLogin(const string& input) {
     if (strcmp(outputs[0].c_str(), "RLO") != 0) cerr << "Response command is not related to the sent command" << endl;
     else if (strcmp(outputs[1].c_str(), "OK") == 0) {
         cout << "User logged in successfully" << endl;
-        this->getUser().setLoggedStatus(true);
-        this->getUser().setUserID( inputs[1]);
-        this->getUser().setUserPassword(inputs[2]);
+        this->getUser()->setLoggedStatus(true);
+        this->getUser()->setUserID( inputs[1]);
+        this->getUser()->setUserPassword(inputs[2]);
     }
     else if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Failed. Invalid user id or incorrect password." << endl;
     else cerr << "Invalid status" << endl;
 
-    cout << this->getUser().getLoggedStatus() << endl;
-    cout << this->getUser().getUserID() << endl;
+    cout << this->getUser()->getLoggedStatus() << endl;
+    cout << this->getUser()->getUserID() << endl;
 
 }
 
@@ -189,10 +186,10 @@ void Manager::doLogout(const string& input) {
 
     /* Verifies if the user input a valid command and that this command can be issued */
     validate_(inputs.size() == 1, "Too many arguments")
-    validate_(this->getUser().getLoggedStatus(), "Client needs to be logged in")
+    validate_(this->getUser()->getLoggedStatus(), "Client needs to be logged in")
 
     /* Transforms user input into a valid command to be sent to the server */
-    req = "OUT " + this->getUser().getUserID() + " " + this->getUser().getUserPassword() + "\n";
+    req = "OUT " + this->getUser()->getUserID() + " " + this->getUser()->getUserPassword() + "\n";
 
     /* Sends request to server by UDP and gets response */
     string response = this->getConnection().sendByUDP(req);
@@ -205,7 +202,7 @@ void Manager::doLogout(const string& input) {
     if (strcmp(outputs[0].c_str(), "ROU") != 0) cerr << "Response command is not related to the sent command" << endl;
     else if (strcmp(outputs[1].c_str(), "OK") == 0) {
         cout << "User logged out successfully" << endl;
-        this->getUser().resetUser();
+        this->getUser()->resetUser();
     }
     else if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Failed. Invalid user id or incorrect password." << endl;
     else cerr << "Invalid status" << endl;
@@ -228,9 +225,9 @@ void Manager::doShowUID(const string& input) {
 
     /* Verifies if the user input a valid command and that this command can be issued */
     validate_(inputs.size() == 1, "Too many arguments")
-    validate_(this->getUser().getLoggedStatus(), "No client logged in")
+    validate_(this->getUser()->getLoggedStatus(), "No client logged in")
 
-    cout << this->getUser().getUserID() << endl;
+    cout << this->getUser()->getUserID() << endl;
 
 }
 
@@ -252,10 +249,10 @@ void Manager::doExit(const string& input) {
     validate_(inputs.size() == 1, "Too many arguments")
 
     /* Still needs to log out user if he is logged in */
-    if (this->getUser().getLoggedStatus()) {
+    if (this->getUser()->getLoggedStatus()) {
 
         /* Transforms user input into a valid command to be sent to the server */
-        req = "OUT " + this->getUser().getUserID() + " " + this->getUser().getUserPassword() + "\n";
+        req = "OUT " + this->getUser()->getUserID() + " " + this->getUser()->getUserPassword() + "\n";
 
         /* Sends request to server by UDP and gets response */
         string response = this->getConnection().sendByUDP(req);
@@ -268,7 +265,7 @@ void Manager::doExit(const string& input) {
         if (strcmp(outputs[0].c_str(), "ROU") != 0) cerr << "Response command is not related to the sent command" << endl;
         else if (strcmp(outputs[1].c_str(), "OK") == 0) {
             cout << "User logged out successfully" << endl;
-            this->getUser().resetUser();
+            this->getUser()->resetUser();
         }
         else if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Failed. Invalid user id or incorrect password." << endl;
         else cerr << "Invalid status" << endl;
@@ -335,10 +332,10 @@ void Manager::doSubscribe(const string& input) {
     validate_(isNumber(inputs[1]), "Group ID is not a number")
     validate_(inputs[2].size() <= 24, "Group name limited to 24 characters")
     validate_(isAlphaNumericPlus(inputs[2]), "Group name should have only alphanumerical characters plus '-' and '_'")
-    validate_(this->getUser().getLoggedStatus(), "Client is not logged in")
+    validate_(this->getUser()->getLoggedStatus(), "Client is not logged in")
 
     /* Transforms user input into a valid command to be sent to the server */
-    req = "GSR " + this->getUser().getUserID() + " " + inputs[1] + " " + inputs[2] + "\n";
+    req = "GSR " + this->getUser()->getUserID() + " " + inputs[1] + " " + inputs[2] + "\n";
 
     /* Sends request to server by UDP and gets response */
     string response = this->getConnection().sendByUDP(req);
@@ -378,10 +375,10 @@ void Manager::doUnsubscribe(const string& input) {
     validate_(inputs.size() == 2, "User did not input group ID")
     validate_(isNumber(inputs[1]), "Group ID is not a number")
     validate_(inputs[1].size() <= 2, "Group ID isn't a 2 digit-number")
-    validate_(this->getUser().getLoggedStatus(), "Client is not logged in")
+    validate_(this->getUser()->getLoggedStatus(), "Client is not logged in")
 
     /* Transforms user input into a valid command to be sent to the server */
-    req = "GUR " + this->getUser().getUserID() + " " + inputs[1] + "\n";
+    req = "GUR " + this->getUser()->getUserID() + " " + inputs[1] + "\n";
 
     /* Sends request to server by UDP and gets response */
     string response = this->getConnection().sendByUDP(req);
@@ -416,10 +413,10 @@ void Manager::doMyGroups(const string& input) {
 
     /* Verifies if the user input a valid command and that this command can be issued */
     validate_(inputs.size() == 1, "Too many arguments")
-    validate_(this->getUser().getLoggedStatus(), "Client is not logged in")
+    validate_(this->getUser()->getLoggedStatus(), "Client is not logged in")
 
     /* Transforms user input into a valid command to be sent to the server */
-    req = "GLM " + this->getUser().getUserID() + "\n";
+    req = "GLM " + this->getUser()->getUserID() + "\n";
 
     /* Sends request to server by UDP and gets response */
     string response = this->getConnection().sendByUDP(req);
@@ -455,10 +452,10 @@ void Manager::doSelect(const string& input) {
     validate_(inputs.size() == 2, "User did not input group ID")
     validate_(isNumber(inputs[1]), "Group ID is not a number")
     validate_(inputs[1].size() <= 2, "Group ID isn't a 2 digit-number")
-    validate_(this->getUser().getLoggedStatus(), "Client is not logged in")
+    validate_(this->getUser()->getLoggedStatus(), "Client is not logged in")
 
     /* Saves selected group locally */
-    this->getUser().setUserSelectedGroupID(inputs[1]);
+    this->getUser()->setUserSelectedGroupID(inputs[1]);
     
 }
 
@@ -478,11 +475,11 @@ void Manager::doShowGID(const string& input) {
 
     /* Verifies if the user input a valid command and that this command can be issued */
     validate_(inputs.size() == 1, "Too many arguments")
-    validate_(this->getUser().getLoggedStatus(), "Client is not logged in")
-    validate_(!this->getUser().getSelectedGroupID().empty(), "No selected group")
+    validate_(this->getUser()->getLoggedStatus(), "Client is not logged in")
+    validate_(!this->getUser()->getSelectedGroupID().empty(), "No selected group")
 
     /* Shows the client its currently selected group */
-    cout << this->getUser().getSelectedGroupID() << endl;
+    cout << this->getUser()->getSelectedGroupID() << endl;
     
 }
 
@@ -502,11 +499,11 @@ void Manager::doUserList(const string& input) {
 
     /* Verifies if the user input a valid command and that this command can be issued */
     validate_(inputs.size() == 1, "Too many arguments")
-    validate_(this->getUser().getLoggedStatus(), "Client is not logged in")
-    validate_(!this->getUser().getSelectedGroupID().empty(), "No selected group")
+    validate_(this->getUser()->getLoggedStatus(), "Client is not logged in")
+    validate_(!this->getUser()->getSelectedGroupID().empty(), "No selected group")
 
     /* Transforms user input into a valid command to be sent to the server */
-    req = "ULS " + this->getUser().getSelectedGroupID() +  "\n";
+    req = "ULS " + this->getUser()->getSelectedGroupID() +  "\n";
 
     /* Sends request to server by UDP and gets response */
     string response = this->getConnection().sendByTCP(req);

@@ -145,7 +145,7 @@ string selector(const string& msg) {
         /* Splits msg by the spaces and returns an array with everything */
         split(msg, inputs);
 
-        verbose_(isVerbose, "UID: " + inputs[1] + "GID: " + inputs[2] + " | IP: " + ip + " | PORT: " + port)
+        verbose_(isVerbose, "UID: " + inputs[1] + " GID: " + inputs[2] + " | IP: " + ip + " | PORT: " + port)
         status = subscribe(&groups, &users, inputs[1], inputs[2], inputs[3]);
         return "RGS " + status + "\n";
 
@@ -153,7 +153,7 @@ string selector(const string& msg) {
         /* Splits msg by the spaces and returns an array with everything */
         split(msg, inputs);
 
-        verbose_(isVerbose, "UID: " + inputs[1] + "GID: " + inputs[2] + " | IP: " + ip + " | PORT: " + port)
+        verbose_(isVerbose, "UID: " + inputs[1] + " GID: " + inputs[2] + " | IP: " + ip + " | PORT: " + port)
         status = unsubscribe(&groups, &users, inputs[1], inputs[2]);
         return "RGU " + status + "\n";
 
@@ -169,7 +169,7 @@ string selector(const string& msg) {
         /* Splits msg by the spaces and returns an array with everything */
         split(msg, inputs);
 
-        verbose_(isVerbose, "GID: " + inputs[1] + "GID: " + inputs[2] + " | IP: " + ip + " | PORT: " + port)
+        verbose_(isVerbose, "GID: " + inputs[1] + " GID: " + inputs[2] + " | IP: " + ip + " | PORT: " + port)
         status = users_subscribed(&groups, &users, inputs[1]);
         return "RUL " + status + "\n";
 
@@ -178,7 +178,7 @@ string selector(const string& msg) {
         /* Splits msg by the spaces and returns an array with everything */
         split(msg, inputs);
 
-        verbose_(isVerbose, "UID: " + inputs[1] + "GID: " + inputs[2] + " | IP: " + ip + " | PORT: " + port)
+        verbose_(isVerbose, "UID: " + inputs[1] + " GID: " + inputs[2] + " | IP: " + ip + " | PORT: " + port)
 
         char text[MSG_MAX_SIZE];  /* Will hold user input text */
         string file;  /* Will hold the input file */
@@ -196,7 +196,7 @@ string selector(const string& msg) {
         /* Splits msg by the spaces and returns an array with everything */
         split(msg, inputs);
 
-        verbose_(isVerbose, "UID: " + inputs[1] + "GID: " + inputs[2] + "MID: " + inputs[3] + " | IP: " + ip + " | PORT: " + port)
+        verbose_(isVerbose, "UID: " + inputs[1] + " GID: " + inputs[2] + "MID: " + inputs[3] + " | IP: " + ip + " | PORT: " + port)
 
         /* receives status from call function*/
         status = retrieve_message(&groups, inputs[2], inputs[3]);

@@ -24,7 +24,7 @@ class Manager {
         /**
          * @brief Current client's user representation.
          */
-        User _user;
+        User *_user;
 
         /**
          * @brief Connection to the server.
@@ -37,15 +37,16 @@ class Manager {
          * @brief Manager class constructor.
          *
          * @param connect connection to our server
+         * @param user current client's information
          */
-        explicit Manager(Connect& connect);
+        explicit Manager(Connect& connect, User& user);
 
         /**
          * @brief Gets manager's user.
          *
          * @return user
          */
-        User getUser();
+        User* getUser();
 
         /**
          * @brief Gets manager's connection to the server.
