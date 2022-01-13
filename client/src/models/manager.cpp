@@ -165,9 +165,6 @@ void Manager::doLogin(const string& input) {
     else if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Failed. Invalid user id or incorrect password." << endl;
     else cerr << "Invalid status" << endl;
 
-    cout << this->getUser()->getLoggedStatus() << endl;
-    cout << this->getUser()->getUserID() << endl;
-
 }
 
 
