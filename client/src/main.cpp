@@ -543,6 +543,7 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         string len = to_string(strlen(text));
 
+        //TODO: @Sofia->Morgado: enviar já este out
         /* Transforms user input into a valid command to be sent to the server */
         out = "PST " + user.uid + " " + user.selected_group + " " + len + " " + "\"" + text + "\"";
 
@@ -739,7 +740,7 @@ int main(int argc, char const *argv[]) {
             /* Keeps sending messages to sever until everything is sent */
             char* ptr = &req[0];
 
-            if(!post_file) {
+            if(!post) {
                 while (n > 0) {
                     assert_((nw = write(fd_tcp, ptr, MSG_MAX_SIZE)) > 0, "Could not send message to server")
                     n -= nw;

@@ -174,6 +174,10 @@ string subscribe(unordered_map<string, Group>* groups, unordered_map<string, Use
     } else if (gid != "00" && groups->at(gid).getName() != group_name) {
         return "E_GNAME";
 
+    /* Group already exists and user has already subscribed*/
+    } else if (gid == "00" && groups->at(gid).getUsers().count(uid) != 0) {
+        return "OK";
+
     /* Everything is fine */
     } else {
 
