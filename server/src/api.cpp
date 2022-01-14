@@ -139,7 +139,6 @@ string list_groups(unordered_map<string, Group>* groups) {
     return list;
 }
 
-//TODO: @Sofia-Morgado -> caso o user já esteja subscrito, devia dar erro
 
 /**
  * Subscribe user to group. If gid equal 0, also creates group.
@@ -153,10 +152,7 @@ string list_groups(unordered_map<string, Group>* groups) {
  * @return status message
  */
 string subscribe(unordered_map<string, Group>* groups, unordered_map<string, User>* users, string& uid, string& gid, string& group_name) {
-
     char new_gid[3];
-
-    cout << groups->count(gid) << endl;
 
     //FIXME: @Sofia-Morgado -> visto que isto é um erro de não existirem grupos ou users, o erro é NOK ou E_USR?
     /* Verifies if there are users registered or if there are groups to subscribe. This is for safety measure s*/
@@ -282,7 +278,7 @@ string groups_subscribed(unordered_map<string, Group>* groups, unordered_map<str
 /**
  * Sends a list of the users subscribed to this group
  * @param groups structure that holds all groups in the server
- * @param gid group's is
+ * @param gid group's id
  * @return status message and list of users (if applicable)
  */
 string users_subscribed(unordered_map<string, Group>* groups, string gid){
@@ -290,9 +286,8 @@ string users_subscribed(unordered_map<string, Group>* groups, string gid){
     unordered_map<string, User*> users_subscribed;
 
     /*Verifies if the group exists */
-    if(!groups->empty() && groups->count(gid) == 0) {
+    if (!groups->empty() && groups->count(gid) == 0){
         return "NOK";
-
 
     } else {
         /* Gets all users subscribed to the group*/
@@ -300,11 +295,14 @@ string users_subscribed(unordered_map<string, Group>* groups, string gid){
 
         /* For each user, gets its id */
         for (auto & itr : users_subscribed ) {
-            user = itr.first + "\n";
+            user = itr.first + " ";
             out.append(user);
         }
 
-        return "OK " + groups->at(gid).getName() + "\n" + out;
+        /* Removing last " " from the last group in the list*/
+        out.pop_back();
+
+        return "OK " + groups->at(gid).getName() + " " + out;
     }
 
 }

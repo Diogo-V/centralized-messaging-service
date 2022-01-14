@@ -297,9 +297,6 @@ void Manager::doListGroups(const string& input) {
     this->getConnection().sendByUDP(req);
     string response = this->getConnection().receivesByUDP();
 
-    //TODO: tirar aisto
-    printf("Response: %s\n", response.c_str());
-
     /* Splits response to be shown */
     vector<string> outputs;
     split(response, outputs);
@@ -519,7 +516,7 @@ void Manager::doUserList(const string& input) {
     if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Failed. Group doesn't exist." << endl;
     else if (strcmp(outputs[1].c_str(), "OK") == 0) {
         for (auto i = outputs.begin() + 2; i != outputs.end() - 1; ++i) cout << *i << " ";
-        cout << *(outputs.end() - 1);
+        cout << *(outputs.end() - 1) << endl;
     } else cerr << "Invalid status" << endl;
 
 }
@@ -632,8 +629,6 @@ void Manager::doRetrieve(const string& input) {
     this->getConnection().sendByTCP(req);
 
     string response = this->getConnection().receivesByTCP();  // TODO: implement a better loop
-
-    cout << response << endl;
 
     /* Splits response to be analysed */
     vector<string> outputs;

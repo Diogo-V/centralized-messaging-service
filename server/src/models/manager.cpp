@@ -365,11 +365,7 @@ string Manager::doRegister(const string& input) {
     verbose_(this->getVerbose(), "UID: " + inputs[1] + " | GID: " + inputs[2] + " | IP: " +
         this->getConnection()->getClientIP() + " | PORT: " + this->getConnection()->getClientPort())
 
-    cout << this->getGroups()->empty() << endl;
-    cout << this->getGroups()->count(inputs[1]) << endl;
-    cout << this->getGroups()->at(inputs[1]).getGroupId() << endl;
-
-    string status = users_subscribed(this->getGroups(), inputs[1]);
+    string status = users_subscribed(this->getGroups(), inputs[1].c_str());
     return "RUL " + status + "\n";
 
 }
