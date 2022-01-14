@@ -285,6 +285,9 @@ string Connect::receiveByTCP() {
  */
 void Connect::replyByTCP(const string& response) {
 
+    //TODO: @SOfia-Morgado - tirar isto
+    cout << response << endl;
+
     /* We are going to send until we send everything */
     int remaining = (int) response.length();
     int sent;
