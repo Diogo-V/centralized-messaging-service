@@ -19,7 +19,7 @@ string subscribe (unordered_map<string, Group>* groups, unordered_map<string, Us
 string unsubscribe(unordered_map<string, Group>* groups, unordered_map<string, User>* users, string uid, string gid);
 string groups_subscribed (unordered_map<string, Group>* groups, unordered_map<string, User>* users, string uid);
 string users_subscribed (unordered_map<string, Group>* groups, unordered_map<string, User>* users, string gid);
-string post_message (unordered_map<string, Group>* groups, unordered_map<string, User>* users, string uid, string gid, string tsize, string text);
+string post_message (unordered_map<string, Group>* groups, unordered_map<string, User>* users, string uid, string gid, string tsize, string text, string filename = "", string filesize  = "");
 string retrieve_message (unordered_map<string, Group>* groups, string gid, string mid);
 
 #endif

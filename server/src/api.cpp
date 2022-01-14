@@ -306,7 +306,7 @@ string users_subscribed(unordered_map<string, Group>* groups, unordered_map<stri
  * @return status message
  */
  //TODO: @Sofia-Morgado-> tratar do file transfer
-string post_message(unordered_map<string, Group>* groups, unordered_map<string, User>* users, string uid, string gid, string tsize, string text) {
+string post_message(unordered_map<string, Group>* groups, unordered_map<string, User>* users, string uid, string gid, string tsize, string text, string filename, string filesize) {
 
     char mid[5];
 
@@ -327,7 +327,7 @@ string post_message(unordered_map<string, Group>* groups, unordered_map<string, 
     sprintf(mid, "%04u", groups->at(gid).getMid() + 1);
 
     /* Create a new message and post it on the group*/
-    Message m(mid, uid, text);
+    Message m(mid, uid, text, filename, filesize);
     groups->at(gid).postMessage(m);
 
     /* Returns message identifier*/

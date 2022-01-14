@@ -29,7 +29,15 @@ class Message {
          */
         string _uid;
 
-        //optional: file;
+        /**
+         * @brief file's name
+         */
+        string _filename;
+
+        /**
+         * @brief file's size
+         */
+        string _filesize;
 
     public:
 
@@ -40,7 +48,7 @@ class Message {
          * @param uid message's author
          * @param text message's text
          */
-        explicit Message(const string& id, const string& uid,  const string& text);
+        explicit Message(const string& id, const string& uid,  const string& text, string& filename, string& filesize);
 
         /**
          * @brief Returns message's id.
@@ -62,6 +70,20 @@ class Message {
          * @return user's id
          */
         string getMessageUid();
+
+        /**
+         * @brief Gets message's filename.
+         *
+         * @return user's id
+         */
+        string getMessageFileName();
+
+        /**
+         * @brief Gets message's file'size.
+         *
+         * @return user's id
+         */
+        string getMessageFileSize();
 
 };
 

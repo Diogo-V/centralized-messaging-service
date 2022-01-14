@@ -562,7 +562,7 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
         memset(text, 0, TEXT_MAX_SIZE);
         memset(file_name, 0, FILENAME_MAX_SIZE);
         //TODO: @Sofia-Morgado -> mudar o nome desta variável
-        int checker; /* Used to check if the user did not input a file */
+        int checker = 0; /* Used to check if the user did not input a file */
         bool file_flag = false;
 
         /* INICIALIZAR TCP*/
@@ -616,23 +616,33 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
             char *project_directory = get_current_dir_name();
             string file_path = string(project_directory) + "/client/bin/" + file_name ;
 
-            ifstream file(string(file_path), ifstream::in | ifstream::binary);
-
-            out = " " + string(file_name) + " " + to_string(file.tellg());
-
+            //TODO: depois alterar para binário
+            ifstream file(string(file_path), ifstream::in | ifstream:: binary | ifstream:: ate);
+            file.seekg(0, ios::end);
             //TODO: mudar o nome da variável
             int file_length = file.tellg();  /* Sends request size */
+            file.seekg(0, ios::beg);
+
+            out = " " + string(file_name) + " " + to_string(file_length) + "\n";
+
+            char file_data[MSG_MAX_SIZE];
+            //memset(text, 0, file_length + 1);
 
             /* Keeps sending messages to sever until everything is sent */
-            filebuf* pbuf = file.rdbuf();
+            //file.read(file_data, file_length);
+            //file_data[file_length] = '\n';
 
             /* Sends Filename and filesize */
-            assert_((bytes_sent = write(fd_tcp, &out, MSG_MAX_SIZE)) > 0, "Could not send message to server")
+            assert_((bytes_sent = write(fd_tcp, out.c_str(), MSG_MAX_SIZE)) > 0, "Could not send message to server")
 
             /* Then sends the data*/
             while (file_length > 0) {
-                assert_((bytes_sent = write(fd_tcp, pbuf, MSG_MAX_SIZE)) > 0, "Could not send data message to server")
-                file_length -= bytes_sent; pbuf += bytes_sent;
+                file.read(file_data, MSG_MAX_SIZE);
+
+                cout << file_data << endl;
+                assert_((bytes_sent = write(fd_tcp, file_data, MSG_MAX_SIZE)) > 0, "Could not send data message to server")
+                file_length -= bytes_sent;
+                memset(file_data, 0, MSG_MAX_SIZE);
             }
 
             /* Close file*/
@@ -644,7 +654,6 @@ bool preprocessing(const string& msg, string& out, con_type& con) {
 
         post = true;
 
-        printf("here\n");
 
         return true;
 
@@ -768,8 +777,6 @@ int main(int argc, char const *argv[]) {
                     ptr += nw;
                 }
             }
-
-            printf("here 1\n");
 
             /* Keeps on reading until everything has been read from the server */
             while ((n = read(fd_tcp, res_buffer, MSG_MAX_SIZE)) != 0) {

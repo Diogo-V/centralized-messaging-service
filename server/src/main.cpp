@@ -100,6 +100,8 @@ string selector(const string& msg) {
     string status{};
     string cmd = get_command(msg);
 
+    cout << cmd << endl;
+
     /* Gets client's ip and port to be logged */
     string ip(inet_ntoa(addr.sin_addr));
     string port{to_string(ntohs(addr.sin_port))};
@@ -188,40 +190,24 @@ string selector(const string& msg) {
         string file;  /* Will hold the input file */
         memset(text, 0, TEXT_MAX_SIZE);
         memset(file_name, 0, FILENAME_MAX_SIZE);
-        int checker, file_size, pointer;  /* Used to check if the user did not input a file */
+        int checker = 0;  /* Used to check if the user did not input a file */
         bool file_flag = false;
+        string file_size;
 
         sscanf(msg.c_str(), R"(%*s %*s %*s %*s "%240[^"]" %n)", text, &checker);
 
-
         if (checker == 0 || msg[checker] != '\0'){
-            printf("Chegou 3\n");
-            assert_(sscanf(msg.c_str(), R"(%*s %*s %*s %*s "%*240[^"]" %s %d %n)", file_name, &file_size, &pointer) == 1, "Invalid format\n")
+            sscanf(msg.c_str(), R"(%*s %*s %*s %*s "%240[^"]" %s %s)", text, file_name, file_size.c_str());
             file_flag = true;
-
-            printf("Chegou 1\n");
-
-            /* Gets the current directory of the project*/
-            char *project_directory = get_current_dir_name();
-            string new_file_path = string(project_directory) + "/server/files/" + file_name ;
-
-            /* Creates a new file*/
-            ofstream file(string(new_file_path), ofstream::out | ofstream::binary);
-
-            printf("Chegou 2\n");
-
-            file.write(&msg[pointer], file_size);
-
-            printf("Chegou aqui\n");
-
-            file.close();
-
         }
 
-        printf("também chegou aqui\n");
-
-        /* receives status from call function*/
-        status = post_message(&groups, &users, inputs[1], inputs[2], inputs[3], text);
+        if (file_flag) {
+            /* receives status from call function*/
+            status = post_message(&groups, &users, inputs[1], inputs[2], inputs[3], text, file_name, file_size);
+        } else {
+            /* receives status from call function*/
+            status = post_message(&groups, &users, inputs[1], inputs[2], inputs[3], text);
+        }
 
         return "RPT " + status + "\n";
 
@@ -408,6 +394,10 @@ int main(int argc, char const *argv[]) {
         bzero(&addr, sizeof(struct sockaddr_in));
         addrlen = sizeof(addr);
 
+        string temporary; /* Holds the request until fsize, for the post command*/
+        bool post = false;
+        char *project_directory = get_current_dir_name(); /* Gets the current directory of the project*/
+
         if (FD_ISSET(fd_udp, &fds)) {  /* Checks if udp socket activated */
 
             /* Receives message from client */
@@ -432,20 +422,64 @@ int main(int argc, char const *argv[]) {
             int tmp_fd = accept(fd_tcp,(struct sockaddr*) &addr, &addrlen);
             assert_(tmp_fd != -1, "Could not create temporary tcp socket")
 
-            /* Keeps on reading until everything has been read from the client */
-            do {
+            /* Read the initial request */
+            nr = read(tmp_fd, in_buffer, MSG_MAX_SIZE);
+            assert_(nr != -1, "Failed to read from temporary socket")
+            temporary += in_buffer;
+
+            vector<string> inputs;
+
+            /* Post message, need to read*/
+            if (in_buffer[0] == 'P' && in_buffer[1] == 'S' && in_buffer[2] == 'T' && in_buffer[strlen(in_buffer) - 1] != '\n'){
+                post = true;
+                memset(in_buffer, 0, MSG_MAX_SIZE);
                 nr = read(tmp_fd, in_buffer, MSG_MAX_SIZE);
                 assert_(nr != -1, "Failed to read from temporary socket")
-                if (nr == 0) break;  /* If a client closes a socket, we need to ignore */
-                n += nr;
-            } while (n < MSG_MAX_SIZE);
-            if (nr == 0) break;  /* If a client closes a socket, we need to ignore */
+                temporary += in_buffer;
+
+                /* Splits msg by the spaces and returns an array with everything */
+                split(in_buffer, inputs);
+                /* Cleans the buffer*/
+                memset(in_buffer, 0, MSG_MAX_SIZE);
+
+                /* Get file size */
+                int len = stoi(inputs[2]);
+                /* Gets the file path*/
+                string new_file_path = string(project_directory) + "/server/files/" + inputs[1] ;
+                /* Creates a new file*/
+                ofstream file(string(new_file_path), ofstream::out | ofstream::binary);
+
+                /* Keeps reading the file data*/
+                do {
+                    nr = read(tmp_fd, in_buffer, MSG_MAX_SIZE);
+                    assert_(nr != -1, "Failed to read from temporary socket")
+
+                    /* Writes the date to the file*/
+                    file.write(in_buffer, strlen(in_buffer));
+                    /* Cleans buffer*/
+                    memset(in_buffer, 0, MSG_MAX_SIZE);
+
+                    if (nr == 0) break;  /* If a client closes a socket, we need to ignore */
+                    n += nr;
+
+
+                } while (n < len);
+
+                file.close();
+
+
+            }
 
             /* Removes \n at the end of the in_buffer. Makes things easier down the line */
             in_buffer[strlen(in_buffer) - 1] = '\0';
 
+            if (!post){
+                temporary = in_buffer;
+            }
+
             /* Process client's message and decides what to do with it based on the passed code */
-            string response = selector(in_buffer);
+            string response = selector(temporary);
+            n = response.size();
 
             /* Keeps sending messages to client until everything is sent */
             char* ptr = &response[0];
@@ -455,6 +489,8 @@ int main(int argc, char const *argv[]) {
             }
 
             close(tmp_fd);  /* Closes file descriptor to avoid errors */
+
+            post = false;
 
         } else {
             assert_(false, "No correct file descriptor was activated in select")
