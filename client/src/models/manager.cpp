@@ -24,7 +24,7 @@ User* Manager::getUser() {
  *
  * @return connection model
  */
-Connect Manager::getConnection() {
+Connect& Manager::getConnection() {
     return this->_connect;
 }
 

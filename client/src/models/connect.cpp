@@ -48,7 +48,7 @@ void Connect::init_socket_tcp() {
     assert_(errcode == 0, "Failed getaddrinfo call for tcp")
 
     /* Creates connection between server and client */
-    assert_(connect(this->getSocketTCP(), res->ai_addr, res->ai_addrlen) != -1, "Could not connect to sever")
+    assert_(connect(this->getSocketTCP(), res->ai_addr, res->ai_addrlen) != -1, "Could not connect to server")
 
 }
 
@@ -123,7 +123,7 @@ string Connect::getPort() {
  *
  * @return udp socket
  */
-int Connect::getSocketUDP() const {
+int Connect::getSocketUDP() {
     return this->_fd_udp;
 }
 
@@ -133,7 +133,7 @@ int Connect::getSocketUDP() const {
  *
  * @return tcp socket
  */
-int Connect::getSocketTCP() const {
+int Connect::getSocketTCP() {
     return this->_fd_tcp;
 }
 
@@ -161,8 +161,13 @@ void Connect::sendByTCP(const string& request) {
     auto remaining = (ssize_t) request.length();  /* Gets request size */
     int sent;
 
+    /* We use a buffer to avoid a non-null terminated string */
+    char buffer[MAX_REQUEST_SIZE];
+    memset(buffer, 0, MAX_REQUEST_SIZE);
+    memcpy(buffer, request.c_str(), request.length());
+
     /* Keeps sending messages to sever until everything is sent */
-    char* ptr = const_cast<char *>(&request[0]);
+    char* ptr = const_cast<char *>(&buffer[0]);
     while (remaining > 0) {
         assert_((sent = write(this->getSocketTCP(), ptr, MAX_REQUEST_SIZE)) > 0, "Could not send message to server")
         remaining -= sent; ptr += sent;

@@ -262,7 +262,8 @@ void Connect::replyByUDP(const string& response) {
 string Connect::receiveByTCP() {
 
     char buffer[MAX_REQUEST_SIZE];  // Temporary buffer to receive all the information
-    string request{'\0'};
+    string request;
+    memset(buffer, 0, MAX_REQUEST_SIZE);
 
     /* Creates temporary socket to connect to client. Keeps main channel active */
     this->_tmp_fd_tcp = accept(this->getSocketTCP(),(struct sockaddr*) this->getAddr(), this->getAddrLen());
@@ -270,7 +271,7 @@ string Connect::receiveByTCP() {
 
     /* Keeps on reading until everything has been read from the client */
     do {
-        ssize_t nr = read(this->getSocketTmpTCP(), buffer, MAX_REQUEST_SIZE);
+        ssize_t nr = read(this->_tmp_fd_tcp, buffer, MAX_REQUEST_SIZE);
         assert_(nr != -1, "Failed to read from temporary socket")
         if (nr == 0) return "CONNECTION CLOSED";  /* If a client closes a socket, we need to ignore */
         request.append(buffer, strlen(buffer));

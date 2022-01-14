@@ -53,7 +53,7 @@ void Manager::start_server() {
         /* Checks if tcp socket activated */
         } else if (FD_ISSET(this->getConnection()->getSocketTCP(), this->getConnection()->getFDS())) {
 
-            string request = this->getConnection()->receiveByTCP();  // TODO: implement files
+            string request = this->getConnection()->receiveByTCP();
 
             /* Process client's message and decides what to do with it based on the passed code */
             string response = this->process_request(request);
