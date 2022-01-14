@@ -259,14 +259,16 @@ string Connect::receiveByTCP() {
     this->_tmp_fd_tcp = accept(this->getSocketTCP(),(struct sockaddr*) this->getAddr(), this->getAddrLen());
     assert_(this->_tmp_fd_tcp != -1, "Could not create temporary tcp socket")
 
+
+
     /* Keeps on reading until everything has been read from the client */
+    char* ptr=&buffer[0];
     do {
-        ssize_t nr = read(this->_tmp_fd_tcp, buffer, MAX_REQUEST_SIZE);
-        cout << buffer << endl;
+        ssize_t nr = read(this->_tmp_fd_tcp, ptr, MAX_REQUEST_SIZE);
         assert_(nr != -1, "Failed to read from temporary socket")
-        //TODO: descomentar isTO!!!!!!!!!!!!
-        //if (nr == 0) return "CONNECTION CLOSED";  /* If a client closes a socket, we need to ignore */
+        if (nr == 0) return "CONNECTION CLOSED";  /* If a client closes a socket, we need to ignore */
         request.append(buffer, strlen(buffer));
+        ptr += nr;
     } while (buffer[strlen(buffer) - 1] != '\n');
 
     /* Removes \n at the end of the buffer. Makes things easier down the line */
