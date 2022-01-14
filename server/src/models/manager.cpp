@@ -282,7 +282,7 @@ string Manager::doRegister(const string& input) {
     split(input, inputs);
 
     /* If server is in verbose mode, we log the client's information */
-    verbose_(this->getVerbose(), "UID: " + inputs[1] + " GID: " + inputs[2] + " | IP: " +
+    verbose_(this->getVerbose(), "UID: " + inputs[1] + " | GID: " + inputs[2] + " | IP: " +
         this->getConnection()->getClientIP() + " | PORT: " + this->getConnection()->getClientPort())
 
     /* Calls api to process command and send back a status to be then sent to the client */
@@ -306,7 +306,7 @@ string Manager::doRegister(const string& input) {
     split(input, inputs);
 
     /* If server is in verbose mode, we log the client's information */
-    verbose_(this->getVerbose(), "UID: " + inputs[1] + " GID: " + inputs[2] + " | IP: " +
+    verbose_(this->getVerbose(), "UID: " + inputs[1] + " | GID: " + inputs[2] + " | IP: " +
         this->getConnection()->getClientIP() + " | PORT: " + this->getConnection()->getClientPort())
 
     /* Calls api to process command and send back a status to be then sent to the client */
@@ -354,7 +354,7 @@ string Manager::doRegister(const string& input) {
     split(input, inputs);
 
     /* If server is in verbose mode, we log the client's information */
-    verbose_(this->getVerbose(), "UID: " + inputs[1] + " GID: " + inputs[2] + " | IP: " +
+    verbose_(this->getVerbose(), "UID: " + inputs[1] + " | GID: " + inputs[2] + " | IP: " +
         this->getConnection()->getClientIP() + " | PORT: " + this->getConnection()->getClientPort())
 
     string status = users_subscribed(this->getGroups(), this->getUsers(), inputs[1]);
