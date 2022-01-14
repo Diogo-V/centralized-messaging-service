@@ -7,7 +7,7 @@ using namespace std;
 
 
 /* Const definitions */
-#define PORT "58011"
+#define PORT "58039"
 #define LOCAL_IP "localhost"
 #define MSG_MAX_SIZE 300
 #define EXIT_CMD "exit"

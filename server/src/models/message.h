@@ -55,35 +55,35 @@ class Message {
          *
          * @return string with 4 chars containing the id
          */
-        string getMessageId();
+        string& getMessageId();
 
         /**
          * @brief Gets message's contents.
          *
          * @return message's text
          */
-        string getMessageText();
+        string& getMessageText();
 
         /**
          * @brief Gets message's author identifier.
          *
          * @return user's id
          */
-        string getMessageUid();
+        string& getMessageUid();
 
         /**
          * @brief Gets message's filename.
          *
          * @return user's id
          */
-        string getMessageFileName();
+        string& getMessageFileName();
 
         /**
-         * @brief Gets message's file'size.
+         * @brief Gets message's file's size.
          *
          * @return user's id
          */
-        string getMessageFileSize();
+        string& getMessageFileSize();
 
 };
 

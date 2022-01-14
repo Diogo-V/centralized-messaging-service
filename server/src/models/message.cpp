@@ -25,7 +25,7 @@ Message::Message(const string& id, const string& uid,  const string& text, strin
  *
  * @return string with 4 chars containing the id
  */
-string Message::getMessageId() {
+string& Message::getMessageId() {
     return this->_id;
 }
 
@@ -35,7 +35,7 @@ string Message::getMessageId() {
  *
  * @return message's text
  */
-string Message::getMessageText() {
+string& Message::getMessageText() {
     return this->_text;
 }
 
@@ -45,7 +45,7 @@ string Message::getMessageText() {
  *
  * @return user's id
  */
-string Message::getMessageUid() {
+string& Message::getMessageUid() {
     return this->_uid;
 }
 
@@ -54,15 +54,15 @@ string Message::getMessageUid() {
  *
  * @return user's id
  */
-string Message::getMessageFileName(){
+string& Message::getMessageFileName(){
     return this->_filename;
 }
 
 /**
-* @brief Gets message's file'size.
+* @brief Gets message's file's size.
 *
 * @return user's id
 */
-string Message::getMessageFileSize(){
+string& Message::getMessageFileSize(){
     return this->_filesize;
 }

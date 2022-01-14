@@ -142,7 +142,7 @@ void Manager::doLogin(const string& input) {
     validate_(isNumber(inputs[1]), "User ID must be a number")
     validate_(inputs[2].size() == 8, "User password must have 8 alphanumerical characters")
     validate_(isAlphaNumeric(inputs[2]), "User password must have only alphanumerical characters")
-    validate_(!this->getUser()->getLoggedStatus(), "User not logged in")
+    validate_(!this->getUser()->getLoggedStatus(), "No user logged in")
 
     /* Transforms user input into a valid command to be sent to the server */
     req = "LOG " + inputs[1] + " " + inputs[2] + "\n";
@@ -224,7 +224,7 @@ void Manager::doShowUID(const string& input) {
     validate_(inputs.size() == 1, "Too many arguments")
 
     if (this->getUser()->getUserID().empty()){
-        cout << "User not logged in" << endl;
+        cout << "No user logged in" << endl;
     } else {
         cout << "User " + this->getUser()->getUserID() + " logged in" << endl;
     }
@@ -305,9 +305,17 @@ void Manager::doListGroups(const string& input) {
     split(response, outputs);
 
     /* Prints response to the user */
-        if (strcmp(outputs[1].c_str(), "0") != 0) {
-        for (auto i = outputs.begin() + 2; i != outputs.end() - 1; ++i) cout << *i << " ";
+    if (strcmp(outputs[1].c_str(), "0") != 0) {
+        cout << "There are " + outputs[1] + " groups:" << endl;
+        for (auto i = outputs.begin() + 2; i != outputs.end() - 1; i+=3){
+            cout << "Group " + *i; ++i;
+            cout << ": " + *i; ++i;
+            cout << " | Last MSG: " + *i << endl;
+        }
         cout << *(outputs.end() - 1) << "\n";
+    }
+    else {
+        cout << "No groups found" << endl;
     }
 
 }
@@ -327,12 +335,12 @@ void Manager::doSubscribe(const string& input) {
     split(input, inputs);
 
     /* Verifies if the user input a valid command and that this command can be issued */
-    validate_(inputs.size() == 3, "User did not input group ID and/or group name")
-    validate_(inputs[1].size() <= 2, "Group ID isn't 2 digit-number")
-    validate_(isNumber(inputs[1]), "Group ID is not a number")
-    validate_(inputs[2].size() <= 24, "Group name limited to 24 characters")
-    validate_(isAlphaNumericPlus(inputs[2]), "Group name should have only alphanumerical characters plus '-' and '_'")
-    validate_(this->getUser()->getLoggedStatus(), "Client is not logged in")
+    validate_(inputs.size() == 3, "Group ID and/or name not inputted")
+    validate_(inputs[1].size() <= 2, "Group ID must have 2 figures")
+    validate_(isNumber(inputs[1]), "Group ID must be a number")
+    validate_(inputs[2].size() <= 24, "Group name must be limited to 24 alphanumerical characters plus '-' and '_'")
+    validate_(isAlphaNumericPlus(inputs[2]), "Group name must have only alphanumerical characters plus '-' and '_'")
+    validate_(this->getUser()->getLoggedStatus(), "No user logged in")
 
     /* Transforms user input into a valid command to be sent to the server */
     req = "GSR " + this->getUser()->getUserID() + " " + inputs[1] + " " + inputs[2] + "\n";
@@ -346,13 +354,13 @@ void Manager::doSubscribe(const string& input) {
     split(response, outputs);
 
     /* Analyses response and informs the user of the result */
-    if (strcmp(outputs[1].c_str(), "OK") == 0) cout << "User subscribed successfully." << endl;
-    else if (strcmp(outputs[1].c_str(), "NEW") == 0) cout << "New group created. User subscribed successfully." << endl;
-    else if (strcmp(outputs[1].c_str(), "E_USR") == 0) cerr << "Failed. Invalid user id." << endl;
-    else if (strcmp(outputs[1].c_str(), "E_GRP") == 0) cerr << "Failed. Invalid group id." << endl;
-    else if (strcmp(outputs[1].c_str(), "E_GNAME") == 0) cerr << "Failed. Invalid group name." << endl;
-    else if (strcmp(outputs[1].c_str(), "E_FULL") == 0) cerr << "Failed. Couldn't create new group." << endl;
-    else if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Failed. Unknown reasons." << endl;
+    if (strcmp(outputs[1].c_str(), "OK") == 0) cout << "User " + this->getUser()->getUserID() + " subscribed to group " + inputs[2] + " successfully" << endl;
+    else if (strcmp(outputs[1].c_str(), "NEW") == 0) cout << "User " + this->getUser()->getUserID() + " subscribed to new group " + inputs[2] + " successfully" << endl;
+    else if (strcmp(outputs[1].c_str(), "E_USR") == 0) cerr << "Invalid user ID" << endl;
+    else if (strcmp(outputs[1].c_str(), "E_GRP") == 0) cerr << "Invalid group ID" << endl;
+    else if (strcmp(outputs[1].c_str(), "E_GNAME") == 0) cerr << "Invalid group name" << endl;
+    else if (strcmp(outputs[1].c_str(), "E_FULL") == 0) cerr << "Too many groups already created" << endl;
+    else if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Subscribe error" << endl;
     else cerr << "Invalid status" << endl;
 
 }
