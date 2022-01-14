@@ -232,7 +232,7 @@ class Connect {
          * @param file_name name of the file
          * @param file_size size of the file
          */
-        void receiveByTCPWithFile(const string& file_name, const int& file_size);
+        void receiveByTCPWithFile(const string& file_name, int file_size);
 
         /**
          * @brief Cleans and frees everything related to the Connection.

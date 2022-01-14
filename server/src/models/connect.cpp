@@ -330,7 +330,7 @@ void Connect::replyByTCPWithFile(ifstream& file, int file_length) {
  * @param file_name name of the file
  * @param file_size size of the file
  */
-void Connect::receiveByTCPWithFile(const string& file_name, const int& file_size) {
+void Connect::receiveByTCPWithFile(const string& file_name, int file_size) {
 
     char buffer[MAX_REQUEST_SIZE];  /* Auxiliary buffer */
     memset(buffer, 0, MAX_REQUEST_SIZE);
