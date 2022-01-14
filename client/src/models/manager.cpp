@@ -224,9 +224,9 @@ void Manager::doShowUID(const string& input) {
     validate_(inputs.size() == 1, "Too many arguments")
 
     if (this->getUser()->getUserID().empty()){
-        cout << "No user logged in" << endl;
+        cout << "User not logged in" << endl;
     } else {
-        cout << "User logged in: " << this->getUser()->getUserID() << endl;
+        cout << "User " + this->getUser()->getUserID() + " logged in" << endl;
     }
 
 }
