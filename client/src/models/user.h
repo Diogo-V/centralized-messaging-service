@@ -27,7 +27,7 @@ class User {
         /**
          * @brief Holds user's login state
          */
-        bool _is_logged;
+        bool _is_logged{false};
 
         /**
          * @brief Holds user's currently selected group's id
@@ -55,7 +55,7 @@ class User {
          *
          * @return user's status
          */
-        bool getLoggedStatus() const;
+        bool getLoggedStatus();
 
         /**
          * @brief Gets user's currently selected group.
