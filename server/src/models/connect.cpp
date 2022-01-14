@@ -115,16 +115,6 @@ int Connect::getSocketTmpTCP() {
 
 
 /**
- * @brief Sets temporary tcp socket.
- *
- * @param new_fd new temporary tcp socket
- */
-void Connect::setSocketTmpTCP(int new_fd) {
-    this->_tmp_fd_tcp = new_fd;
-}
-
-
-/**
  * @brief Gets set of file descriptors that are being watched.
  *
  * @return set of file descriptors
@@ -302,7 +292,27 @@ void Connect::replyByTCP(const string& response) {
         remaining -= sent; ptr += sent;
     }
 
-    close(this->getSocketTmpTCP());  /* Closes file descriptor to avoid errors */
+}
+
+
+/**
+ * @brief Send a response with a file to a client in TCP socket.
+ *
+ * @param file file that is being sent
+ * @param file_length size of the file
+ */
+void Connect::replyByTCPWithFile(ifstream& file, int file_length) {
+
+    char file_data[MAX_REQUEST_SIZE];  /* Temporary buffer to hold file information */
+    int bytes_sent;  /* Tells us how many bytes have been read from each iteration */
+
+    /* Sends file data to server bit by but */
+    while (file_length > 0) {
+        file.read(file_data, MAX_REQUEST_SIZE);
+        assert_((bytes_sent = write(this->getSocketTCP(), file_data, MAX_REQUEST_SIZE)) > 0, "Could not send data message to server")
+        file_length -= bytes_sent;
+        memset(file_data, 0, MAX_REQUEST_SIZE);
+    }
 
 }
 

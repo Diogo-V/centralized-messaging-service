@@ -546,16 +546,12 @@ void Manager::doPost(const string& input) {
     this->getConnection().init_socket_tcp();
 
     /* Extracts user's message from input */
-    assert_(sscanf(input.c_str(), R"(%*s "%240[^"]" %n)", text, &hasFile) == 1, "Invalid format\n")
+    assert_(sscanf(input.c_str(), R"(%*s "%240[^"]" %n)", text, &hasFile) == 1, "Text is limited to 240 characters.\n")
 
     /* Verifies if the user input a valid command and that this command can be issued */
-    //validate_(inputs.size() >= 2, "Invalid number of arguments")
     validate_(this->getUser()->getLoggedStatus(), "Client is not logged in")
     validate_(!this->getUser()->getSelectedGroupID().empty(), "No selected group")
     validate_(strlen(file_name) <= FILENAME_MAX_SIZE, "File name name up to 24 characters, including the dot and the file type")
-    //TODO: @Sofia-Morgado -> melhorar esta verificação
-    //validate_(file_flag || (file_name[strlen(file_name) - 4] == '.'), "File name is of type: nn(...)nn.xxx")
-    //validate_((inputs[1].length() - 2) <= 240, "Text is limited to 240 characters")
 
     if (hasFile == 0 || input[hasFile] != '\0') {  /* User input a file */
 
@@ -566,10 +562,8 @@ void Manager::doPost(const string& input) {
         char *project_directory = get_current_dir_name();
         string file_path = string(project_directory) + "/client/bin/" + file_name ;
 
-        //TODO: depois alterar para binário
-        ifstream file(string(file_path), ifstream::in | ifstream:: binary | ifstream:: ate);
+        ifstream file(string(file_path), ifstream::in | ifstream::binary | ifstream::ate);
         file.seekg(0, ios::end);
-        //TODO: mudar o nome da variável
         int file_length = file.tellg();  /* Sends request size */
         file.seekg(0, ios::beg);
 
@@ -626,13 +620,17 @@ void Manager::doRetrieve(const string& input) {
     vector<string> inputs;  /* Holds a list of strings with the inputs from our user */
     string req;  /* Holds request that is going to be sent to the server */
 
-    // TODO: @Sofia -> Copy your implementation
+    /* Opens TCP connection with the server */
+    this->getConnection().init_socket_tcp();
 
     req = "RTV " + this->getUser()->getUserID() + " " + this->getUser()->getSelectedGroupID() + " " + inputs[1] + "\n";
 
     /* Sends request to server by UDP and gets response */
-    this->getConnection().sendByTCP(req);  // TODO: Has to be another TCP in case of file
-    string response = this->getConnection().receivesByTCP();
+    this->getConnection().sendByTCP(req);
+
+    string response = this->getConnection().receivesByTCP();  // TODO: implement a better loop
+
+    cout << response << endl;
 
     /* Splits response to be analysed */
     vector<string> outputs;

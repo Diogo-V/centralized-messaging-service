@@ -61,6 +61,9 @@ void Manager::start_server() {
             /* Sends response back to client */
             this->getConnection()->replyByTCP(response);
 
+            /* Closes file descriptor to avoid errors */
+            close(this->getConnection()->getSocketTmpTCP());
+
         } else {
             assert_(false, "No correct file descriptor was activated in select")
         }
@@ -421,17 +424,61 @@ string Manager::doRegister(const string& input) {
  */
  string Manager::doRetrieve(const string& input) {
 
-    //    verbose_(this->getVerbose(), "UID: " + inputs[1] + " GID: " + inputs[2] + " | IP: " +
-    //        this->getConnection()->getClientIP() + " | PORT: " + this->getConnection()->getClientPort())
+    /* Splits input by the spaces and returns an array with everything */
+    vector<string> inputs;
+    split(input, inputs);
 
-    /* Splits msg by the spaces and returns an array with everything */
-//    split(msg, inputs);
-//
-//    verbose_(isVerbose, "UID: " + inputs[1] + "GID: " + inputs[2] + "MID: " + inputs[3] + " | IP: " + ip + " | PORT: " + port)
-//
-//    /* receives status from call function*/
-//    status = retrieve_message(&groups, inputs[2], inputs[3]);
-//
-//    return "RRT " + status + "\n";
+    char buffer[MAX_REQUEST_SIZE];  /* Auxiliary buffer */
+    memset(buffer, 0, MAX_REQUEST_SIZE);
+    ssize_t received;
+    long remaining = 0;
+
+    /* If server is in verbose mode, we log the client's information */
+    verbose_(this->getVerbose(), "UID: " + inputs[1] + " | GID: " + inputs[2] + " | IP: " +
+        this->getConnection()->getClientIP() + " | PORT: " + this->getConnection()->getClientPort())
+
+    /* Gets status and vector of messages upon success to be worked on this function */
+    vector<Message> result;
+    string status = retrieve_message(this->getGroups(), inputs[2], inputs[3], result);
+
+    /* If we had some kind of error, ignores loop */
+    if (status != "OK") return "RRT " + status + "\n";
+
+    /* Inits output string */
+    string res = "RRT " + status + " " + to_string(result.size()) + " ";
+
+    /* Gets current directory */
+    char *project_directory = get_current_dir_name();
+
+    /* Mounts string to be sent to the user by reading every message and transforming it into
+     * a valid response */
+    for (auto itr: result) {
+
+        res += itr.getMessageId() + " " + itr.getMessageUid() + " " +
+               to_string(itr.getMessageText().length()) + " \"" + itr.getMessageText() + "\"";
+
+        if (! itr.getMessageFileName().empty()) {  /* Checks if file is associated */
+
+            /* Appends information related to the input file */
+            res += " / " + itr.getMessageFileName() + " " + itr.getMessageFileSize() + " ";
+
+            this->getConnection()->replyByTCP(res);  // Sends current request
+            res = " ";  // Resets response
+
+            /* Opens file to be read */
+            string file_path = string(project_directory) + "/server/files/" + itr.getMessageFileName();
+            ifstream file(file_path, ifstream::in | ifstream::binary);
+
+            /* Sends file to client */
+            this->getConnection()->replyByTCPWithFile(file, stoi(itr.getMessageFileSize()));
+
+            file.close();
+
+        } else {
+            res += " ";  /* We won't be using \n to separate line, so we use ' ' */
+//            this->getConnection()->replyByTCP(res);  // Sends current request
+        }
+
+    }
 
 }
