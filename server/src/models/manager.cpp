@@ -26,40 +26,40 @@ void Manager::start_server() {
     while (true) {
 
         /* Adds file descriptors to watcher */
-        FD_ZERO(this->getConnection().getFDS());
-        FD_SET(this->getConnection().getSocketUDP(), this->getConnection().getFDS());
-        FD_SET(this->getConnection().getSocketTCP(), this->getConnection().getFDS());
+        FD_ZERO(this->getConnection()->getFDS());
+        FD_SET(this->getConnection()->getSocketUDP(), this->getConnection()->getFDS());
+        FD_SET(this->getConnection()->getSocketTCP(), this->getConnection()->getFDS());
 
         /* Blocks until one of the descriptors, previously set in are ready to by read. Returns number of file descriptors ready */
-        uint8_t counter = select(this->getConnection().getSocketTCP() + 1,this->getConnection().getFDS(),
+        uint8_t counter = select(this->getConnection()->getSocketTCP() + 1,this->getConnection()->getFDS(),
                                  (fd_set*) nullptr,(fd_set*) nullptr,(struct timeval *) nullptr);
         assert_(counter > 0, "Select threw an error")
 
         /* Cleans previous iteration so that it does not bug */
-        this->getConnection().cleanAddr();
+        this->getConnection()->cleanAddr();
 
         /* Checks if udp socket activated */
-        if (FD_ISSET(this->getConnection().getSocketUDP(), this->getConnection().getFDS())) {
+        if (FD_ISSET(this->getConnection()->getSocketUDP(), this->getConnection()->getFDS())) {
 
             /* Receives message from client */
-            string request = this->getConnection().receiveByUDP();
+            string request = this->getConnection()->receiveByUDP();
 
             /* Process client's message and decides what to do with it based on the passed code */
             string response = this->process_request(request);
 
             /* Sends response back to client */
-            this->getConnection().replyByUDP(response);
+            this->getConnection()->replyByUDP(response);
 
         /* Checks if tcp socket activated */
-        } else if (FD_ISSET(this->getConnection().getSocketTCP(), this->getConnection().getFDS())) {
+        } else if (FD_ISSET(this->getConnection()->getSocketTCP(), this->getConnection()->getFDS())) {
 
-            string request = this->getConnection().receiveByTCP();  // TODO: implement files
+            string request = this->getConnection()->receiveByTCP();  // TODO: implement files
 
             /* Process client's message and decides what to do with it based on the passed code */
             string response = this->process_request(request);
 
             /* Sends response back to client */
-            this->getConnection().replyByTCP(response);
+            this->getConnection()->replyByTCP(response);
 
         } else {
             assert_(false, "No correct file descriptor was activated in select")
@@ -74,7 +74,7 @@ void Manager::start_server() {
  * @brief Cleans and frees everything related to the Manager.
  */
 void Manager::clean() {
-    this->getConnection().clean();
+    this->getConnection()->clean();
 }
 
 
@@ -91,17 +91,17 @@ string Manager::process_request(const string& request) {
     string cmd = get_command(request);
 
     /* Verifies if the user requested a valid command */
-    if (cmd == "REG") this->doRegister(request);
-    else if (cmd == "UNR") this->doUnregister(request);
-    else if (cmd == "LOG") this->doLogin(request);
-    else if (cmd == "OUT") this->doLogout(request);
-    else if (cmd == "GLS") this->doListGroups(request);
-    else if (cmd == "GSR") this->doSubscribe(request);
-    else if (cmd == "GUR") this->doUnsubscribe(request);
-    else if (cmd == "GLM") this->doMyGroups(request);
-    else if (cmd == "ULS") this->doUserList(request);
-    else if (cmd == "PST") this->doPost(request);
-    else if (cmd == "RTV") this->doRetrieve(request);
+    if (cmd == "REG") return this->doRegister(request);
+    else if (cmd == "UNR") return this->doUnregister(request);
+    else if (cmd == "LOG") return this->doLogin(request);
+    else if (cmd == "OUT") return this->doLogout(request);
+    else if (cmd == "GLS") return this->doListGroups(request);
+    else if (cmd == "GSR") return this->doSubscribe(request);
+    else if (cmd == "GUR") return this->doUnsubscribe(request);
+    else if (cmd == "GLM") return this->doMyGroups(request);
+    else if (cmd == "ULS") return this->doUserList(request);
+    else if (cmd == "PST") return this->doPost(request);
+    else if (cmd == "RTV") return this->doRetrieve(request);
     else cout << "Invalid command" << endl;
 
 }
@@ -132,8 +132,8 @@ unordered_map<string, Group>* Manager::getGroups() {
  *
  * @return server's connection module
  */
-Connect Manager::getConnection() {
-    return this->_connect;
+Connect* Manager::getConnection() {
+    return &this->_connect;
 }
 
 
@@ -162,8 +162,8 @@ string Manager::doRegister(const string& input) {
     split(input, inputs);
 
     /* If server is in verbose mode, we log the client's information */
-    verbose_(this->getVerbose(), "UID: " + inputs[1] + " | IP: " + this->getConnection().getClientIP() +
-        " | PORT: " + this->getConnection().getClientPort())
+    verbose_(this->getVerbose(), "UID: " + inputs[1] + " | IP: " + this->getConnection()->getClientIP() +
+        " | PORT: " + this->getConnection()->getClientPort())
 
     /* Calls api to process command and send back a status to be then sent to the client */
     string status = register_user(this->getUsers(), inputs[1], inputs[2]);
@@ -186,8 +186,8 @@ string Manager::doRegister(const string& input) {
     split(input, inputs);
 
     /* If server is in verbose mode, we log the client's information */
-    verbose_(this->getVerbose(), "UID: " + inputs[1] + " | IP: " + this->getConnection().getClientIP() +
-                                 " | PORT: " + this->getConnection().getClientPort())
+    verbose_(this->getVerbose(), "UID: " + inputs[1] + " | IP: " + this->getConnection()->getClientIP() +
+                                 " | PORT: " + this->getConnection()->getClientPort())
 
     /* Calls api to process command and send back a status to be then sent to the client */
     string status = unregister_user(this->getUsers(), this->getGroups(), inputs[1], inputs[2]);
@@ -210,8 +210,8 @@ string Manager::doRegister(const string& input) {
     split(input, inputs);
 
     /* If server is in verbose mode, we log the client's information */
-    verbose_(this->getVerbose(), "UID: " + inputs[1] + " | IP: " + this->getConnection().getClientIP() +
-                                 " | PORT: " + this->getConnection().getClientPort())
+    verbose_(this->getVerbose(), "UID: " + inputs[1] + " | IP: " + this->getConnection()->getClientIP() +
+                                 " | PORT: " + this->getConnection()->getClientPort())
 
     /* Calls api to process command and send back a status to be then sent to the client */
     string status = login_user(this->getUsers(), inputs[1], inputs[2]);
@@ -234,8 +234,8 @@ string Manager::doRegister(const string& input) {
     split(input, inputs);
 
     /* If server is in verbose mode, we log the client's information */
-    verbose_(this->getVerbose(), "UID: " + inputs[1] + " | IP: " + this->getConnection().getClientIP() +
-                                 " | PORT: " + this->getConnection().getClientPort())
+    verbose_(this->getVerbose(), "UID: " + inputs[1] + " | IP: " + this->getConnection()->getClientIP() +
+                                 " | PORT: " + this->getConnection()->getClientPort())
 
     /* Calls api to process command and send back a status to be then sent to the client */
     string status = logout_user(this->getUsers(), inputs[1] , inputs[2]);
@@ -258,8 +258,8 @@ string Manager::doRegister(const string& input) {
     split(input, inputs);
 
     /* If server is in verbose mode, we log the client's information */
-    verbose_(this->getVerbose(), "IP: " + this->getConnection().getClientIP() + " | PORT: " +
-        this->getConnection().getClientPort())
+    verbose_(this->getVerbose(), "IP: " + this->getConnection()->getClientIP() + " | PORT: " +
+        this->getConnection()->getClientPort())
 
     /* Calls api to process command and send back a status to be then sent to the client */
     string status = list_groups(this->getGroups());
@@ -283,7 +283,7 @@ string Manager::doRegister(const string& input) {
 
     /* If server is in verbose mode, we log the client's information */
     verbose_(this->getVerbose(), "UID: " + inputs[1] + " GID: " + inputs[2] + " | IP: " +
-        this->getConnection().getClientIP() + " | PORT: " + this->getConnection().getClientPort())
+        this->getConnection()->getClientIP() + " | PORT: " + this->getConnection()->getClientPort())
 
     /* Calls api to process command and send back a status to be then sent to the client */
     string status = subscribe(this->getGroups(), this->getUsers(), inputs[1], inputs[2], inputs[3]);
@@ -307,7 +307,7 @@ string Manager::doRegister(const string& input) {
 
     /* If server is in verbose mode, we log the client's information */
     verbose_(this->getVerbose(), "UID: " + inputs[1] + " GID: " + inputs[2] + " | IP: " +
-        this->getConnection().getClientIP() + " | PORT: " + this->getConnection().getClientPort())
+        this->getConnection()->getClientIP() + " | PORT: " + this->getConnection()->getClientPort())
 
     /* Calls api to process command and send back a status to be then sent to the client */
     string status = unsubscribe(this->getGroups(), this->getUsers(), inputs[1], inputs[2]);
@@ -330,8 +330,8 @@ string Manager::doRegister(const string& input) {
     split(input, inputs);
 
     /* If server is in verbose mode, we log the client's information */
-    verbose_(this->getVerbose(), "UID: " + inputs[1] + " | IP: " + this->getConnection().getClientIP() +
-        " | PORT: " + this->getConnection().getClientPort())
+    verbose_(this->getVerbose(), "UID: " + inputs[1] + " | IP: " + this->getConnection()->getClientIP() +
+        " | PORT: " + this->getConnection()->getClientPort())
 
     /* Calls api to process command and send back a status to be then sent to the client */
     string status = groups_subscribed(this->getGroups(), this->getUsers(), inputs[1]);
@@ -355,7 +355,7 @@ string Manager::doRegister(const string& input) {
 
     /* If server is in verbose mode, we log the client's information */
     verbose_(this->getVerbose(), "UID: " + inputs[1] + " GID: " + inputs[2] + " | IP: " +
-        this->getConnection().getClientIP() + " | PORT: " + this->getConnection().getClientPort())
+        this->getConnection()->getClientIP() + " | PORT: " + this->getConnection()->getClientPort())
 
     string status = users_subscribed(this->getGroups(), this->getUsers(), inputs[1]);
     return "RUL " + status + "\n";
@@ -373,8 +373,8 @@ string Manager::doRegister(const string& input) {
  string Manager::doPost(const string& input) {
 
     /* If server is in verbose mode, we log the client's information */
-//    verbose_(this->getVerbose(), "UID: " + inputs[1] + " | IP: " + this->getConnection().getClientIP() +
-//                                 " | PORT: " + this->getConnection().getClientPort())
+//    verbose_(this->getVerbose(), "UID: " + inputs[1] + " | IP: " + this->getConnection()->getClientIP() +
+//                                 " | PORT: " + this->getConnection()->getClientPort())
 
 /* Splits msg by the spaces and returns an array with everything */
 //    split(msg, inputs);
@@ -434,7 +434,7 @@ string Manager::doRegister(const string& input) {
  string Manager::doRetrieve(const string& input) {
 
     //    verbose_(this->getVerbose(), "UID: " + inputs[1] + " GID: " + inputs[2] + " | IP: " +
-    //        this->getConnection().getClientIP() + " | PORT: " + this->getConnection().getClientPort())
+    //        this->getConnection()->getClientIP() + " | PORT: " + this->getConnection()->getClientPort())
 
     /* Splits msg by the spaces and returns an array with everything */
 //    split(msg, inputs);

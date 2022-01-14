@@ -72,7 +72,7 @@ class Manager {
          *
          * @return server's connection module
          */
-        Connect getConnection();
+        Connect* getConnection();
 
         /**
          * @brief Checks if the server is being executed in verbose mode.

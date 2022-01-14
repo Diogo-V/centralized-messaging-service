@@ -156,9 +156,9 @@ string Connect::sendByUDP(const string& request) {
         assert_(n != -1, "Failed to send message with UDP")
 
         /* Read from socket until it finds an \n and stores it in response */
-        Connect::TimerON(this->getSocketUDP());
+//        Connect::TimerON(this->getSocketUDP());  TODO: uncomment this shit
         n = recvfrom(this->getSocketUDP(), buffer, sizeof buffer, 0, nullptr, nullptr);
-        Connect::TimerOFF(this->getSocketUDP());
+//        Connect::TimerOFF(this->getSocketUDP());
         response.append(buffer);
         memset(buffer, 0, sizeof buffer);
 
