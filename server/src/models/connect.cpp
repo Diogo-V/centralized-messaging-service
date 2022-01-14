@@ -20,11 +20,11 @@ void Connect::init_socket_udp() {
     hints.ai_flags = AI_PASSIVE;
 
     /* Uses its URL to consult DNS and get a UDP server's IP address */
-    errcode = getaddrinfo(nullptr, this->getPort().c_str(), &hints, (struct addrinfo**) &this->_res);
+    errcode = getaddrinfo(nullptr, this->getPort().c_str(), &hints, &this->_res);
     assert_(errcode == 0, "Failed getaddrinfo call for udp socket")
 
     /* Binds sockets to our specified port and tells our SO that this channel if for this program */
-    int err = bind(this->getSocketUDP(), this->_res.ai_addr, this->_res.ai_addrlen);
+    int err = bind(this->getSocketUDP(), this->_res->ai_addr, this->_res->ai_addrlen);
     assert_(err == 0, "Failed to bind udp socket")
 
 }
@@ -39,7 +39,7 @@ void Connect::init_socket_tcp() {
     struct addrinfo hints{};  /* Used to request info from DNS to get our "endpoint" */
 
     /* Creates tcp subgroup for internet */
-    this->_fd_udp = socket(AF_INET, SOCK_STREAM, 0);
+    this->_fd_tcp = socket(AF_INET, SOCK_STREAM, 0);
     assert_(this->getSocketTCP() != -1, "Could not create tcp socket")
 
     /* Inits TCP server's struct to access the DNS */
@@ -53,7 +53,7 @@ void Connect::init_socket_tcp() {
     assert_(errcode == 0, "Failed getaddrinfo call for tcp")
 
     /* Binds sockets to our specified port and tells our SO that this channel if for this program */
-    int err = bind(this->getSocketTCP(), this->_res.ai_addr, this->_res.ai_addrlen);
+    int err = bind(this->getSocketTCP(), this->_res->ai_addr, this->_res->ai_addrlen);
     assert_(err == 0, "Failed to bind tcp socket")
 
     /* Prepares socket to receive connections */
@@ -378,7 +378,7 @@ string Connect::receiveByTCPWithFile() {
  * @brief Cleans and frees everything related to the Connection.
  */
 void Connect::clean() {
-    freeaddrinfo(&this->_res);
+    freeaddrinfo(this->_res);
     close(this->getSocketTCP());
     close(this->getSocketUDP());
 }
