@@ -372,7 +372,37 @@ string Manager::doRegister(const string& input) {
  */
  string Manager::doPost(const string& input) {
 
-    // empty
+    /* Splits input by the spaces and returns an array with everything */
+    vector<string> inputs;
+    split(input, inputs);
+
+    /* If server is in verbose mode, we log the client's information */
+    verbose_(this->getVerbose(), "UID: " + inputs[1] + " GID: " + inputs[2] + " | IP: " +
+        this->getConnection()->getClientIP() + " | PORT: " + this->getConnection()->getClientPort())
+
+    char text[TEXT_MAX_SIZE];  /* Will hold user input text */
+    char file_name[FILENAME_MAX_SIZE]; /* Will hold the input file */
+    string file;  /* Will hold the input file */
+    memset(text, 0, TEXT_MAX_SIZE);
+    memset(file_name, 0, FILENAME_MAX_SIZE);
+    int checker = 0;  /* Used to check if the user did not input a file */
+    string file_size;
+    string status;
+
+    /* Gets text and checks if  */
+    sscanf(input.c_str(), R"(%*s %*s %*s %*s "%240[^"]" %n)", text, &checker);
+
+    /* Checks if user input any files and acts accordingly */
+    if (checker == 0 || input[checker] != '\0') {
+        sscanf(input.c_str(), R"(%*s %*s %*s %*s "%240[^"]" %s %s)", text, file_name, file_size.c_str());
+        status = post_message(this->getGroups(), this->getUsers(), inputs[1], inputs[2], inputs[3], text,
+                              file_name, file_size);
+        this->getConnection()->receiveByTCPWithFile(file_name, stoi(file_size));
+    } else {
+        status = post_message(this->getGroups(), this->getUsers(), inputs[1], inputs[2], inputs[3], text);
+    }
+
+    return "RPT " + status + "\n";
 
 }
 

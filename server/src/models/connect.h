@@ -229,9 +229,10 @@ class Connect {
         /**
          * @brief Receives a valid command by a client in TCP socket with a file.
          *
-         * @return client's request
+         * @param file_name name of the file
+         * @param file_size size of the file
          */
-        string receiveByTCPWithFile();
+        void receiveByTCPWithFile(const string& file_name, const int& file_size);
 
         /**
          * @brief Cleans and frees everything related to the Connection.
