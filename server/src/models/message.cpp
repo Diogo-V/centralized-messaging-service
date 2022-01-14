@@ -11,10 +11,12 @@ using namespace std;
  * @param uid message's author
  * @param text message's text
  */
-Message::Message(const string& id, const string& uid,  const string& text) {
+Message::Message(const string& id, const string& uid,  const string& text, string& filename, string& filesize) {
     _id = id;
     _text = text;
     _uid = uid;
+    _filename = filename;
+    _filesize = filesize;
 }
 
 
@@ -45,4 +47,22 @@ string Message::getMessageText() {
  */
 string Message::getMessageUid() {
     return this->_uid;
+}
+
+/**
+ * @brief Gets message's filename.
+ *
+ * @return user's id
+ */
+string Message::getMessageFileName(){
+    return this->_filename;
+}
+
+/**
+* @brief Gets message's file'size.
+*
+* @return user's id
+*/
+string Message::getMessageFileSize(){
+    return this->_filesize;
 }

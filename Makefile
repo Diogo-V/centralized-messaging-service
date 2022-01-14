@@ -1,6 +1,6 @@
 CC = g++
-debug_flags = -O3 -Wall -std=c++14 -g -lm
-compile_flags = -O3 -Wall -std=c++14 -lm
+debug_flags = -O3 -Wall -std=c++11 -g -lm
+compile_flags = -O3 -Wall -std=c++11 -lm
 
 port = 58011  # Port in which our server is going to run (tejo's port)
 ip_tecnico = tejo.tecnico.ulisboa.pt
