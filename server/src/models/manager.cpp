@@ -362,7 +362,7 @@ string Manager::doRegister(const string& input) {
     verbose_(this->getVerbose(), "UID: " + inputs[1] + " | GID: " + inputs[2] + " | IP: " +
         this->getConnection()->getClientIP() + " | PORT: " + this->getConnection()->getClientPort())
 
-    string status = users_subscribed(this->getGroups(), this->getUsers(), inputs[1]);
+    string status = users_subscribed(this->getGroups(), inputs[1]);
     return "RUL " + status + "\n";
 
 }

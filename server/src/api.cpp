@@ -260,7 +260,10 @@ string groups_subscribed(unordered_map<string, Group>* groups, unordered_map<str
             out.append(group);
         }
 
-        return to_string(user_groups.size()) + " " + out + "\n";
+        /* Removing last " " from the last group in the list*/
+        out.pop_back();
+
+        return to_string(user_groups.size()) + " " + out;
     }
 
 }
@@ -269,18 +272,17 @@ string groups_subscribed(unordered_map<string, Group>* groups, unordered_map<str
 /**
  * Sends a list of the users subscribed to this group
  * @param groups structure that holds all groups in the server
- * @param users structure that holds all users in the server
  * @param gid group's is
  * @return status message and list of users (if applicable)
  */
-string users_subscribed(unordered_map<string, Group>* groups, unordered_map<string, User>* users, string gid){
+string users_subscribed(unordered_map<string, Group>* groups, string gid){
     string out, user;
     unordered_map<string, User*> users_subscribed;
 
     /*Verifies if the group exists */
     if(!groups->empty() && groups->count(gid) == 0) {
-        cout << groups->count(gid) << endl;
         return "NOK";
+
 
     } else {
         /* Gets all users subscribed to the group*/
