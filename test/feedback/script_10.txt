@@ -1,4 +1,37 @@
 When used after script_09.txt (should list groups):
+---------------------------
+Fri, 14 Jan 2022 12:30:19 GMT
+
+COMMAND: groups
+
+There are 9 groups:
+
+Group 09: 9 Last MSG: 0000
+Group 08: Battle-of-Lake-Peipus Last MSG: 0000
+Group 05: Great-Battles Last MSG: 0000
+Group 04: Supersonic-planes Last MSG: 0000
+Group 07: Great-Battles-Pics-EVEN Last MSG: 0000
+Group 03: Two-msg-Text-Photo Last MSG: 0000
+Group 06: Great-Battles-Pics-ODD Last MSG: 0000
+Group 02: One-msg-text-and-photo Last MSG: 0000
+Group 01: Two-messages-text-only Last MSG: 0000
+
+---------------------------
+Fri, 14 Jan 2022 12:30:19 GMT
+
+COMMAND: exit
+
 
 
 When used without precedent (should list no groups):
+---------------------------
+Fri, 14 Jan 2022 12:48:59 GMT
+
+COMMAND: groups
+
+No groups found (RGL 0)
+
+---------------------------
+Fri, 14 Jan 2022 12:48:59 GMT
+
+COMMAND: exit
