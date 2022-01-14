@@ -453,22 +453,30 @@ string Manager::doRegister(const string& input) {
      * a valid response */
     for (auto itr: result) {
 
-        /* Creates main request information */
-        res = itr.getMessageId() + " " + itr.getMessageUid() + " " + to_string(itr.getMessageText().length())
-                + " \"" + itr.getMessageText() + "\"";
+        string res2;  // Response 2
+
+        /* Creates second request */
+        res2.append(itr.getMessageId());
+        res2.append(" ");
+        res2.append(itr.getMessageUid());
+        res2.append(" ");
+        res2.append(to_string(itr.getMessageText().length()));
+        res2.append(" \"");
+        res2.append(itr.getMessageText());
+        res2.append("\"");
 
         /* We do this to have a way of alerting the client an attached file */
-        if (! itr.getMessageFileName().empty()) res += " ";
-        else res += "\n";
+        if (! itr.getMessageFileName().empty()) res2 += " ";
+        else res2 += "\n";
 
-        this->getConnection()->replyByTCP(res);  // Sends current request
+        this->getConnection()->replyByTCP(res2);  // Sends current request
 
         if (! itr.getMessageFileName().empty()) {  /* Checks if file is associated */
 
             /* Appends information related to the input file */
-            res = "/ " + itr.getMessageFileName() + " " + itr.getMessageFileSize() + " " + "\n";
+            res2 = "/ " + itr.getMessageFileName() + " " + itr.getMessageFileSize() + " " + "\n";
 
-            this->getConnection()->replyByTCP(res);  // Sends current request
+            this->getConnection()->replyByTCP(res2);  // Sends current request
 
             /* Opens file to be read */
             string file_path = string(get_current_dir_name()) + "/server/files/" + itr.getMessageFileName();
@@ -481,7 +489,7 @@ string Manager::doRegister(const string& input) {
 
         }
 
-        res = "";  // Resets response
+        res2 = "";  // Resets response
 
     }
 

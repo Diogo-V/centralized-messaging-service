@@ -1,8 +1,8 @@
 CC = g++
-debug_flags = -O3 -Wall -std=c++14 -g -lm
-compile_flags = -O3 -Wall -std=c++14 -lm
+debug_flags = -Wall -std=c++14 -g -lm
+compile_flags = -Wall -std=c++14 -g -lm
 
-port = 58039  # Port in which our server is going to run (tejo's port)
+port = 58040  # Port in which our server is going to run (tejo's port)
 ip_tecnico = tejo.tecnico.ulisboa.pt
 ip = localhost  # Ip of our server
 
@@ -28,11 +28,11 @@ rs: cs
 
 # RUN SERVER REMOTE VERBOSE -> Runs server with udp and tcp connections remotely
 rsrv: cs
-	./server/bin/main -p $(port) -v && date +%N
+	./server/bin/main -p $(port) -v
 
 # RUN CLIENT REMOTE -> Runs client with input ip and port
 rcr: cc
-	./client/bin/main -p $(port) -n $(ip) && date +%N
+	./client/bin/main -p $(port) -n $(ip)
 
 # RUN CLIENT REMOTE IST -> Runs client with input ip and port
 rct: cc
