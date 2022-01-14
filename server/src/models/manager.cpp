@@ -386,7 +386,7 @@ string Manager::doRegister(const string& input) {
     memset(text, 0, TEXT_MAX_SIZE);
     memset(file_name, 0, FILENAME_MAX_SIZE);
     int checker = 0;  /* Used to check if the user did not input a file */
-    string file_size;
+    int file_size;
     string status;
 
     /* Gets text and checks if  */
@@ -394,10 +394,10 @@ string Manager::doRegister(const string& input) {
 
     /* Checks if user input any files and acts accordingly */
     if (checker == 0 || input[checker] != '\0') {
-        sscanf(input.c_str(), R"(%*s %*s %*s %*s "%240[^"]" %s %s)", text, file_name, file_size.c_str());
+        sscanf(input.c_str(), R"(%*s %*s %*s %*s "%240[^"]" %s %d)", text, file_name, &file_size);
         status = post_message(this->getGroups(), this->getUsers(), inputs[1], inputs[2], inputs[3], text,
-                              file_name, file_size);
-        this->getConnection()->receiveByTCPWithFile(file_name, stoi(file_size));
+                              file_name, to_string(file_size));
+        this->getConnection()->receiveByTCPWithFile(file_name, file_size);
     } else {
         status = post_message(this->getGroups(), this->getUsers(), inputs[1], inputs[2], inputs[3], text);
     }

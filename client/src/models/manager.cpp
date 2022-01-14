@@ -581,6 +581,9 @@ void Manager::doPost(const string& input) {
         /* Then sends file's data */
         this->getConnection().sendByTCPWithFile(file, file_length);
 
+        /* Gets response from server */
+        response = this->getConnection().receivesByTCP();
+
         /* Close file*/
         file.close();
 
