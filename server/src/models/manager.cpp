@@ -55,6 +55,8 @@ void Manager::start_server() {
 
             string request = this->getConnection()->receiveByTCP();
 
+            cout << "Request: " << request << endl;
+
             /* Process client's message and decides what to do with it based on the passed code */
             string response = this->process_request(request);
 
