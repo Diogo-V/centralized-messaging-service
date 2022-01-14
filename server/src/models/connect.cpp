@@ -344,8 +344,8 @@ void Connect::receiveByTCPWithFile(const string& file_name, const int& file_size
     ofstream file(string(new_file_path), ofstream::out | ofstream::binary);
 
     /* Keeps reading the file data*/
-    char* ptr=&buffer[0];
-    do {
+    char* ptr = &buffer[0];
+    while (remaining < file_size) {  /* Does this until we got the whole file */
 
         /* Reads from socket and puts in buffer */
         received = read(this->getSocketTmpTCP(), ptr, MAX_REQUEST_SIZE);
@@ -361,7 +361,7 @@ void Connect::receiveByTCPWithFile(const string& file_name, const int& file_size
         remaining += received;
         ptr += received;
 
-    } while (remaining < file_size);  /* Does this until we got the whole file */
+    }
 
     file.close();
 
