@@ -304,7 +304,7 @@ void Manager::doListGroups(const string& input) {
     if (strcmp(outputs[0].c_str(), "RGL") != 0) cerr << "Response command is not related to the sent command" << endl;
     else if (strcmp(outputs[1].c_str(), "0") != 0) {
         for (auto i = outputs.begin() + 2; i != outputs.end() - 1; ++i) cout << *i << " ";
-        cout << *(outputs.end() - 1);
+        cout << *(outputs.end() - 1) << "\n";
     }
 
 }
