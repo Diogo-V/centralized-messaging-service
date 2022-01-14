@@ -137,12 +137,12 @@ void Manager::doLogin(const string& input) {
     split(input, inputs);
 
     /* Verifies if the user input a valid command and that this command can be issued */
-    validate_(inputs.size() == 3, "User did not input user ID and/or password")
-    validate_(inputs[1].size() == 5, "User ID should have 5 numbers")
-    validate_(isNumber(inputs[1]), "User ID is not a number")
-    validate_(inputs[2].size() == 8, "User password should have 8 alphanumerical characters")
-    validate_(isAlphaNumeric(inputs[2]), "User password should have only alphanumerical characters")
-    validate_(!this->getUser()->getLoggedStatus(), "Client is already logged in")
+    validate_(inputs.size() == 3, "User ID and/or password not inputted")
+    validate_(inputs[1].size() == 5, "User ID must have 5 figures")
+    validate_(isNumber(inputs[1]), "User ID must be a number")
+    validate_(inputs[2].size() == 8, "User password must have 8 alphanumerical characters")
+    validate_(isAlphaNumeric(inputs[2]), "User password must have only alphanumerical characters")
+    validate_(!this->getUser()->getLoggedStatus(), "Login error (RLO NOK)")
 
     /* Transforms user input into a valid command to be sent to the server */
     req = "LOG " + inputs[1] + " " + inputs[2] + "\n";
@@ -157,12 +157,12 @@ void Manager::doLogin(const string& input) {
 
     /* Analyses response and informs the user of the result */
     if (strcmp(outputs[1].c_str(), "OK") == 0) {
-        cout << "User logged in successfully" << endl;
+        cout << "Login successful (RLO OK)" << endl;
         this->getUser()->setLoggedStatus(true);
         this->getUser()->setUserID( inputs[1]);
         this->getUser()->setUserPassword(inputs[2]);
     }
-    else if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Failed. Invalid user id or incorrect password." << endl;
+    else if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Login error (RLO NOK)" << endl;
     else cerr << "Invalid status" << endl;
 
 }
