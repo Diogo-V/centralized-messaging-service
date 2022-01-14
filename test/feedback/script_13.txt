@@ -1,10 +1,249 @@
 When used after script_06.txt and script_09.txt (should list groups, login user 10002, subscribe user 10002 to groups 02 to 09, and list groups user 10002 is subscribed to):
+---------------------------
+Fri, 14 Jan 2022 15:09:20 GMT
 
+COMMAND: groups
 
-When used after script_06.txt and script_09.txt (should list groups, login user 10002 and list groups user 10002 is subscribed to - none):
+There are 9 groups:
+
+Group 09: 9 Last MSG: 0000
+Group 08: Battle-of-Lake-Peipus Last MSG: 0000
+Group 05: Great-Battles Last MSG: 0000
+Group 04: Supersonic-planes Last MSG: 0000
+Group 07: Great-Battles-Pics-EVEN Last MSG: 0000
+Group 03: Two-msg-Text-Photo Last MSG: 0000
+Group 06: Great-Battles-Pics-ODD Last MSG: 0000
+Group 02: One-msg-text-and-photo Last MSG: 0000
+Group 01: Two-messages-text-only Last MSG: 0000
+
+---------------------------
+Fri, 14 Jan 2022 15:09:20 GMT
+
+COMMAND: login 10002 pword002
+Login successful (RLO OK)
+---------------------------
+Fri, 14 Jan 2022 15:09:20 GMT
+
+COMMAND: my_groups
+
+User 10002 isn't member of any group
+
+---------------------------
+Fri, 14 Jan 2022 15:09:20 GMT
+
+COMMAND: subscribe 02 One-msg-text-and-photo
+User 10002 subscribed to group 02 (RGS OK)
+---------------------------
+Fri, 14 Jan 2022 15:09:20 GMT
+
+COMMAND: subscribe 03 Two-msg-Text-Photo
+User 10002 subscribed to group 03 (RGS OK)
+---------------------------
+Fri, 14 Jan 2022 15:09:20 GMT
+
+COMMAND: subscribe 04 Supersonic-planes
+User 10002 subscribed to group 04 (RGS OK)
+---------------------------
+Fri, 14 Jan 2022 15:09:20 GMT
+
+COMMAND: subscribe 05 Great-Battles
+User 10002 subscribed to group 05 (RGS OK)
+---------------------------
+Fri, 14 Jan 2022 15:09:20 GMT
+
+COMMAND: subscribe 06 Great-Battles-Pics-ODD
+User 10002 subscribed to group 06 (RGS OK)
+---------------------------
+Fri, 14 Jan 2022 15:09:20 GMT
+
+COMMAND: subscribe 07 Great-Battles-Pics-EVEN
+User 10002 subscribed to group 07 (RGS OK)
+---------------------------
+Fri, 14 Jan 2022 15:09:20 GMT
+
+COMMAND: subscribe 08 Battle-of-Lake-Peipus
+User 10002 subscribed to group 08 (RGS OK)
+---------------------------
+Fri, 14 Jan 2022 15:09:20 GMT
+
+COMMAND: subscribe 09 9
+User 10002 subscribed to group 09 (RGS OK)
+---------------------------
+Fri, 14 Jan 2022 15:09:20 GMT
+
+COMMAND: my_groups
+
+User 10002 is member of the following 8 groups :
+
+Group 02: One-msg-text-and-photo Last MSG: 0000
+Group 03: Two-msg-Text-Photo Last MSG: 0000
+Group 04: Supersonic-planes Last MSG: 0000
+Group 05: Great-Battles Last MSG: 0000
+Group 06: Great-Battles-Pics-ODD Last MSG: 0000
+Group 07: Great-Battles-Pics-EVEN Last MSG: 0000
+Group 08: Battle-of-Lake-Peipus Last MSG: 0000
+Group 09: 9 Last MSG: 0000
+
+---------------------------
+Fri, 14 Jan 2022 15:09:20 GMT
+
+COMMAND: logout
+Logout user 10002 successful (ROU OK)
+---------------------------
+Fri, 14 Jan 2022 15:09:20 GMT
+
+COMMAND: exit
+
 
 
 When used after script_06.txt (should list no groups, login user 10002 and list groups user 10002 is subscribed to - none):
+---------------------------
+Fri, 14 Jan 2022 15:03:24 GMT
+
+COMMAND: groups
+
+No groups found (RGL 0)
+
+---------------------------
+Fri, 14 Jan 2022 15:03:24 GMT
+
+COMMAND: login 10002 pword002
+Login successful (RLO OK)
+---------------------------
+Fri, 14 Jan 2022 15:03:24 GMT
+
+COMMAND: my_groups
+
+User 10002 isn't member of any group
+
+---------------------------
+Fri, 14 Jan 2022 15:03:24 GMT
+
+COMMAND: subscribe 02 One-msg-text-and-photo
+Wrong format reported by server (RGS NOK)
+---------------------------
+Fri, 14 Jan 2022 15:03:24 GMT
+
+COMMAND: subscribe 03 Two-msg-Text-Photo
+Wrong format reported by server (RGS NOK)
+---------------------------
+Fri, 14 Jan 2022 15:03:24 GMT
+
+COMMAND: subscribe 04 Supersonic-planes
+Wrong format reported by server (RGS NOK)
+---------------------------
+Fri, 14 Jan 2022 15:03:24 GMT
+
+COMMAND: subscribe 05 Great-Battles
+Wrong format reported by server (RGS NOK)
+---------------------------
+Fri, 14 Jan 2022 15:03:24 GMT
+
+COMMAND: subscribe 06 Great-Battles-Pics-ODD
+Wrong format reported by server (RGS NOK)
+---------------------------
+Fri, 14 Jan 2022 15:03:24 GMT
+
+COMMAND: subscribe 07 Great-Battles-Pics-EVEN
+Wrong format reported by server (RGS NOK)
+---------------------------
+Fri, 14 Jan 2022 15:03:24 GMT
+
+COMMAND: subscribe 08 Battle-of-Lake-Peipus
+Wrong format reported by server (RGS NOK)
+---------------------------
+Fri, 14 Jan 2022 15:03:24 GMT
+
+COMMAND: subscribe 09 9
+Wrong format reported by server (RGS NOK)
+---------------------------
+Fri, 14 Jan 2022 15:03:24 GMT
+
+COMMAND: my_groups
+
+User 10002 isn't member of any group
+
+---------------------------
+Fri, 14 Jan 2022 15:03:24 GMT
+
+COMMAND: logout
+Logout user 10002 successful (ROU OK)
+---------------------------
+Fri, 14 Jan 2022 15:03:24 GMT
+
+COMMAND: exit
+
 
 
 When used without precedent (should fail due user 10002 not being registered):
+---------------------------
+Fri, 14 Jan 2022 14:54:18 GMT
+
+COMMAND: groups
+
+No groups found (RGL 0)
+
+---------------------------
+Fri, 14 Jan 2022 14:54:18 GMT
+
+COMMAND: login 10002 pword002
+Login error (RLO NOK)
+---------------------------
+Fri, 14 Jan 2022 14:54:18 GMT
+
+COMMAND: my_groups
+No user logged in
+---------------------------
+Fri, 14 Jan 2022 14:54:18 GMT
+
+COMMAND: subscribe 02 One-msg-text-and-photo
+No user logged in
+---------------------------
+Fri, 14 Jan 2022 14:54:18 GMT
+
+COMMAND: subscribe 03 Two-msg-Text-Photo
+No user logged in
+---------------------------
+Fri, 14 Jan 2022 14:54:18 GMT
+
+COMMAND: subscribe 04 Supersonic-planes
+No user logged in
+---------------------------
+Fri, 14 Jan 2022 14:54:18 GMT
+
+COMMAND: subscribe 05 Great-Battles
+No user logged in
+---------------------------
+Fri, 14 Jan 2022 14:54:18 GMT
+
+COMMAND: subscribe 06 Great-Battles-Pics-ODD
+No user logged in
+---------------------------
+Fri, 14 Jan 2022 14:54:18 GMT
+
+COMMAND: subscribe 07 Great-Battles-Pics-EVEN
+No user logged in
+---------------------------
+Fri, 14 Jan 2022 14:54:18 GMT
+
+COMMAND: subscribe 08 Battle-of-Lake-Peipus
+No user logged in
+---------------------------
+Fri, 14 Jan 2022 14:54:18 GMT
+
+COMMAND: subscribe 09 9
+No user logged in
+---------------------------
+Fri, 14 Jan 2022 14:54:18 GMT
+
+COMMAND: my_groups
+No user logged in
+---------------------------
+Fri, 14 Jan 2022 14:54:18 GMT
+
+COMMAND: logout
+Not logged in
+---------------------------
+Fri, 14 Jan 2022 14:54:18 GMT
+
+COMMAND: exit
