@@ -263,7 +263,7 @@ string Manager::doRegister(const string& input) {
 
     /* Calls api to process command and send back a status to be then sent to the client */
     string status = list_groups(this->getGroups());
-    if (groups.size()==0){
+    if (this->getGroups()->empty()) {
         return "RGL " + to_string(this->getGroups()->size()) + status + "\n";
     }
     else{
