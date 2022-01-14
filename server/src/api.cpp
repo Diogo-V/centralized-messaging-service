@@ -196,11 +196,15 @@ string subscribe(unordered_map<string, Group>* groups, unordered_map<string, Use
             strcpy(new_gid, gid.c_str());
         }
 
-        /* Subscribes user to new group. Add user to group subscribers and the group to user's group */
+        /* Subscribes user to group. Add user to group subscribers and the group to user's group */
         groups->at(new_gid).subscribeUser(&users->at(uid));
         users->at(uid).addGroup(new_gid);
-
-        return "OK";
+        
+        if (gid == "00") {
+            return "NEW";
+        } else {
+            return "OK";
+        }
     }
 
 }
