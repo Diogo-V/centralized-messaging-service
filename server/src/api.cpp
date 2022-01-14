@@ -250,8 +250,16 @@ string groups_subscribed(unordered_map<string, Group>* groups, unordered_map<str
     if(!users->empty() && users->count(uid) == 0) {
         return "E_USR";
 
+        /* User not logged in*/
+    } else if (!users->at(uid).getUserStatus()){
+        return "E_USR";
+
     } else {
         user_groups = users->at(uid).getUserGroups();
+
+        if (user_groups.empty()){
+            return "0";
+        }
 
         //TODO: @Sofia-Morgado-> isto vai ter consequências no código
         for (auto & itr : user_groups ) {
