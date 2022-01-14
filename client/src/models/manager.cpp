@@ -70,9 +70,9 @@ void Manager::doRegister(const string& input) {
     split(response, outputs);
 
     /* Analyses response and informs the user of the result */
-    if (strcmp(outputs[1].c_str(), "OK") == 0) cout << "User " + inputs[1] + " registered successfully (RRG OK)" << endl;
-    else if (strcmp(outputs[1].c_str(), "DUP") == 0) cerr << "User " + inputs[1] + " already registered (RRG DUP)" << endl;
-    else if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Too many users already registered (RRG NOK)" << endl;
+    if (strcmp(outputs[1].c_str(), "OK") == 0) cout << "User " + inputs[1] + " registered successfully" << endl;
+    else if (strcmp(outputs[1].c_str(), "DUP") == 0) cerr << "User " + inputs[1] + " already registered" << endl;
+    else if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Too many users already registered" << endl;
     else cerr << "Invalid status" << endl;
 
 }
@@ -112,11 +112,11 @@ void Manager::doUnregister(const string& input) {
 
     /* Analyses response and informs the user of the result */
     if (strcmp(outputs[1].c_str(), "OK") == 0) {
-        cout << "User " + inputs[1] + " unregistered successfully (RUN OK)" << endl;
+        cout << "User " + inputs[1] + " unregistered successfully" << endl;
         /*Logouts the user if the user was logged in*/
         if (this->getUser()->getLoggedStatus()) this->getUser()->resetUser();
     }
-    else if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Unregister failed (RUN NOK)" << endl;
+    else if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Unregister failed" << endl;
     else cerr << "Invalid status" << endl;
 
 }
@@ -142,7 +142,7 @@ void Manager::doLogin(const string& input) {
     validate_(isNumber(inputs[1]), "User ID must be a number")
     validate_(inputs[2].size() == 8, "User password must have 8 alphanumerical characters")
     validate_(isAlphaNumeric(inputs[2]), "User password must have only alphanumerical characters")
-    validate_(!this->getUser()->getLoggedStatus(), "Client is not logged in")
+    validate_(!this->getUser()->getLoggedStatus(), "Login error")
 
     /* Transforms user input into a valid command to be sent to the server */
     req = "LOG " + inputs[1] + " " + inputs[2] + "\n";
@@ -157,7 +157,7 @@ void Manager::doLogin(const string& input) {
 
     /* Analyses response and informs the user of the result */
     if (strcmp(outputs[1].c_str(), "OK") == 0) {
-        cout << "Login user " + inputs[1] << endl;
+        cout << "Login user " + inputs[1] + " successful" << endl;
         this->getUser()->setLoggedStatus(true);
         this->getUser()->setUserID( inputs[1]);
         this->getUser()->setUserPassword(inputs[2]);
@@ -183,7 +183,7 @@ void Manager::doLogout(const string& input) {
 
     /* Verifies if the user input a valid command and that this command can be issued */
     validate_(inputs.size() == 1, "Too many arguments")
-    validate_(this->getUser()->getLoggedStatus(), "Logout error (ROU NOK)")
+    validate_(this->getUser()->getLoggedStatus(), "Logout error")
 
     /* Transforms user input into a valid command to be sent to the server */
     req = "OUT " + this->getUser()->getUserID() + " " + this->getUser()->getUserPassword() + "\n";
@@ -198,10 +198,10 @@ void Manager::doLogout(const string& input) {
 
     /* Analyses response and informs the user of the result */
     if (strcmp(outputs[1].c_str(), "OK") == 0) {
-        cout << "Logout user " + this->getUser()->getUserID() + " successful (ROU OK)" << endl;
+        cout << "Logout user " + this->getUser()->getUserID() + " successful" << endl;
         this->getUser()->resetUser();
     }
-    else if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Logout error (ROU NOK)" << endl;
+    else if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Logout error" << endl;
     else cerr << "Invalid status" << endl;
 
 }
