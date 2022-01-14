@@ -236,9 +236,6 @@ string Connect::receiveByUDP() {
  */
 void Connect::replyByUDP(const string& response) {
 
-    //TODO: @SOfia-Morgado - tirar isto
-    cout << response << endl;
-
     /* Sends response back to client */
     ssize_t n = sendto(this->getSocketUDP(), response.c_str(), response.size(), 0,
                        (struct sockaddr*) this->getAddr(), *this->getAddrLen());
@@ -262,13 +259,11 @@ string Connect::receiveByTCP() {
     this->_tmp_fd_tcp = accept(this->getSocketTCP(),(struct sockaddr*) this->getAddr(), this->getAddrLen());
     assert_(this->_tmp_fd_tcp != -1, "Could not create temporary tcp socket")
 
-
-
     /* Keeps on reading until everything has been read from the client */
     char* ptr=&buffer[0];
     do {
         ssize_t nr = read(this->_tmp_fd_tcp, ptr, MAX_REQUEST_SIZE);
-        assert_(nr != -1, "Failed to read from temporary socket lalal")
+        assert_(nr != -1, "Failed to read from temporary socket")
         if (nr == 0) return "CONNECTION CLOSED";  /* If a client closes a socket, we need to ignore */
         request.append(buffer, strlen(buffer));
         ptr += nr;
@@ -287,9 +282,6 @@ string Connect::receiveByTCP() {
  * @param response response that is going to be sent back to the client.
  */
 void Connect::replyByTCP(const string& response) {
-
-    //TODO: @SOfia-Morgado - tirar isto
-    cout << response << endl;
 
     /* We are going to send until we send everything */
     int remaining = (int) response.length();
