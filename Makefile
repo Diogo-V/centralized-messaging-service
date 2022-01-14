@@ -34,7 +34,7 @@ rsrv: cs
 rcr: cc
 	./client/bin/main -p $(port) -n $(ip)
 
-# RUN CLIENT REMOTE -> Runs client with input ip and port
+# RUN CLIENT REMOTE IST -> Runs client with input ip and port
 rct: cc
 	./client/bin/main -p $(port) -n $(ip_tecnico)
 

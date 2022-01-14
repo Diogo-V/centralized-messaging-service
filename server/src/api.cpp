@@ -304,12 +304,11 @@ string users_subscribed(unordered_map<string, Group>* groups, unordered_map<stri
  * @param users structure that holds all the users in the server
  * @param uid user's id
  * @param gid group's id
- * @param tsize text size
+ * @param txt_size text size
  * @param text text
  * @return status message
  */
- //TODO: @Sofia-Morgado-> tratar do file transfer
-string post_message(unordered_map<string, Group>* groups, unordered_map<string, User>* users, string uid, string gid, string tsize, string text, string filename, string filesize) {
+string post_message(unordered_map<string, Group>* groups, unordered_map<string, User>* users, string uid, string gid, string txt_size, string text, string filename, string filesize) {
 
     char mid[5];
 
@@ -338,35 +337,31 @@ string post_message(unordered_map<string, Group>* groups, unordered_map<string, 
 }
 
 
-//TODO: files
-string retrieve_message(unordered_map<string, Group>* groups, string gid, string mid){
-    string out;
-    vector<Message> messages;
+/**
+ * @brief Retrieves 20 messages from a group after a certain mid.
+ *
+ * @param groups map of groups
+ * @param gid request groups
+ * @param mid start message id
+ * @param out vector of messages that are going to be read and parsed by manager
+ *
+ * @return status string
+ */
+string retrieve_message(unordered_map<string, Group>* groups, string& gid, string& mid, vector<Message>& out) {
 
-    //TODO: @Sofia-Morgago penso que esta verificação não é necessária
-    /*Verifies if the user exists */
-    //if(!users->empty() && users->count(_uid) == 0){
-    //    return "NOK";
-
-    /*Verifies if the group exists */
+    /* Verifies if the group exists */
     if (!groups->empty() && groups->count(gid) == 0) {
         return "NOK";
     }
 
-    messages = groups->at(gid).retrieveMessages(stoi(mid));
+    /* Get messages from the input message to the end or until 20 */
+    out = groups->at(gid).retrieveMessages(stoi(mid));
 
-    /* No messages available*/
-    if (messages.empty()){
+    /* No messages available */
+    if (out.empty()) {
         return "EOF";
     }
 
-    out = to_string(messages.size()) + "\n";
+    return "OK";
 
-    for (auto itr: messages){
-        out += itr.getMessageId() + " " + itr.getMessageUid() + " " + to_string(itr.getMessageText().size()) + " \"" +
-                itr.getMessageText() + "\" \n";
-    }
-
-    /* Returns message identifier*/
-    return "OK " + out;
 }

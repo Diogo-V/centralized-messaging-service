@@ -151,13 +151,6 @@ class Connect {
         int getSocketTmpTCP();
 
         /**
-         * @brief Sets temporary tcp socket.
-         *
-         * @param new_fd new temporary tcp socket
-         */
-        void setSocketTmpTCP(int new_fd);
-
-        /**
          * @brief Gets set of file descriptors that are being watched.
          *
          * @return set of file descriptors
@@ -224,6 +217,14 @@ class Connect {
          * @param response response that is going to be sent back to the client.
          */
         void replyByTCP(const string& response);
+
+        /**
+         * @brief Send a response with a file to a client in TCP socket.
+         *
+         * @param file file that is being sent
+         * @param file_length size of the file
+         */
+        void replyByTCPWithFile(ifstream& file, int file_length);
 
         /**
          * @brief Receives a valid command by a client in TCP socket with a file.
