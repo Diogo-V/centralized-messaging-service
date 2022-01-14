@@ -470,18 +470,14 @@ string Manager::doRegister(const string& input) {
 
             this->getConnection()->replyByTCP(res);  // Sends current request
 
-            /* Gets current directory */
-            char *project_directory = get_current_dir_name();
-
             /* Opens file to be read */
-            string file_path = string(project_directory) + "/server/files/" + itr.getMessageFileName();
+            string file_path = string(get_current_dir_name()) + "/server/files/" + itr.getMessageFileName();
             ifstream file(file_path, ifstream::in | ifstream::binary);
 
             /* Sends file to client */
             this->getConnection()->replyByTCPWithFile(file, stoi(itr.getMessageFileSize()));
 
             file.close();
-            free(project_directory);
 
         }
 
