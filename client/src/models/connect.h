@@ -16,7 +16,8 @@
 #define TIMEOUT_TIME_S 15
 #define UDP_N_TRIES 3
 #define MAX_REQUEST_SIZE 300
-#define MAX_SENT_FILE_DATA 300
+#define MAX_POST_TEXT_SIZE 240
+#define MAX_FILENAME_SIZE 24
 
 
 using namespace std;

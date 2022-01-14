@@ -289,8 +289,13 @@ void Connect::replyByTCP(const string& response) {
     int remaining = (int) response.length();
     int sent;
 
+    /* We use a buffer to avoid a non-null terminated string */
+    char buffer[MAX_REQUEST_SIZE];
+    memset(buffer, 0, MAX_REQUEST_SIZE);
+    memcpy(buffer, response.c_str(), response.length());
+
     /* Keeps sending messages to client until everything is sent */
-    char* ptr = const_cast<char *>(&response[0]);
+    char* ptr = const_cast<char *>(&buffer[0]);
     while (remaining > 0) {
         assert_((sent = write(this->getSocketTmpTCP(), ptr, MAX_REQUEST_SIZE)) > 0, "Could not send message to client")
         remaining -= sent; ptr += sent;
