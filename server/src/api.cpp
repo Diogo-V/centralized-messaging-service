@@ -293,6 +293,11 @@ string users_subscribed(unordered_map<string, Group>* groups, string gid){
         /* Gets all users subscribed to the group*/
         users_subscribed = groups->at(gid).getUsers();
 
+        /* There aren't users subscribed*/
+        if (users_subscribed.empty()){
+            return "OK " + groups->at(gid).getName();
+        }
+
         /* For each user, gets its id */
         for (auto & itr : users_subscribed ) {
             user = itr.first + " ";
