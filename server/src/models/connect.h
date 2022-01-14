@@ -54,7 +54,7 @@ class Connect {
         /**
          * @brief Stores result from getaddrinfo and uses it to set up our socket.
          */
-        struct addrinfo *_res;
+        struct addrinfo _res;
 
         /**
          * @brief Holds size of message sent from client.
