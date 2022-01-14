@@ -156,6 +156,8 @@ string subscribe(unordered_map<string, Group>* groups, unordered_map<string, Use
 
     char new_gid[3];
 
+    cout << groups->count(gid) << endl;
+
     //FIXME: @Sofia-Morgado -> visto que isto é um erro de não existirem grupos ou users, o erro é NOK ou E_USR?
     /* Verifies if there are users registered or if there are groups to subscribe. This is for safety measure s*/
     if(users->empty() || (groups->empty() && gid != "00")) {
@@ -178,7 +180,7 @@ string subscribe(unordered_map<string, Group>* groups, unordered_map<string, Use
         return "E_GNAME";
 
     /* Group already exists and user has already subscribed*/
-    } else if (gid == "00" && groups->count(gid) != 0 && groups->at(gid).getUsers().count(uid) != 0) {
+    } else if (gid != "00" && groups->count(gid) != 0 && groups->at(gid).getUsers().count(uid) != 0) {
         return "OK";
 
     /* Everything is fine */
