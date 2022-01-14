@@ -254,7 +254,7 @@ string Connect::receivesByTCP() {
 
     ssize_t received;  /* Holds amount of bytes received */
     char buffer[MAX_REQUEST_SIZE];  /* Holds temporarily the information sent to the socket */
-    string response{};  /* Used to build the server's response */
+    string response;  /* Used to build the server's response */
 
     /* Keeps on reading until everything has been read from the server */
     do {
@@ -279,7 +279,103 @@ string Connect::receivesByTCP() {
  */
 string Connect::receivesByTCPWithFile() {
 
+    ssize_t received;  /* Holds amount of bytes received */
+    char buffer[MAX_REQUEST_SIZE];  /* Holds temporarily the information sent to the socket */
+    char status[4] = {0};  /* Response status */
+    int n_msgs = 0;  /* Number of messages that the server is going to send us */
+    string response;  /* Used to build the server's response */
+    string msg;
 
+    /* Reads first reply that will contain the information to set up the rest of the loops */
+    ssize_t n = read(this->getSocketTCP(), buffer, MAX_REQUEST_SIZE);
+    assert_(n != -1, "Failed to retrieve response from server")
+    sscanf(buffer, "%*s %s %d\n", status, &n_msgs);
+
+    /* If status is not OK, we can interrupt */
+    string status_str(status);
+    if (strcmp(status, "OK") != 0) return "RRT " + status_str + "\n";
+
+    /* We loop until we get all the messages */
+    do {
+
+        /* Variables in each reply */
+        char msg_id[5] = {0}; string msg_id_str;
+        char uid[6] = {0}; string uid_str;
+        int txt_length = 0;
+        char text[MAX_POST_TEXT_SIZE] = {0}; string text_str;
+        char check_file;
+        char filename[MAX_FILENAME_SIZE] = {0};
+        int filesize = 0;
+
+        /* Reads message from server */
+        memset(buffer, 0, MAX_REQUEST_SIZE);
+        received = read(this->getSocketTCP(), buffer, MAX_REQUEST_SIZE);
+        assert_(received != -1, "Failed to retrieve response from server")
+        if (received == 0) return "CONNECTION CLOSED";  /* If a client closes a socket, we need to ignore */
+
+        /* Gets information from response to be used to print to the user */
+        sscanf(buffer, R"(%s %s %d "%240[^"]"%c)", msg_id, uid, &txt_length, text, &check_file);
+
+        /* Converts into string to be easier to concatenate to a final string */
+        msg_id_str = msg_id; uid_str = uid; text_str = text;
+
+        /* Creates final string */
+        msg = "MSG-ID: " + msg_id_str + " | USER-ID: " + uid_str + " | TEXT: \"" + text_str + "\"";
+
+        /* If true, then we have a file incoming */
+        if (check_file == ' ') {
+
+            /* Reads file info from server */
+            memset(buffer, 0, MAX_REQUEST_SIZE);
+            received = read(this->getSocketTCP(), buffer, MAX_REQUEST_SIZE);
+            assert_(received != -1, "Failed to retrieve response from server")
+            if (received == 0) return "CONNECTION CLOSED";  /* If a client closes a socket, we need to ignore */
+
+            /* Gets information about attached file */
+            sscanf(buffer, "/ %s %d \n", filename, &filesize);
+
+            memset(buffer, 0, MAX_REQUEST_SIZE);
+            long remaining = 0;
+
+            /* Gets the file path */
+            char *project_directory = get_current_dir_name();
+            string new_file_path = string(project_directory) + "/client/files/" + filename;
+
+            /* Creates a new file */
+            ofstream file(string(new_file_path), ofstream::out | ofstream::binary);
+
+            /* Keeps reading the file data*/
+            do {
+
+                /* Reads from socket and puts in buffer */
+                received = read(this->getSocketTCP(), buffer, MAX_REQUEST_SIZE);
+                assert_(received != -1, "Failed to read from temporary socket")
+
+                /* Writes from buffer to file */
+                file.write(buffer, strlen(buffer));
+
+                /* Cleans buffer for next iteration */
+                memset(buffer, 0, MAX_REQUEST_SIZE);
+
+                if (received == 0) break;  /* If a client closes a socket, we need to ignore */
+                remaining += received;
+
+            } while (remaining < filesize);  /* Does this until we got the whole file */
+
+            file.close();
+
+            string filename_str(filename);
+            msg += " " + filename_str;
+
+        }
+
+        msg += "\n";
+
+        response += msg;  /* Appends to response */
+
+    } while (--n_msgs > 0);
+
+    return response;
 
 }
 

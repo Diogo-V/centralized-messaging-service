@@ -428,10 +428,9 @@ string Manager::doRegister(const string& input) {
     vector<string> inputs;
     split(input, inputs);
 
-    char buffer[MAX_REQUEST_SIZE];  /* Auxiliary buffer */
+    /* Auxiliary buffer */
+    char buffer[MAX_REQUEST_SIZE];
     memset(buffer, 0, MAX_REQUEST_SIZE);
-    ssize_t received;
-    long remaining = 0;
 
     /* If server is in verbose mode, we log the client's information */
     verbose_(this->getVerbose(), "UID: " + inputs[1] + " | GID: " + inputs[2] + " | IP: " +
@@ -445,7 +444,10 @@ string Manager::doRegister(const string& input) {
     if (status != "OK") return "RRT " + status + "\n";
 
     /* Inits output string */
-    string res = "RRT " + status + " " + to_string(result.size()) + " ";
+    string res = "RRT " + status + " " + to_string(result.size()) + "\n";
+
+    this->getConnection()->replyByTCP(res);  // Sends current request
+    res = "";  // Clears response to not conflict with the rest of the commands
 
     /* Gets current directory */
     char *project_directory = get_current_dir_name();
@@ -454,16 +456,22 @@ string Manager::doRegister(const string& input) {
      * a valid response */
     for (auto itr: result) {
 
-        res += itr.getMessageId() + " " + itr.getMessageUid() + " " +
-               to_string(itr.getMessageText().length()) + " \"" + itr.getMessageText() + "\"";
+        /* Creates main request information */
+        res = itr.getMessageId() + " " + itr.getMessageUid() + " " + to_string(itr.getMessageText().length())
+                + " \"" + itr.getMessageText() + "\"";
+
+        /* We do this to have a way of alerting the client an attached file */
+        if (! itr.getMessageFileName().empty()) res += " ";
+        else res += "\n";
+
+        this->getConnection()->replyByTCP(res);  // Sends current request
 
         if (! itr.getMessageFileName().empty()) {  /* Checks if file is associated */
 
             /* Appends information related to the input file */
-            res += " / " + itr.getMessageFileName() + " " + itr.getMessageFileSize() + " ";
+            res = "/ " + itr.getMessageFileName() + " " + itr.getMessageFileSize() + " " + "\n";
 
             this->getConnection()->replyByTCP(res);  // Sends current request
-            res = " ";  // Resets response
 
             /* Opens file to be read */
             string file_path = string(project_directory) + "/server/files/" + itr.getMessageFileName();
@@ -474,11 +482,12 @@ string Manager::doRegister(const string& input) {
 
             file.close();
 
-        } else {
-            res += " ";  /* We won't be using \n to separate line, so we use ' ' */
-//            this->getConnection()->replyByTCP(res);  // Sends current request
         }
 
+        res = "";  // Resets response
+
     }
+
+    res += "\n";
 
 }

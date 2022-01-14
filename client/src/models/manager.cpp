@@ -634,7 +634,7 @@ void Manager::doRetrieve(const string& input) {
     /* Sends request to server by UDP and gets response */
     this->getConnection().sendByTCP(req);
 
-    string response = this->getConnection().receivesByTCP();  // TODO: implement a better loop
+    string response = this->getConnection().receivesByTCPWithFile();
 
     /* Splits response to be analysed */
     vector<string> outputs;
@@ -643,9 +643,8 @@ void Manager::doRetrieve(const string& input) {
     /* Analyses response and informs user of the result */
     if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Failed. Couldn't retrieve messages" << endl;
     else if (strcmp(outputs[1].c_str(), "EOF") == 0) cout << "No messages available" << endl;
-    else if (strcmp(outputs[1].c_str(), "OK") == 0) {
-        for (auto i = outputs.begin() + 2; i != outputs.end() - 1; ++i) cout << *i << " ";
-        cout << *(outputs.end() - 1);
-    } else cerr << "Invalid status" << endl;
+    else {
+        cout << response;
+    }
     
 }
