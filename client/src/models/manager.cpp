@@ -305,7 +305,7 @@ void Manager::doListGroups(const string& input) {
     split(response, outputs);
 
     /* Prints response to the user */
-    if (strcmp(outputs[1].c_str(), "0") != 0) {
+        if (strcmp(outputs[1].c_str(), "0") != 0) {
         for (auto i = outputs.begin() + 2; i != outputs.end() - 1; ++i) cout << *i << " ";
         cout << *(outputs.end() - 1) << "\n";
     }
