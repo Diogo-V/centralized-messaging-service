@@ -8,14 +8,19 @@ ip = localhost  # Ip of our server
 
 server_models = ./server/src/models/*.cpp ./server/src/models/*.h
 server_source = ./server/src/*.cpp ./server/src/*.h
+# server_helpers = ./server/src/misc/*.cpp ./server/src/misc/*.h
+
+client_models = ./client/src/models/*.cpp ./client/src/models/*.h
+client_source = ./client/src/*.cpp
+client_helpers = ./client/src/misc/*.cpp ./client/src/misc/*.h
 
 # COMPILE SERVER -> Compiles udp + tcp server and all its dependencies
 cs: server/src/main.cpp
-	$(CC) $(compile_flags) -o ./server/bin/main $(server_source) $(server_models)
+	$(CC) $(compile_flags) -o ./server/bin/main $(server_source) $(server_models) # $(server_helpers)
 
 # COMPILE CLIENT -> Compiles client and all its dependencies
 cc: client/src/main.cpp
-	$(CC) $(compile_flags) -o ./client/bin/main ./client/src/main.cpp
+	$(CC) $(compile_flags) -o ./client/bin/main $(client_source) $(client_models) $(client_helpers)
 
 # RUN SERVER -> Runs server with udp and tcp connections
 rs: cs

@@ -342,7 +342,7 @@ string retrieve_message(unordered_map<string, Group>* groups, string gid, string
 
     //TODO: @Sofia-Morgago penso que esta verificação não é necessária
     /*Verifies if the user exists */
-    //if(!users->empty() && users->count(uid) == 0){
+    //if(!users->empty() && users->count(_uid) == 0){
     //    return "NOK";
 
     /*Verifies if the group exists */
