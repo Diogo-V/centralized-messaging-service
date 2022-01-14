@@ -264,10 +264,10 @@ void Manager::doExit(const string& input) {
 
         /* Analyses response and informs the user of the result */
         if (strcmp(outputs[1].c_str(), "OK") == 0) {
-            cout << "User logged out successfully" << endl;
+            cout << "Logout user " + this->getUser()->getUserID() + " successful" << endl;
             this->getUser()->resetUser();
         }
-        else if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Failed. Invalid user id or incorrect password." << endl;
+        else if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Logout error" << endl;
         else cerr << "Invalid status" << endl;
 
     }
