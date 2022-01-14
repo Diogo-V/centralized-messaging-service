@@ -142,7 +142,7 @@ void Manager::doLogin(const string& input) {
     validate_(isNumber(inputs[1]), "User ID must be a number")
     validate_(inputs[2].size() == 8, "User password must have 8 alphanumerical characters")
     validate_(isAlphaNumeric(inputs[2]), "User password must have only alphanumerical characters")
-    validate_(!this->getUser()->getLoggedStatus(), "Login error (RLO NOK)")
+    validate_(!this->getUser()->getLoggedStatus(), "Client is not logged in")
 
     /* Transforms user input into a valid command to be sent to the server */
     req = "LOG " + inputs[1] + " " + inputs[2] + "\n";
@@ -157,12 +157,12 @@ void Manager::doLogin(const string& input) {
 
     /* Analyses response and informs the user of the result */
     if (strcmp(outputs[1].c_str(), "OK") == 0) {
-        cout << "Login user " + inputs[1] + " successful (RLO OK)" << endl;
+        cout << "Login user " + inputs[1] << endl;
         this->getUser()->setLoggedStatus(true);
         this->getUser()->setUserID( inputs[1]);
         this->getUser()->setUserPassword(inputs[2]);
     }
-    else if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Login error (RLO NOK)" << endl;
+    else if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Login error" << endl;
     else cerr << "Invalid status" << endl;
 
 }

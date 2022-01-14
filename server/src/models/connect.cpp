@@ -236,6 +236,9 @@ string Connect::receiveByUDP() {
  */
 void Connect::replyByUDP(const string& response) {
 
+    //TODO: @SOfia-Morgado - tirar isto
+    cout << response << endl;
+
     /* Sends response back to client */
     ssize_t n = sendto(this->getSocketUDP(), response.c_str(), response.size(), 0,
                        (struct sockaddr*) this->getAddr(), *this->getAddrLen());
