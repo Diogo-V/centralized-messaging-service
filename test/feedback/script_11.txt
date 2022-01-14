@@ -1,10 +1,97 @@
 When used after script_06.txt and script_09.txt (should subscribe user 10002 to group 02):
+---------------------------
+Fri, 14 Jan 2022 13:59:55 GMT
+
+COMMAND: groups
+
+There are 9 groups:
+
+Group 09: 9 Last MSG: 0000
+Group 08: Battle-of-Lake-Peipus Last MSG: 0000
+Group 05: Great-Battles Last MSG: 0000
+Group 04: Supersonic-planes Last MSG: 0000
+Group 07: Great-Battles-Pics-EVEN Last MSG: 0000
+Group 03: Two-msg-Text-Photo Last MSG: 0000
+Group 06: Great-Battles-Pics-ODD Last MSG: 0000
+Group 02: One-msg-text-and-photo Last MSG: 0000
+Group 01: Two-messages-text-only Last MSG: 0000
+
+---------------------------
+Fri, 14 Jan 2022 13:59:55 GMT
+
+COMMAND: login 10002 pword002
+Login successful (RLO OK)
+---------------------------
+Fri, 14 Jan 2022 13:59:55 GMT
+
+COMMAND: subscribe 02 One-msg-text-and-photo
+User 10002 subscribed to group 02 (RGS OK)
+---------------------------
+Fri, 14 Jan 2022 13:59:55 GMT
+
+COMMAND: logout
+Logout user 10002 successful (ROU OK)
+---------------------------
+Fri, 14 Jan 2022 13:59:55 GMT
+
+COMMAND: exit
+
 
 
 When used after script_06.txt (should fail due to group 02 not being created):
+---------------------------
+Fri, 14 Jan 2022 14:06:52 GMT
+
+COMMAND: groups
+
+No groups found (RGL 0)
+
+---------------------------
+Fri, 14 Jan 2022 14:06:52 GMT
+
+COMMAND: login 10002 pword002
+Login successful (RLO OK)
+---------------------------
+Fri, 14 Jan 2022 14:06:52 GMT
+
+COMMAND: subscribe 02 One-msg-text-and-photo
+Wrong format reported by server (RGS NOK)
+---------------------------
+Fri, 14 Jan 2022 14:06:52 GMT
+
+COMMAND: logout
+Logout user 10002 successful (ROU OK)
+---------------------------
+Fri, 14 Jan 2022 14:06:52 GMT
+
+COMMAND: exit
 
 
-When used after script_09.txt (should fail due to user 10002 not being registered):
 
+When used without precedent (should fail due to user 10002 not being registered):
+---------------------------
+Fri, 14 Jan 2022 14:05:58 GMT
 
-When used without precedent (should fail due group 02 not being created and user 10002 not being registered):
+COMMAND: groups
+
+No groups found (RGL 0)
+
+---------------------------
+Fri, 14 Jan 2022 14:05:58 GMT
+
+COMMAND: login 10002 pword002
+Login error (RLO NOK)
+---------------------------
+Fri, 14 Jan 2022 14:05:58 GMT
+
+COMMAND: subscribe 02 One-msg-text-and-photo
+No user logged in
+---------------------------
+Fri, 14 Jan 2022 14:05:58 GMT
+
+COMMAND: logout
+Not logged in
+---------------------------
+Fri, 14 Jan 2022 14:05:58 GMT
+
+COMMAND: exit
