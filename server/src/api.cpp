@@ -120,7 +120,8 @@ string logout_user(unordered_map<string, User>* users, string& uid, string& pass
  * @return list of group IDs and names
  */
 string list_groups(unordered_map<string, Group>* groups) {
-    string group, list, mid;
+    string group, list;
+    char mid[5];
 
     /* verifies if there are groups created. This is for safety measure*/
     if(groups->empty()) {
@@ -128,7 +129,7 @@ string list_groups(unordered_map<string, Group>* groups) {
     }
 
     for (auto & itr : *groups) {
-        mid = itr.second.getMid() == 0 ? "0000" : to_string(itr.second.getMid()) ;
+        sprintf(mid, "%04u", itr.second.getMid());
         group = itr.first + " " + itr.second.getName() + " " + mid + " ";
         list.append(group);
     }
@@ -241,7 +242,8 @@ string unsubscribe(unordered_map<string, Group>* groups, unordered_map<string, U
  * @return number of groups and list of groups
  */
 string groups_subscribed(unordered_map<string, Group>* groups, unordered_map<string, User>* users, string uid){
-    string out, group, mid;
+    string out, group;
+    char mid[5];
     list<string> user_groups;
 
     /*Verifies if the user exists */
@@ -261,7 +263,8 @@ string groups_subscribed(unordered_map<string, Group>* groups, unordered_map<str
 
         //TODO: @Sofia-Morgado-> isto vai ter consequências no código
         for (auto & itr : user_groups ) {
-            mid = groups->at(itr).getMid() == 0 ? "0000" : to_string(groups->at(itr).getMid()) ;
+            /* Formats message id to hold 4 chars */
+            sprintf(mid, "%04u", groups->at(itr).getMid());
             group = groups->at(itr).getGroupId() + " " + groups->at(itr).getName() + " " + mid + " ";
             out.append(group);
         }
@@ -293,7 +296,6 @@ string users_subscribed(unordered_map<string, Group>* groups, string gid){
         /* Gets all users subscribed to the group*/
         users_subscribed = groups->at(gid).getUsers();
 
-        /* There aren't users subscribed*/
         if (users_subscribed.empty()){
             return "OK " + groups->at(gid).getName();
         }
