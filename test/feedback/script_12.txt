@@ -1,10 +1,145 @@
 When used after script_06.txt, script_09.txt and script_11.txt (should list groups, login user 10002 and list groups user 10002 is subscribed to):
+---------------------------
+Fri, 14 Jan 2022 14:46:16 GMT
+
+COMMAND: groups
+
+There are 9 groups:
+
+Group 09: 9 Last MSG: 0000
+Group 08: Battle-of-Lake-Peipus Last MSG: 0000
+Group 05: Great-Battles Last MSG: 0000
+Group 04: Supersonic-planes Last MSG: 0000
+Group 07: Great-Battles-Pics-EVEN Last MSG: 0000
+Group 03: Two-msg-Text-Photo Last MSG: 0000
+Group 06: Great-Battles-Pics-ODD Last MSG: 0000
+Group 02: One-msg-text-and-photo Last MSG: 0000
+Group 01: Two-messages-text-only Last MSG: 0000
+
+---------------------------
+Fri, 14 Jan 2022 14:46:16 GMT
+
+COMMAND: login 10002 pword002
+Login successful (RLO OK)
+---------------------------
+Fri, 14 Jan 2022 14:46:16 GMT
+
+COMMAND: my_groups
+
+User 10002 is member of the following group :
+
+Group 02: One-msg-text-and-photo Last MSG: 0000
+
+---------------------------
+Fri, 14 Jan 2022 14:46:16 GMT
+
+COMMAND: logout
+Logout user 10002 successful (ROU OK)
+---------------------------
+Fri, 14 Jan 2022 14:46:16 GMT
+
+COMMAND: exit
+
 
 
 When used after script_06.txt and script_09.txt (should list groups, login user 10002 and list groups user 10002 is subscribed to - none):
+---------------------------
+Fri, 14 Jan 2022 14:45:01 GMT
+
+COMMAND: groups
+
+There are 9 groups:
+
+Group 09: 9 Last MSG: 0000
+Group 08: Battle-of-Lake-Peipus Last MSG: 0000
+Group 05: Great-Battles Last MSG: 0000
+Group 04: Supersonic-planes Last MSG: 0000
+Group 07: Great-Battles-Pics-EVEN Last MSG: 0000
+Group 03: Two-msg-Text-Photo Last MSG: 0000
+Group 06: Great-Battles-Pics-ODD Last MSG: 0000
+Group 02: One-msg-text-and-photo Last MSG: 0000
+Group 01: Two-messages-text-only Last MSG: 0000
+
+---------------------------
+Fri, 14 Jan 2022 14:45:01 GMT
+
+COMMAND: login 10002 pword002
+Login successful (RLO OK)
+---------------------------
+Fri, 14 Jan 2022 14:45:01 GMT
+
+COMMAND: my_groups
+
+User 10002 isn't member of any group
+
+---------------------------
+Fri, 14 Jan 2022 14:45:01 GMT
+
+COMMAND: logout
+Logout user 10002 successful (ROU OK)
+---------------------------
+Fri, 14 Jan 2022 14:45:01 GMT
+
+COMMAND: exit
+
 
 
 When used after script_06.txt (should list no groups, login user 10002 and list groups user 10002 is subscribed to - none):
+---------------------------
+Fri, 14 Jan 2022 14:43:50 GMT
+
+COMMAND: groups
+
+No groups found (RGL 0)
+
+---------------------------
+Fri, 14 Jan 2022 14:43:50 GMT
+
+COMMAND: login 10002 pword002
+Login successful (RLO OK)
+---------------------------
+Fri, 14 Jan 2022 14:43:50 GMT
+
+COMMAND: my_groups
+
+User 10002 isn't member of any group
+
+---------------------------
+Fri, 14 Jan 2022 14:43:50 GMT
+
+COMMAND: logout
+Logout user 10002 successful (ROU OK)
+---------------------------
+Fri, 14 Jan 2022 14:43:50 GMT
+
+COMMAND: exit
+
 
 
 When used without precedent (should fail due user 10002 not being registered):
+---------------------------
+Fri, 14 Jan 2022 14:38:07 GMT
+
+COMMAND: groups
+
+No groups found (RGL 0)
+
+---------------------------
+Fri, 14 Jan 2022 14:38:07 GMT
+
+COMMAND: login 10002 pword002
+Login error (RLO NOK)
+---------------------------
+Fri, 14 Jan 2022 14:38:07 GMT
+
+COMMAND: my_groups
+No user logged in
+---------------------------
+Fri, 14 Jan 2022 14:38:07 GMT
+
+COMMAND: logout
+Not logged in
+---------------------------
+Fri, 14 Jan 2022 14:38:07 GMT
+
+COMMAND: exit
