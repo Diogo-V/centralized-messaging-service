@@ -144,7 +144,12 @@ string selector(const string& msg) {
 
         verbose_(isVerbose, "IP: " + ip + " | PORT: " + port)
         status = list_groups(&groups);
-        return "RGL " + to_string(groups.size()) + " " + status + "\n";
+        if (groups.size()>0){
+            return "RGL " + to_string(groups.size()) + " " + status;
+        }
+        else{
+            return "RGL" + to_string(groups.size()) + "\n";
+        }
 
     } else if (cmd == "GSR") {  /* Join group */
         /* Splits msg by the spaces and returns an array with everything */
