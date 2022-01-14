@@ -57,16 +57,6 @@ class Connect {
     private:
 
         /**
-         * @brief Setups our udp socket.
-         */
-        void init_socket_udp();
-
-        /**
-         * @brief Setups our tcp socket.
-         */
-        void init_socket_tcp();
-
-        /**
          * @brief Activates a timer to wait about 5 seconds. It is used as a measure of backup in case UDP
          * is not able to send the message to our server.
          *
@@ -86,6 +76,16 @@ class Connect {
         static int TimerOFF(int sd);
 
     public:
+
+        /**
+         * @brief Setups our udp socket.
+         */
+        void init_socket_udp();
+
+        /**
+         * @brief Setups our tcp socket.
+         */
+        void init_socket_tcp();
 
         /**
          * @brief Connect class constructor.
@@ -125,33 +125,52 @@ class Connect {
         int getSocketTCP() const;
 
         /**
-         * @brief Sends a valid command by UDP to our server and gets a response.
+         * @brief Sends a valid command by UDP to our server.
          *
          * @param request request to be sent to the server
-         *
-         * @return server's response
          */
-        string sendByUDP(const string& request);
+        void sendByUDP(const string& request);
 
         /**
-         * @brief Sends a valid command by TCP to our server and gets a response.
+         * @brief Sends a valid command by TCP to our server.
          *
          * @param request request to be sent to the server
-         *
-         * @return server's response
          */
-        string sendByTCP(const string& request);
+        void sendByTCP(const string& request);
 
         /**
-         * @brief Sends a valid command by TCP with a file to our server and gets a response.
+         * @brief Sends a valid command by TCP with a file to our server.
          *
-         * @param request request to be sent to the server
-         * @param filepath path to the file that is going to be sent
-         * @param filename name of the file to be sent
+         * @param file file that has been already opened and from where we will be reading
+         * @param file_length size of the file
+         */
+        void sendByTCPWithFile(ifstream& file, int file_length);
+
+        /**
+         * @brief Receives a response from the server after sending a request by UDP.
          *
          * @return server's response
          */
-        string sendByTCPWithFile(const string& request, const string& filepath, const string& filename);
+        string receivesByUDP();
+
+        /**
+         * @brief Receives a response from the server after sending a request by TCP.
+         *
+         * @return server's response
+         */
+        string receivesByTCP();
+
+        /**
+         * @brief Receives a response from the server after sending a request by TCP with files.
+         *
+         * @return server's response
+         */
+        string receivesByTCPWithFile();
+
+        /**
+         * @brief Closes current TCP connection to the server.
+         */
+        void closeTCP();
 
         /**
          * @brief Cleans and frees everything related to the Connection.

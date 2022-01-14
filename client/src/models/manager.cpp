@@ -62,15 +62,15 @@ void Manager::doRegister(const string& input) {
     req = "REG " + inputs[1] + " " + inputs[2] + "\n";
 
     /* Sends request to server by UDP and gets response */
-    string response = this->getConnection().sendByUDP(req);
+    this->getConnection().sendByUDP(req);
+    string response = this->getConnection().receivesByUDP();
 
     /* Splits response to be analysed */
     vector<string> outputs;
     split(response, outputs);
 
     /* Analyses response and informs the user of the result */
-    if (strcmp(outputs[0].c_str(), "RRG") != 0) cerr << "Response command is not related to the sent command" << endl;
-    else if (strcmp(outputs[1].c_str(), "OK") == 0) cout << "User registered successfully" << endl;
+    if (strcmp(outputs[1].c_str(), "OK") == 0) cout << "User registered successfully" << endl;
     else if (strcmp(outputs[1].c_str(), "DUP") == 0) cerr << "Failed. User has already registered" << endl;
     else if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Failed. Too many users already registered " << endl;
     else cerr << "Invalid status" << endl;
@@ -103,15 +103,15 @@ void Manager::doUnregister(const string& input) {
     req = "UNR " + inputs[1] + " " + inputs[2] + "\n";
 
     /* Sends request to server by UDP and gets response */
-    string response = this->getConnection().sendByUDP(req);
+    this->getConnection().sendByUDP(req);
+    string response = this->getConnection().receivesByUDP();
 
     /* Splits response to be analysed */
     vector<string> outputs;
     split(response, outputs);
 
     /* Analyses response and informs the user of the result */
-    if (strcmp(outputs[0].c_str(), "RUN") != 0) cerr << "Response command is not related to the sent command" << endl;
-    else if (strcmp(outputs[1].c_str(), "OK") == 0) {
+    if (strcmp(outputs[1].c_str(), "OK") == 0) {
         cout << "User unregistered successfully" << endl;
         /*Logouts the user if the user was logged in*/
         if (this->getUser()->getLoggedStatus()) this->getUser()->resetUser();
@@ -148,15 +148,15 @@ void Manager::doLogin(const string& input) {
     req = "LOG " + inputs[1] + " " + inputs[2] + "\n";
 
     /* Sends request to server by UDP and gets response */
-    string response = this->getConnection().sendByUDP(req);
+    this->getConnection().sendByUDP(req);
+    string response = this->getConnection().receivesByUDP();
 
     /* Splits response to be analysed */
     vector<string> outputs;
     split(response, outputs);
 
     /* Analyses response and informs the user of the result */
-    if (strcmp(outputs[0].c_str(), "RLO") != 0) cerr << "Response command is not related to the sent command" << endl;
-    else if (strcmp(outputs[1].c_str(), "OK") == 0) {
+    if (strcmp(outputs[1].c_str(), "OK") == 0) {
         cout << "User logged in successfully" << endl;
         this->getUser()->setLoggedStatus(true);
         this->getUser()->setUserID( inputs[1]);
@@ -189,15 +189,15 @@ void Manager::doLogout(const string& input) {
     req = "OUT " + this->getUser()->getUserID() + " " + this->getUser()->getUserPassword() + "\n";
 
     /* Sends request to server by UDP and gets response */
-    string response = this->getConnection().sendByUDP(req);
+    this->getConnection().sendByUDP(req);
+    string response = this->getConnection().receivesByUDP();
 
     /* Splits response to be analysed */
     vector<string> outputs;
     split(response, outputs);
 
     /* Analyses response and informs the user of the result */
-    if (strcmp(outputs[0].c_str(), "ROU") != 0) cerr << "Response command is not related to the sent command" << endl;
-    else if (strcmp(outputs[1].c_str(), "OK") == 0) {
+    if (strcmp(outputs[1].c_str(), "OK") == 0) {
         cout << "User logged out successfully" << endl;
         this->getUser()->resetUser();
     }
@@ -252,15 +252,15 @@ void Manager::doExit(const string& input) {
         req = "OUT " + this->getUser()->getUserID() + " " + this->getUser()->getUserPassword() + "\n";
 
         /* Sends request to server by UDP and gets response */
-        string response = this->getConnection().sendByUDP(req);
+        this->getConnection().sendByUDP(req);
+        string response = this->getConnection().receivesByUDP();
 
         /* Splits response to be analysed */
         vector<string> outputs;
         split(response, outputs);
 
         /* Analyses response and informs the user of the result */
-        if (strcmp(outputs[0].c_str(), "ROU") != 0) cerr << "Response command is not related to the sent command" << endl;
-        else if (strcmp(outputs[1].c_str(), "OK") == 0) {
+        if (strcmp(outputs[1].c_str(), "OK") == 0) {
             cout << "User logged out successfully" << endl;
             this->getUser()->resetUser();
         }
@@ -294,15 +294,15 @@ void Manager::doListGroups(const string& input) {
     req = "GLS\n";
 
     /* Sends request to server by UDP and gets response */
-    string response = this->getConnection().sendByUDP(req);
+    this->getConnection().sendByUDP(req);
+    string response = this->getConnection().receivesByUDP();
 
     /* Splits response to be shown */
     vector<string> outputs;
     split(response, outputs);
 
     /* Prints response to the user */
-    if (strcmp(outputs[0].c_str(), "RGL") != 0) cerr << "Response command is not related to the sent command" << endl;
-    else if (strcmp(outputs[1].c_str(), "0") != 0) {
+    if (strcmp(outputs[1].c_str(), "0") != 0) {
         for (auto i = outputs.begin() + 2; i != outputs.end() - 1; ++i) cout << *i << " ";
         cout << *(outputs.end() - 1);
     }
@@ -335,15 +335,15 @@ void Manager::doSubscribe(const string& input) {
     req = "GSR " + this->getUser()->getUserID() + " " + inputs[1] + " " + inputs[2] + "\n";
 
     /* Sends request to server by UDP and gets response */
-    string response = this->getConnection().sendByUDP(req);
+    this->getConnection().sendByUDP(req);
+    string response = this->getConnection().receivesByUDP();
 
     /* Splits response to be analysed */
     vector<string> outputs;
     split(response, outputs);
 
     /* Analyses response and informs the user of the result */
-    if (strcmp(outputs[0].c_str(), "RGS") != 0) cerr << "Response command is not related to the sent command" << endl;
-    else if (strcmp(outputs[1].c_str(), "OK") == 0) cout << "User subscribed successfully." << endl;
+    if (strcmp(outputs[1].c_str(), "OK") == 0) cout << "User subscribed successfully." << endl;
     else if (strcmp(outputs[1].c_str(), "NEW") == 0) cout << "New group created. User subscribed successfully." << endl;
     else if (strcmp(outputs[1].c_str(), "E_USR") == 0) cerr << "Failed. Invalid user id." << endl;
     else if (strcmp(outputs[1].c_str(), "E_GRP") == 0) cerr << "Failed. Invalid group id." << endl;
@@ -378,15 +378,15 @@ void Manager::doUnsubscribe(const string& input) {
     req = "GUR " + this->getUser()->getUserID() + " " + inputs[1] + "\n";
 
     /* Sends request to server by UDP and gets response */
-    string response = this->getConnection().sendByUDP(req);
+    this->getConnection().sendByUDP(req);
+    string response = this->getConnection().receivesByUDP();
 
     /* Splits response to be analysed */
     vector<string> outputs;
     split(response, outputs);
 
     /* Analyses response and informs the user of the result */
-    if (strcmp(outputs[0].c_str(), "RGU") != 0) cerr << "Response command is not related to the sent command" << endl;
-    else if (strcmp(outputs[1].c_str(), "OK") == 0) cout << "User unsubscribed successfully" << endl;
+    if (strcmp(outputs[1].c_str(), "OK") == 0) cout << "User unsubscribed successfully" << endl;
     else if (strcmp(outputs[1].c_str(), "E_USR") == 0) cerr << "Failed. Invalid user id.";
     else if (strcmp(outputs[1].c_str(), "E_GRP") == 0) cerr << "Failed. Invalid group id." << endl;
     else if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Failed. Unknown reason." << endl;
@@ -416,15 +416,15 @@ void Manager::doMyGroups(const string& input) {
     req = "GLM " + this->getUser()->getUserID() + "\n";
 
     /* Sends request to server by UDP and gets response */
-    string response = this->getConnection().sendByUDP(req);
+    this->getConnection().sendByUDP(req);
+    string response = this->getConnection().receivesByUDP();
 
     /* Splits response to be shown */
     vector<string> outputs;
     split(response, outputs);
 
     /* Analyses response and shows it to the user */
-    if (strcmp(outputs[0].c_str(), "RGM") != 0) cerr << "Response command is not related to the sent command" << endl;
-    else if (strcmp(outputs[1].c_str(), "0") != 0) {
+    if (strcmp(outputs[1].c_str(), "0") != 0) {
         for (auto i = outputs.begin() + 2; i != outputs.end() - 1; ++i) cout << *i << " ";
         cout << *(outputs.end() - 1);
     }
@@ -503,15 +503,17 @@ void Manager::doUserList(const string& input) {
     req = "ULS " + this->getUser()->getSelectedGroupID() +  "\n";
 
     /* Sends request to server by UDP and gets response */
-    string response = this->getConnection().sendByTCP(req);
+    this->getConnection().init_socket_tcp();
+    this->getConnection().sendByTCP(req);
+    string response = this->getConnection().receivesByTCP();
+    this->getConnection().closeTCP();
 
     /* Splits response to be analysed */
     vector<string> outputs;
     split(response, outputs);
 
     /* Analyses response and informs the user of the result */
-    if (strcmp(outputs[0].c_str(), "RUL") != 0) cerr << "Response command is not related to the sent command" << endl;
-    else if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Failed. Group doesn't exist." << endl;
+    if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Failed. Group doesn't exist." << endl;
     else if (strcmp(outputs[1].c_str(), "OK") == 0) {
         for (auto i = outputs.begin() + 2; i != outputs.end() - 1; ++i) cout << *i << " ";
         cout << *(outputs.end() - 1);
@@ -535,57 +537,76 @@ void Manager::doPost(const string& input) {
     char file_name[FILENAME_MAX_SIZE]; /* Will hold the input file */
     memset(text, 0, TEXT_MAX_SIZE);
     memset(file_name, 0, FILENAME_MAX_SIZE);
-    int check_if_file; /* Used to check if the user did not input a file */
+    int hasFile = 0; /* Used to check if the user did not input a file */
 
-    /* Gets post message */
-    assert_(sscanf(input.c_str(), R"(%*s "%240[^"]" %n)", text, &check_if_file) == 1, "Invalid format\n")
+    /* Opens TCP connection with the server */
+    this->getConnection().init_socket_tcp();
+
+    /* Extracts user's message from input */
+    assert_(sscanf(input.c_str(), R"(%*s "%240[^"]" %n)", text, &hasFile) == 1, "Invalid format\n")
 
     /* Verifies if the user input a valid command and that this command can be issued */
     //validate_(inputs.size() >= 2, "Invalid number of arguments")
     validate_(this->getUser()->getLoggedStatus(), "Client is not logged in")
     validate_(!this->getUser()->getSelectedGroupID().empty(), "No selected group")
-    validate_(strlen(file_name) <= 24, "File name name up to 24 characters, including the dot and the file type")
+    validate_(strlen(file_name) <= FILENAME_MAX_SIZE, "File name name up to 24 characters, including the dot and the file type")
     //TODO: @Sofia-Morgado -> melhorar esta verificação
     //validate_(file_flag || (file_name[strlen(file_name) - 4] == '.'), "File name is of type: nn(...)nn.xxx")
     //validate_((inputs[1].length() - 2) <= 240, "Text is limited to 240 characters")
 
-    string len = to_string(strlen(text));
+    if (hasFile == 0 || input[hasFile] != '\0') {  /* User input a file */
 
-    /* Transforms user input into a valid command to be sent to the server */
-    req = "PST " + this->getUser()->getUserID() + " " + this->getUser()->getSelectedGroupID() + " " + len + " " + "\"" + text + "\"";
-
-    /* Checks if the user input a file path */
-    if (check_if_file == 0 || input[check_if_file] != '\0') {
-
+        /* Extracts file name from user's input */
         assert_(sscanf(input.c_str(), R"(%*s "%*240[^"]" %s)", file_name) == 1, "Invalid format\n")
 
         /* Gets the current directory of the project*/
         char *project_directory = get_current_dir_name();
         string file_path = string(project_directory) + "/client/bin/" + file_name ;
 
-        this->getConnection().sendByTCPWithFile(req, file_path, file_name);
+        //TODO: depois alterar para binário
+        ifstream file(string(file_path), ifstream::in | ifstream:: binary | ifstream:: ate);
+        file.seekg(0, ios::end);
+        //TODO: mudar o nome da variável
+        int file_length = file.tellg();  /* Sends request size */
+        file.seekg(0, ios::beg);
 
-    } else {
+        /* Transforms user input into a valid command to be sent to the server */
+        req = "PST " + this->getUser()->getUserID() + " " + this->getUser()->getSelectedGroupID() + " " +
+                to_string(strlen(text)) + " " + "\"" + text + "\"" + " " + string(file_name) + " "
+                + to_string(file_length) + "\n";
 
-        req += "\n";  // Appends \n to request to tell server that we finished sending
+        /* Sends initial information that will allow the server to receive also a file */
+        this->getConnection().sendByTCP(req);
 
-        /* Sends post message to server and gets response */
-        response = this->getConnection().sendByTCP(req);
+        /* Then sends file's data */
+        this->getConnection().sendByTCPWithFile(file, file_length);
+
+        /* Close file*/
+        file.close();
+
+    } else {  /* User did not input a file */
+
+        string len = to_string(strlen(text));
+
+        /* Transforms user input into a valid command to be sent to the server */
+        req = "PST " + this->getUser()->getUserID() + " " + this->getUser()->getSelectedGroupID() + " " + len + " " + "\"" + text + "\"\n";
+
+        /* Since we don't have any files, we can just send it as a normal request */
+        this->getConnection().sendByTCP(req);
+        response = this->getConnection().receivesByTCP();
 
     }
 
-    /* Splits response to be analysed */
-    vector<string> outputs;
-    split(response, outputs);
+    this->getConnection().closeTCP();  // Closes previous connection
 
-    cout << response << endl;
+    vector<string> outputs;  /* Holds a list of strings with the outputs from our server */
+    split(response, outputs);  /* Splits msg by the spaces and returns an array with everything */
 
     /* Analyses response and informs the user of the result */
-    if (strcmp(outputs[0].c_str(), "RPT") != 0) cerr << "Response command is not related to the sent command" << endl;
-    else if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Failed. Message couldn't be posted" << endl;
+    if (outputs[1] == "NOK") cerr << "Failed. Message couldn't be posted" << endl;
     else if (isNumber(outputs[1])) cout << outputs[1] << endl;
     else cerr << "Invalid status" << endl;
-    
+
 }
 
 
@@ -604,15 +625,15 @@ void Manager::doRetrieve(const string& input) {
     req = "RTV " + this->getUser()->getUserID() + " " + this->getUser()->getSelectedGroupID() + " " + inputs[1] + "\n";
 
     /* Sends request to server by UDP and gets response */
-    string response = this->getConnection().sendByTCP(req);  // TODO: Has to be another TCP in case of file
+    this->getConnection().sendByTCP(req);  // TODO: Has to be another TCP in case of file
+    string response = this->getConnection().receivesByTCP();
 
     /* Splits response to be analysed */
     vector<string> outputs;
     split(response, outputs);
 
     /* Analyses response and informs user of the result */
-    if (strcmp(outputs[0].c_str(), "RRT") != 0) cerr << "Response command is not related to the sent command" << endl;
-    else if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Failed. Couldn't retrieve messages" << endl;
+    if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Failed. Couldn't retrieve messages" << endl;
     else if (strcmp(outputs[1].c_str(), "EOF") == 0) cout << "No messages available" << endl;
     else if (strcmp(outputs[1].c_str(), "OK") == 0) {
         for (auto i = outputs.begin() + 2; i != outputs.end() - 1; ++i) cout << *i << " ";

@@ -372,54 +372,7 @@ string Manager::doRegister(const string& input) {
  */
  string Manager::doPost(const string& input) {
 
-    /* If server is in verbose mode, we log the client's information */
-//    verbose_(this->getVerbose(), "UID: " + inputs[1] + " | IP: " + this->getConnection()->getClientIP() +
-//                                 " | PORT: " + this->getConnection()->getClientPort())
-
-/* Splits msg by the spaces and returns an array with everything */
-//    split(msg, inputs);
-//
-//    char text[TEXT_MAX_SIZE];  /* Will hold user input text */
-//    char file_name[FILENAME_MAX_SIZE]; /* Will hold the input file */
-//    string file;  /* Will hold the input file */
-//    memset(text, 0, TEXT_MAX_SIZE);
-//    memset(file_name, 0, FILENAME_MAX_SIZE);
-//    int checker, file_size, pointer;  /* Used to check if the user did not input a file */
-//    bool file_flag = false;
-//
-//    sscanf(msg.c_str(), R"(%*s %*s %*s %*s "%240[^"]" %n)", text, &checker);
-//
-//
-//    if (checker == 0 || msg[checker] != '\0'){
-//        printf("Chegou 3\n");
-//        assert_(sscanf(msg.c_str(), R"(%*s %*s %*s %*s "%*240[^"]" %s %d %n)", file_name, &file_size, &pointer) == 1, "Invalid format\n")
-//        file_flag = true;
-//
-//        printf("Chegou 1\n");
-//
-//        /* Gets the current directory of the project*/
-//        char *project_directory = get_current_dir_name();
-//        string new_file_path = string(project_directory) + "/server/files/" + file_name ;
-//
-//        /* Creates a new file*/
-//        ofstream file(string(new_file_path), ofstream::out | ofstream::binary);
-//
-//        printf("Chegou 2\n");
-//
-//        file.write(&msg[pointer], file_size);
-//
-//        printf("Chegou aqui\n");
-//
-//        file.close();
-//
-//    }
-//
-//    printf("também chegou aqui\n");
-//
-//    /* receives status from call function*/
-//    status = post_message(&groups, &users, inputs[1], inputs[2], inputs[3], text);
-//
-//    return "RPT " + status + "\n";
+    // empty
 
 }
 
