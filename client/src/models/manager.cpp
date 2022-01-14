@@ -620,6 +620,9 @@ void Manager::doRetrieve(const string& input) {
     vector<string> inputs;  /* Holds a list of strings with the inputs from our user */
     string req;  /* Holds request that is going to be sent to the server */
 
+    /* Splits msg by the spaces and returns an array with everything */
+    split(input, inputs);
+
     /* Opens TCP connection with the server */
     this->getConnection().init_socket_tcp();
 
