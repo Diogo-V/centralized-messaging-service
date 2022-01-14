@@ -142,7 +142,7 @@ void Manager::doLogin(const string& input) {
     validate_(isNumber(inputs[1]), "User ID must be a number")
     validate_(inputs[2].size() == 8, "User password must have 8 alphanumerical characters")
     validate_(isAlphaNumeric(inputs[2]), "User password must have only alphanumerical characters")
-    validate_(!this->getUser()->getLoggedStatus(), "No user logged in")
+    validate_(!this->getUser()->getLoggedStatus(), "User must logout first before log in")
 
     /* Transforms user input into a valid command to be sent to the server */
     req = "LOG " + inputs[1] + " " + inputs[2] + "\n";
@@ -306,13 +306,16 @@ void Manager::doListGroups(const string& input) {
 
     /* Prints response to the user */
     if (strcmp(outputs[1].c_str(), "0") != 0) {
+
+        int number_groups = atoi(outputs[1].c_str());
+
         cout << "There are " + outputs[1] + " groups:" << endl;
-        for (auto i = outputs.begin() + 2; i != outputs.end() - 1; i+=3){
+        for (auto i = outputs.begin() + 2; number_groups > 0; i++){
             cout << "Group " + *i; ++i;
             cout << ": " + *i; ++i;
-            cout << " | Last MSG: " + *i << endl;
+            cout << " Last MSG: " + *i << endl;
+            number_groups --;
         }
-        cout << *(outputs.end() - 1) << "\n";
     }
     else {
         cout << "No groups found" << endl;
@@ -354,8 +357,8 @@ void Manager::doSubscribe(const string& input) {
     split(response, outputs);
 
     /* Analyses response and informs the user of the result */
-    if (strcmp(outputs[1].c_str(), "OK") == 0) cout << "User " + this->getUser()->getUserID() + " subscribed to group " + inputs[2] + " successfully" << endl;
-    else if (strcmp(outputs[1].c_str(), "NEW") == 0) cout << "User " + this->getUser()->getUserID() + " subscribed to new group " + inputs[2] + " successfully" << endl;
+    if (strcmp(outputs[1].c_str(), "OK") == 0) cout << "User " + this->getUser()->getUserID() + " subscribed to group " + inputs[1] + " successfully" << endl;
+    else if (strcmp(outputs[1].c_str(), "NEW") == 0) cout << "User " + this->getUser()->getUserID() + " subscribed to new group successfully" << endl;
     else if (strcmp(outputs[1].c_str(), "E_USR") == 0) cerr << "Invalid user ID" << endl;
     else if (strcmp(outputs[1].c_str(), "E_GRP") == 0) cerr << "Invalid group ID" << endl;
     else if (strcmp(outputs[1].c_str(), "E_GNAME") == 0) cerr << "Invalid group name" << endl;
@@ -380,10 +383,10 @@ void Manager::doUnsubscribe(const string& input) {
     split(input, inputs);
 
     /* Verifies if the user input a valid command and that this command can be issued */
-    validate_(inputs.size() == 2, "User did not input group ID")
-    validate_(isNumber(inputs[1]), "Group ID is not a number")
-    validate_(inputs[1].size() <= 2, "Group ID isn't a 2 digit-number")
-    validate_(this->getUser()->getLoggedStatus(), "Client is not logged in")
+    validate_(inputs.size() == 2, "Group ID not inputted")
+    validate_(isNumber(inputs[1]), "Group ID must be a number")
+    validate_(inputs[1].size() <= 2, "Group ID must have 2 figures")
+    validate_(this->getUser()->getLoggedStatus(), "No user logged in")
 
     /* Transforms user input into a valid command to be sent to the server */
     req = "GUR " + this->getUser()->getUserID() + " " + inputs[1] + "\n";
@@ -397,10 +400,10 @@ void Manager::doUnsubscribe(const string& input) {
     split(response, outputs);
 
     /* Analyses response and informs the user of the result */
-    if (strcmp(outputs[1].c_str(), "OK") == 0) cout << "User unsubscribed successfully" << endl;
-    else if (strcmp(outputs[1].c_str(), "E_USR") == 0) cerr << "Failed. Invalid user id.";
-    else if (strcmp(outputs[1].c_str(), "E_GRP") == 0) cerr << "Failed. Invalid group id." << endl;
-    else if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Failed. Unknown reason." << endl;
+    if (strcmp(outputs[1].c_str(), "OK") == 0) cout << "User " + this->getUser()->getUserID() + " unsubscribed from group " + inputs[1] + " successfully" << endl;
+    else if (strcmp(outputs[1].c_str(), "E_USR") == 0) cerr << "Invalid user ID";
+    else if (strcmp(outputs[1].c_str(), "E_GRP") == 0) cerr << "Invalid group ID" << endl;
+    else if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Unsubscribe error" << endl;
     else cerr << "Invalid status" << endl;
 
 }
@@ -421,7 +424,7 @@ void Manager::doMyGroups(const string& input) {
 
     /* Verifies if the user input a valid command and that this command can be issued */
     validate_(inputs.size() == 1, "Too many arguments")
-    validate_(this->getUser()->getLoggedStatus(), "Client is not logged in")
+    validate_(this->getUser()->getLoggedStatus(), "No user logged in")
 
     /* Transforms user input into a valid command to be sent to the server */
     req = "GLM " + this->getUser()->getUserID() + "\n";
@@ -436,9 +439,20 @@ void Manager::doMyGroups(const string& input) {
 
     /* Analyses response and shows it to the user */
     if (strcmp(outputs[1].c_str(), "0") != 0) {
-        for (auto i = outputs.begin() + 2; i != outputs.end() - 1; ++i) cout << *i << " ";
-        cout << *(outputs.end() - 1) << "\n";
+        int number_groups = atoi(outputs[1].c_str());
+
+        cout << "User " << this->getUser()->getUserID() << " is member of the following group :" << endl;
+        for (auto i = outputs.begin() + 2; number_groups > 0; i++){
+            cout << "Group " + *i; ++i;
+            cout << ": " + *i; ++i;
+            cout << " Last MSG: " + *i << endl;
+            number_groups --;
+        }
     }
+    else {
+        cout << "User " << this->getUser()->getUserID() << " isn't member of any group" << endl;
+    }
+
 
 }
 
@@ -482,13 +496,13 @@ void Manager::doShowGID(const string& input) {
 
     /* Verifies if the user input a valid command and that this command can be issued */
     validate_(inputs.size() == 1, "Too many arguments")
-    validate_(this->getUser()->getLoggedStatus(), "Client is not logged in")
+    validate_(this->getUser()->getLoggedStatus(), "No user logged in")
 
     /* Shows the client its currently selected group */
     if (this->getUser()->getSelectedGroupID().empty()){
-        cout << "No selected group" << endl;
+        cout << "No group selected" << endl;
     } else {
-        cout << "Selected group: " << this->getUser()->getSelectedGroupID() << endl;
+        cout << "Group " + this->getUser()->getSelectedGroupID() + " selected" << endl;
     }
     
 }
@@ -509,9 +523,9 @@ void Manager::doUserList(const string& input) {
 
     /* Verifies if the user input a valid command and that this command can be issued */
     validate_(inputs.size() == 1, "Too many arguments")
-    validate_(this->getUser()->getLoggedStatus(), "Client is not logged in")
+    validate_(this->getUser()->getLoggedStatus(), "No user logged in")
     //TODO: remover isto (Sofia)
-    validate_(!this->getUser()->getSelectedGroupID().empty(), "No selected group")
+    validate_(!this->getUser()->getSelectedGroupID().empty(), "No group selected")
 
     /* Transforms user input into a valid command to be sent to the server */
     req = "ULS " + this->getUser()->getSelectedGroupID() +  "\n";
@@ -527,10 +541,11 @@ void Manager::doUserList(const string& input) {
     split(response, outputs);
 
     /* Analyses response and informs the user of the result */
-    if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Failed. Group doesn't exist." << endl;
+    if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Group does not exist." << endl;
     else if (strcmp(outputs[1].c_str(), "OK") == 0) {
-        for (auto i = outputs.begin() + 2; i != outputs.end() - 1; ++i) cout << *i << " ";
-        cout << *(outputs.end() - 1) << endl;
+        cout << "User list for group " << outputs[2] << " : "<< endl;
+        for (auto i = outputs.begin() + 3; i != outputs.end(); ++i) cout << *i << endl;
+        cout << "End of users list" << endl;
     } else cerr << "Invalid status" << endl;
 
 }
@@ -557,12 +572,12 @@ void Manager::doPost(const string& input) {
     this->getConnection().init_socket_tcp();
 
     /* Extracts user's message from input */
-    assert_(sscanf(input.c_str(), R"(%*s "%240[^"]" %n)", text, &hasFile) == 1, "Text is limited to 240 characters.\n")
+    assert_(sscanf(input.c_str(), R"(%*s "%240[^"]" %n)", text, &hasFile) == 1, "Text is limited to 240 characters\n")
 
     /* Verifies if the user input a valid command and that this command can be issued */
-    validate_(this->getUser()->getLoggedStatus(), "Client is not logged in")
-    validate_(!this->getUser()->getSelectedGroupID().empty(), "No selected group")
-    validate_(strlen(file_name) <= FILENAME_MAX_SIZE, "File name name up to 24 characters, including the dot and the file type")
+    validate_(this->getUser()->getLoggedStatus(), "No user logged in")
+    validate_(!this->getUser()->getSelectedGroupID().empty(), "No group selected")
+    validate_(strlen(file_name) <= FILENAME_MAX_SIZE, "File name up to 24 characters, including the dot and the file type")
 
     if (hasFile == 0 || input[hasFile] != '\0') {  /* User input a file */
 
@@ -649,7 +664,7 @@ void Manager::doRetrieve(const string& input) {
     split(response, outputs);
 
     /* Analyses response and informs user of the result */
-    if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Failed. Couldn't retrieve messages" << endl;
+    if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Failed. Message couldn't be retrieved" << endl;
     else if (strcmp(outputs[1].c_str(), "EOF") == 0) cout << "No messages available" << endl;
     else {
         cout << response;
