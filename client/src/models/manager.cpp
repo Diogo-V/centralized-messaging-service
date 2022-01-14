@@ -354,8 +354,8 @@ void Manager::doSubscribe(const string& input) {
     split(response, outputs);
 
     /* Analyses response and informs the user of the result */
-    if (strcmp(outputs[1].c_str(), "OK") == 0) cout << "User " + this->getUser()->getUserID() + " subscribed to group " + inputs[2] + " successfully" << endl;
-    else if (strcmp(outputs[1].c_str(), "NEW") == 0) cout << "User " + this->getUser()->getUserID() + " subscribed to new group " + inputs[2] + " successfully" << endl;
+    if (strcmp(outputs[1].c_str(), "OK") == 0) cout << "User " + this->getUser()->getUserID() + " subscribed to group " + inputs[1] + " successfully" << endl;
+    else if (strcmp(outputs[1].c_str(), "NEW") == 0) cout << "User " + this->getUser()->getUserID() + " subscribed to new group successfully" << endl;
     else if (strcmp(outputs[1].c_str(), "E_USR") == 0) cerr << "Invalid user ID" << endl;
     else if (strcmp(outputs[1].c_str(), "E_GRP") == 0) cerr << "Invalid group ID" << endl;
     else if (strcmp(outputs[1].c_str(), "E_GNAME") == 0) cerr << "Invalid group name" << endl;
@@ -380,10 +380,10 @@ void Manager::doUnsubscribe(const string& input) {
     split(input, inputs);
 
     /* Verifies if the user input a valid command and that this command can be issued */
-    validate_(inputs.size() == 2, "User did not input group ID")
-    validate_(isNumber(inputs[1]), "Group ID is not a number")
-    validate_(inputs[1].size() <= 2, "Group ID isn't a 2 digit-number")
-    validate_(this->getUser()->getLoggedStatus(), "Client is not logged in")
+    validate_(inputs.size() == 2, "Group ID not inputted")
+    validate_(isNumber(inputs[1]), "Group ID must be a number")
+    validate_(inputs[1].size() <= 2, "Group ID must have 2 figures")
+    validate_(this->getUser()->getLoggedStatus(), "No user logged in")
 
     /* Transforms user input into a valid command to be sent to the server */
     req = "GUR " + this->getUser()->getUserID() + " " + inputs[1] + "\n";
@@ -397,10 +397,10 @@ void Manager::doUnsubscribe(const string& input) {
     split(response, outputs);
 
     /* Analyses response and informs the user of the result */
-    if (strcmp(outputs[1].c_str(), "OK") == 0) cout << "User unsubscribed successfully" << endl;
-    else if (strcmp(outputs[1].c_str(), "E_USR") == 0) cerr << "Failed. Invalid user id.";
-    else if (strcmp(outputs[1].c_str(), "E_GRP") == 0) cerr << "Failed. Invalid group id." << endl;
-    else if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Failed. Unknown reason." << endl;
+    if (strcmp(outputs[1].c_str(), "OK") == 0) cout << "User " + this->getUser()->getUserID() + " unsubscribed from group " + inputs[1] + " successfully" << endl;
+    else if (strcmp(outputs[1].c_str(), "E_USR") == 0) cerr << "Invalid user ID";
+    else if (strcmp(outputs[1].c_str(), "E_GRP") == 0) cerr << "Invalid group ID" << endl;
+    else if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Unsubscribe error" << endl;
     else cerr << "Invalid status" << endl;
 
 }
