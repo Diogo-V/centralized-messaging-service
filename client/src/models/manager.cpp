@@ -222,9 +222,12 @@ void Manager::doShowUID(const string& input) {
 
     /* Verifies if the user input a valid command and that this command can be issued */
     validate_(inputs.size() == 1, "Too many arguments")
-    validate_(this->getUser()->getLoggedStatus(), "No client logged in")
 
-    cout << this->getUser()->getUserID() << endl;
+    if (this->getUser()->getUserID().empty()){
+        cout << "No user logged in" << endl;
+    } else {
+        cout << "User logged in: " << this->getUser()->getUserID() << endl;
+    }
 
 }
 
@@ -449,7 +452,6 @@ void Manager::doSelect(const string& input) {
     validate_(inputs.size() == 2, "User did not input group ID")
     validate_(isNumber(inputs[1]), "Group ID is not a number")
     validate_(inputs[1].size() <= 2, "Group ID isn't a 2 digit-number")
-    validate_(this->getUser()->getLoggedStatus(), "Client is not logged in")
 
     /* Saves selected group locally */
     this->getUser()->setUserSelectedGroupID(inputs[1]);
@@ -473,10 +475,13 @@ void Manager::doShowGID(const string& input) {
     /* Verifies if the user input a valid command and that this command can be issued */
     validate_(inputs.size() == 1, "Too many arguments")
     validate_(this->getUser()->getLoggedStatus(), "Client is not logged in")
-    validate_(!this->getUser()->getSelectedGroupID().empty(), "No selected group")
 
     /* Shows the client its currently selected group */
-    cout << this->getUser()->getSelectedGroupID() << endl;
+    if (this->getUser()->getSelectedGroupID().empty()){
+        cout << "No selected group" << endl;
+    } else {
+        cout << "Selected group: " << this->getUser()->getSelectedGroupID() << endl;
+    }
     
 }
 
@@ -497,6 +502,7 @@ void Manager::doUserList(const string& input) {
     /* Verifies if the user input a valid command and that this command can be issued */
     validate_(inputs.size() == 1, "Too many arguments")
     validate_(this->getUser()->getLoggedStatus(), "Client is not logged in")
+    //TODO: remover isto (Sofia)
     validate_(!this->getUser()->getSelectedGroupID().empty(), "No selected group")
 
     /* Transforms user input into a valid command to be sent to the server */

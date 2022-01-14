@@ -397,6 +397,8 @@ string Manager::doRegister(const string& input) {
     int file_size;
     string status;
 
+    cout << input << endl;
+
     /* Gets text and checks if  */
     sscanf(input.c_str(), R"(%*s %*s %*s %*s "%240[^"]" %n)", text, &checker);
 
@@ -409,6 +411,8 @@ string Manager::doRegister(const string& input) {
     } else {
         status = post_message(this->getGroups(), this->getUsers(), inputs[1], inputs[2], inputs[3], text);
     }
+
+    cout << status << endl;
 
     return "RPT " + status + "\n";
 
