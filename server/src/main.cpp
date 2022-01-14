@@ -47,9 +47,8 @@ void termination_handler(int sig_type) {
     DIR *dp;
 
     /* Gets the current directory of the project*/
-    char *project_directory = get_current_dir_name();
     string filepath;
-    string files_directory = string(project_directory) + "/server/files";
+    string files_directory = string(get_current_dir_name()) + "/server/files";
 
     /* Opens the files directory */
     dp = opendir(files_directory.c_str());
@@ -57,7 +56,7 @@ void termination_handler(int sig_type) {
 
     /* Goes over each file and removes it */
     while ((entry = readdir(dp))) {
-        if (strcmp(entry->d_name, ".") == 0 ||strcmp(entry->d_name, "..") == 0 )
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0 )
             continue;
 
         filepath = files_directory +  "/" + entry->d_name;

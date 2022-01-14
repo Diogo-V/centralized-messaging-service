@@ -449,9 +449,6 @@ string Manager::doRegister(const string& input) {
     this->getConnection()->replyByTCP(res);  // Sends current request
     res = "";  // Clears response to not conflict with the rest of the commands
 
-    /* Gets current directory */
-    char *project_directory = get_current_dir_name();
-
     /* Mounts string to be sent to the user by reading every message and transforming it into
      * a valid response */
     for (auto itr: result) {
@@ -473,6 +470,9 @@ string Manager::doRegister(const string& input) {
 
             this->getConnection()->replyByTCP(res);  // Sends current request
 
+            /* Gets current directory */
+            char *project_directory = get_current_dir_name();
+
             /* Opens file to be read */
             string file_path = string(project_directory) + "/server/files/" + itr.getMessageFileName();
             ifstream file(file_path, ifstream::in | ifstream::binary);
@@ -481,6 +481,7 @@ string Manager::doRegister(const string& input) {
             this->getConnection()->replyByTCPWithFile(file, stoi(itr.getMessageFileSize()));
 
             file.close();
+            free(project_directory);
 
         }
 

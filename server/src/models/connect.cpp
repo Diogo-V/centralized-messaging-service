@@ -301,7 +301,7 @@ void Connect::replyByTCP(const string& response) {
     memcpy(buffer, response.c_str(), response.length());
 
     /* Keeps sending messages to client until everything is sent */
-    char* ptr = const_cast<char *>(&buffer[0]);
+    char* ptr = &buffer[0];
     while (remaining > 0) {
         assert_((sent = write(this->getSocketTmpTCP(), ptr, MAX_REQUEST_SIZE)) > 0, "Could not send message to client")
         remaining -= sent; ptr += sent;
@@ -346,8 +346,7 @@ void Connect::receiveByTCPWithFile(const string& file_name, const int& file_size
     long remaining = 0;
 
     /* Gets the file path */
-    char *project_directory = get_current_dir_name();
-    string new_file_path = string(project_directory) + "/server/files/" + file_name ;
+    string new_file_path = string(get_current_dir_name()) + "/server/files/" + file_name ;
 
     /* Creates a new file */
     ofstream file(string(new_file_path), ofstream::out | ofstream::binary);
