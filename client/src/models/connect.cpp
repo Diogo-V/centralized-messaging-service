@@ -47,6 +47,9 @@ void Connect::init_socket_tcp() {
     errcode = getaddrinfo(this->getIP().c_str(), this->getPort().c_str(), &hints, &this->res);
     assert_(errcode == 0, "Failed getaddrinfo call for tcp")
 
+    /* Creates connection between server and client */
+    assert_(connect(this->getSocketTCP(), res->ai_addr, res->ai_addrlen) != -1, "Could not connect to server")
+
 }
 
 
@@ -120,7 +123,7 @@ string Connect::getPort() {
  *
  * @return udp socket
  */
-int Connect::getSocketUDP() const {
+int Connect::getSocketUDP() {
     return this->_fd_udp;
 }
 
@@ -130,42 +133,97 @@ int Connect::getSocketUDP() const {
  *
  * @return tcp socket
  */
-int Connect::getSocketTCP() const {
+int Connect::getSocketTCP() {
     return this->_fd_tcp;
 }
 
 
 /**
- * @brief Sends a valid command by UDP to our server and gets a response.
+ * @brief Sends a valid command by UDP to our server.
  *
  * @param request request to be sent to the server
+ */
+void Connect::sendByUDP(const string& request) {
+
+    ssize_t n = sendto(this->getSocketUDP(), request.c_str(), request.length(), 0, res->ai_addr, res->ai_addrlen);
+    assert_(n != -1, "Failed to send message with UDP")
+
+}
+
+
+/**
+ * @brief Sends a valid command by TCP to our server.
+ *
+ * @param request request to be sent to the server
+ */
+void Connect::sendByTCP(const string& request) {
+
+    auto remaining = (ssize_t) request.length();  /* Gets request size */
+    int sent;
+
+    /* We use a buffer to avoid a non-null terminated string */
+    char buffer[MAX_REQUEST_SIZE];
+    memset(buffer, 0, MAX_REQUEST_SIZE);
+    memcpy(buffer, request.c_str(), request.length());
+
+    /* Keeps sending messages to sever until everything is sent */
+    char* ptr = const_cast<char *>(&buffer[0]);
+    while (remaining > 0) {
+        assert_((sent = write(this->getSocketTCP(), ptr, MAX_REQUEST_SIZE)) > 0, "Could not send message to server")
+        remaining -= sent; ptr += sent;
+    }
+
+}
+
+
+/**
+ * @brief Sends a valid command by TCP with a file to our server.
+ *
+ * @param file file that has been already opened and from where we will be reading
+ * @param file_length size of the file
+ */
+void Connect::sendByTCPWithFile(ifstream& file, int file_length) {
+
+    char file_data[MAX_REQUEST_SIZE];  /* Temporary buffer to hold file information */
+    int bytes_sent;  /* Tells us how many bytes have been read from each iteration */
+
+    /* Sends file data to server bit by but */
+    while (file_length > 0) {
+        file.read(file_data, MAX_REQUEST_SIZE);
+        assert_((bytes_sent = write(this->getSocketTCP(), file_data, MAX_REQUEST_SIZE)) > 0, "Could not send data message to server")
+        file_length -= bytes_sent;
+        memset(file_data, 0, MAX_REQUEST_SIZE);
+    }
+
+}
+
+
+/**
+ * @brief Receives a response from the server after sending a request by UDP.
  *
  * @return server's response
  */
-string Connect::sendByUDP(const string& request) {
+string Connect::receivesByUDP() {
 
     int tries = UDP_N_TRIES;  /* Number of tries that are going to be executed */
     bool try_again;  /* Checks if we should try again */
     char buffer[100]{'\0'};  /* Holds temporarily the information sent to the socket */
     string response{};  /* Used to build the server's response */
+    ssize_t n;
 
     do {  /* We use a loop to allow retrying to send the message in case it fails */
 
-        /* Sends message to server */
-        ssize_t n = sendto(this->getSocketUDP(), request.c_str(), request.length(), 0, res->ai_addr, res->ai_addrlen);
-        assert_(n != -1, "Failed to send message with UDP")
-
         /* Read from socket until it finds an \n and stores it in response */
-//        Connect::TimerON(this->getSocketUDP());  TODO: uncomment this shit
+        Connect::TimerON(this->getSocketUDP());
         n = recvfrom(this->getSocketUDP(), buffer, sizeof buffer, 0, nullptr, nullptr);
-//        Connect::TimerOFF(this->getSocketUDP());
+        Connect::TimerOFF(this->getSocketUDP());
         response.append(buffer);
         memset(buffer, 0, sizeof buffer);
 
         if (n == -1) {
             try_again = true;
             tries --;
-            cout << "Retrying to send message..." << endl;
+            cout << "Retrying to receive message..." << endl;
         } else {
             try_again = false;
         }
@@ -187,46 +245,26 @@ string Connect::sendByUDP(const string& request) {
 
 
 /**
- * @brief Sends a valid command by TCP to our server and gets a response.
- *
- * @param request request to be sent to the server
+ * @brief Receives a response from the server after sending a request by TCP.
  *
  * @return server's response
  */
-string Connect::sendByTCP(const string& request) {
+string Connect::receivesByTCP() {
 
+    ssize_t received;  /* Holds amount of bytes received */
     char buffer[MAX_REQUEST_SIZE];  /* Holds temporarily the information sent to the socket */
     string response{};  /* Used to build the server's response */
 
-    /* Initializes and setups fd_udp to be a valid socket */
-    init_socket_tcp();
-
-    /* Creates connection between server and client */
-    assert_(connect(this->getSocketTCP(), res->ai_addr, res->ai_addrlen) != -1, "Could not connect to sever")
-
-    uint16_t nw;  /* Used to keep track of how many bytes we have sent to the server */
-    auto n = (ssize_t) request.length();  /* Sends request size */
-
-    /* Keeps sending messages to sever until everything is sent */
-    char* ptr = const_cast<char *>(&request[0]);
-    while (n > 0) {
-        assert_((nw = write(this->getSocketTCP(), ptr, MAX_REQUEST_SIZE)) > 0, "Could not send message to server")
-        n -= nw; ptr += nw;
-    }
-
     /* Keeps on reading until everything has been read from the server */
     do {
-        ssize_t nr = read(this->getSocketTCP(), buffer, MAX_REQUEST_SIZE);
-        assert_(n != -1, "Failed to retrieve response from server")
-        if (nr == 0) return "CONNECTION CLOSED";  /* If a client closes a socket, we need to ignore */
+        received = read(this->getSocketTCP(), buffer, MAX_REQUEST_SIZE);
+        assert_(received != -1, "Failed to retrieve response from server")
+        if (received == 0) return "CONNECTION CLOSED";  /* If a client closes a socket, we need to ignore */
         response.append(buffer, strlen(buffer));
     } while (buffer[strlen(buffer) - 1] != '\n');
 
     /* Removes \n from end of response. Makes things easier down the line */
     response[response.length() - 1] = '\0';
-
-    /* Closes TCP connection */
-    close(this->getSocketTCP());
 
     return response;
 
@@ -234,73 +272,22 @@ string Connect::sendByTCP(const string& request) {
 
 
 /**
- * @brief Sends a valid command by TCP with a file to our server and gets a response.
- *
- * @param request request to be sent to the server
- * @param filepath path to the file that is going to be sent
- * @param filename name of the file to be sent
+ * @brief Receives a response from the server after sending a request by TCP with files.
  *
  * @return server's response
  */
-string Connect::sendByTCPWithFile(const string& initial_request, const string& filepath, const string& filename) {
+string Connect::receivesByTCPWithFile() {
 
-    char buffer[100];  /* Holds temporarily the information sent to the socket */
-    string response{};  /* Used to build the server's response */
 
-    /* Initializes and setups fd_udp to be a valid socket */
-    init_socket_tcp();
 
-    /* Creates connection between server and client */
-    assert_(connect(this->getSocketTCP(), res->ai_addr, res->ai_addrlen) != -1, "Could not connect to sever")
+}
 
-    uint16_t nw;  /* Used to keep track of how many bytes we have sent to the server */
-    auto n = (ssize_t) initial_request.length();  /* Sends request size */
 
-    /* Keeps sending messages to sever until everything is sent. Only sends initial request */
-    char* ptr = const_cast<char *>(&initial_request[0]);
-    while (n > 0) {
-        assert_((nw = write(this->getSocketTCP(), ptr, MAX_REQUEST_SIZE)) > 0, "Could not send message to server")
-        n -= nw; ptr += nw;
-    }
-
-    /* Since we have already finished sending the initial request to the server, we have to send
-     * the input file now */
-    ifstream file(string(filepath), ifstream::in | ifstream::binary);
-
-    string req = " " + string(filename) + " " + to_string(file.tellg());
-
-    int file_length = (int) file.tellg();  /* Sends request size */
-
-    /* Keeps sending messages to sever until everything is sent */
-    filebuf* file_p = file.rdbuf();
-
-    /* Sends Filename and filesize */
-    int bytes_sent;
-    assert_((bytes_sent = write(this->getSocketTCP(), req.c_str(), MAX_REQUEST_SIZE)) > 0, "Could not send message to server")
-
-    /* Then sends the data*/
-    while (file_length > 0) {
-        assert_((bytes_sent = write(this->getSocketTCP(), file_p, MAX_SENT_FILE_DATA)) > 0, "Could not send data message to server")
-        file_length -= bytes_sent; file_p += bytes_sent;
-    }
-
-    /* Close file*/
-    file.close();
-
-    /* Keeps on reading until everything has been read from the server */
-    n = 0;
-    do {
-        n += read(this->getSocketTCP(), buffer, sizeof buffer);
-        assert_(n != -1, "Failed to retrieve response from server")
-        response.append(buffer);
-    } while (n < MAX_REQUEST_SIZE);
-
-    /* Removes \n from end of response. Makes things easier down the line */
-    response[response.length() - 1] = '\0';
-
-    /* Closes TCP connection */
+/**
+ * @brief Closes current TCP connection to the server.
+ */
+void Connect::closeTCP() {
     close(this->getSocketTCP());
-
 }
 
 

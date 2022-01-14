@@ -262,16 +262,16 @@ void Connect::replyByUDP(const string& response) {
 string Connect::receiveByTCP() {
 
     char buffer[MAX_REQUEST_SIZE];  // Temporary buffer to receive all the information
-    string request{'\0'};
+    string request;
+    memset(buffer, 0, MAX_REQUEST_SIZE);
 
     /* Creates temporary socket to connect to client. Keeps main channel active */
-    int tmp_fd = accept(this->getSocketTCP(),(struct sockaddr*) this->getAddr(), this->getAddrLen());
-    assert_(tmp_fd != -1, "Could not create temporary tcp socket")
-    this->setSocketTmpTCP(tmp_fd);
+    this->_tmp_fd_tcp = accept(this->getSocketTCP(),(struct sockaddr*) this->getAddr(), this->getAddrLen());
+    assert_(this->_tmp_fd_tcp != -1, "Could not create temporary tcp socket")
 
     /* Keeps on reading until everything has been read from the client */
     do {
-        ssize_t nr = read(this->getSocketTmpTCP(), buffer, MAX_REQUEST_SIZE);
+        ssize_t nr = read(this->_tmp_fd_tcp, buffer, MAX_REQUEST_SIZE);
         assert_(nr != -1, "Failed to read from temporary socket")
         if (nr == 0) return "CONNECTION CLOSED";  /* If a client closes a socket, we need to ignore */
         request.append(buffer, strlen(buffer));
@@ -310,66 +310,42 @@ void Connect::replyByTCP(const string& response) {
 /**
  * @brief Receives a valid command by a client in TCP socket with a file.
  *
- * @return client's request
+ * @param file_name name of the file
+ * @param file_size size of the file
  */
-string Connect::receiveByTCPWithFile() {
+void Connect::receiveByTCPWithFile(const string& file_name, const int& file_size) {
 
-//    char buffer[100];  /* Holds temporarily the information sent to the socket */
-//    string response{};  /* Used to build the server's response */
-//
-//    /* Initializes and setups fd_udp to be a valid socket */
-//    init_socket_tcp();
-//
-//    /* Creates connection between server and client */
-//    assert_(connect(this->getSocketTCP(), res->ai_addr, res->ai_addrlen) != -1, "Could not connect to sever")
-//
-//    uint16_t nw;  /* Used to keep track of how many bytes we have sent to the server */
-//    auto n = (ssize_t) initial_request.length();  /* Sends request size */
-//
-//    /* Keeps sending messages to sever until everything is sent. Only sends initial request */
-//    char* ptr = const_cast<char *>(&initial_request[0]);
-//    while (n > 0) {
-//        assert_((nw = write(this->getSocketTCP(), ptr, MAX_REQUEST_SIZE)) > 0, "Could not send message to server")
-//        n -= nw; ptr += nw;
-//    }
-//
-//    /* Since we have already finished sending the initial request to the server, we have to send
-//     * the input file now */
-//    ifstream file(string(filepath), ifstream::in | ifstream::binary);
-//
-//    string req = " " + string(filename) + " " + to_string(file.tellg());
-//
-//    int file_length = (int) file.tellg();  /* Sends request size */
-//
-//    /* Keeps sending messages to sever until everything is sent */
-//    filebuf* file_p = file.rdbuf();
-//
-//    /* Sends Filename and filesize */
-//    int bytes_sent;
-//    assert_((bytes_sent = write(this->getSocketTCP(), req.c_str(), MAX_REQUEST_SIZE)) > 0, "Could not send message to server")
-//
-//    /* Then sends the data*/
-//    while (file_length > 0) {
-//        assert_((bytes_sent = write(this->getSocketTCP(), file_p, MAX_RECEIVED_FILE_DATA)) > 0, "Could not send data message to server")
-//        file_length -= bytes_sent; file_p += bytes_sent;
-//    }
-//
-//    /* Close file*/
-//    file.close();
-//
-//    /* Keeps on reading until everything has been read from the server */
-//    n = 0;
-//    do {
-//        n += read(this->getSocketTCP(), buffer, sizeof buffer);
-//        assert_(n != -1, "Failed to retrieve response from server")
-//        response.append(buffer);
-//    } while (n < MAX_REQUEST_SIZE);
-//
-//    /* Removes \n from end of response. Makes things easier down the line */
-//    response[response.length() - 1] = '\0';
-//
-//    /* Closes TCP connection */
-//    close(this->getSocketTCP());
+    char buffer[MAX_REQUEST_SIZE];  /* Auxiliary buffer */
+    memset(buffer, 0, MAX_REQUEST_SIZE);
+    ssize_t received;
+    long remaining = 0;
+
+    /* Gets the file path */
+    char *project_directory = get_current_dir_name();
+    string new_file_path = string(project_directory) + "/server/files/" + file_name ;
+
+    /* Creates a new file */
+    ofstream file(string(new_file_path), ofstream::out | ofstream::binary);
+
+    /* Keeps reading the file data*/
+    do {
+
+        /* Reads from socket and puts in buffer */
+        received = read(this->getSocketTmpTCP(), buffer, MAX_REQUEST_SIZE);
+        assert_(received != -1, "Failed to read from temporary socket")
+
+        /* Writes from buffer to file */
+        file.write(buffer, strlen(buffer));
+
+        /* Cleans buffer for next iteration */
+        memset(buffer, 0, MAX_REQUEST_SIZE);
+
+        if (received == 0) break;  /* If a client closes a socket, we need to ignore */
+        remaining += received;
+
+    } while (remaining < file_size);  /* Does this until we got the whole file */
+
+    file.close();
 
 }
 

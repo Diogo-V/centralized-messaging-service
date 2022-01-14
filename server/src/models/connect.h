@@ -15,7 +15,6 @@
 #include <fstream>
 
 #define MAX_REQUEST_SIZE 300
-#define MAX_RECEIVED_FILE_DATA 300
 #define TEXT_MAX_SIZE 240
 #define FILENAME_MAX_SIZE 24
 #define TCP_N_CONNECTIONS 5
@@ -229,9 +228,10 @@ class Connect {
         /**
          * @brief Receives a valid command by a client in TCP socket with a file.
          *
-         * @return client's request
+         * @param file_name name of the file
+         * @param file_size size of the file
          */
-        string receiveByTCPWithFile();
+        void receiveByTCPWithFile(const string& file_name, const int& file_size);
 
         /**
          * @brief Cleans and frees everything related to the Connection.

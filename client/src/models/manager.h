@@ -56,7 +56,7 @@ class Manager {
          *
          * @return connection model
          */
-        Connect getConnection();
+        Connect& getConnection();
 
         /**
          * @brief Cleans and frees everything related to the Manager.
