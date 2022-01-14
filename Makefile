@@ -34,6 +34,10 @@ rsrv: cs
 rcr: cc
 	./client/bin/main -p $(port) -n $(ip)
 
+# RUN CLIENT REMOTE -> Runs client with input ip and port
+rct: cc
+	./client/bin/main -p $(port) -n $(ip_tecnico)
+
 # RUN CLIENT LOCAL -> Runs client with local configurations
 rcl: cc
 	./client/bin/main

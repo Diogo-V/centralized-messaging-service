@@ -297,6 +297,9 @@ void Manager::doListGroups(const string& input) {
     this->getConnection().sendByUDP(req);
     string response = this->getConnection().receivesByUDP();
 
+    //TODO: tirar aisto
+    printf("Response: %s\n", response.c_str());
+
     /* Splits response to be shown */
     vector<string> outputs;
     split(response, outputs);

@@ -267,7 +267,7 @@ string Manager::doRegister(const string& input) {
         return "RGL " + to_string(this->getGroups()->size()) + status + "\n";
     }
     else{
-        return "RGL " + to_string(this->getGroups()->size()) + " " + status;
+        return "RGL " + to_string(this->getGroups()->size()) + " " + status + "\n";
     }
 
 }

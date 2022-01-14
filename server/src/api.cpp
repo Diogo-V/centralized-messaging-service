@@ -133,6 +133,9 @@ string list_groups(unordered_map<string, Group>* groups) {
         list.append(group);
     }
 
+    /* Removing last " " from the last group in the list*/
+    list.pop_back();
+
     return list;
 }
 

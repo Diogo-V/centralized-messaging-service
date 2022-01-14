@@ -207,7 +207,8 @@ string Connect::receivesByUDP() {
 
     int tries = UDP_N_TRIES;  /* Number of tries that are going to be executed */
     bool try_again;  /* Checks if we should try again */
-    char buffer[100]{'\0'};  /* Holds temporarily the information sent to the socket */
+    //TODO: change this
+    char buffer[300]{'\0'};  /* Holds temporarily the information sent to the socket */
     string response{};  /* Used to build the server's response */
     ssize_t n;
 
