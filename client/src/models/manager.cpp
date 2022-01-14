@@ -142,7 +142,7 @@ void Manager::doLogin(const string& input) {
     validate_(isNumber(inputs[1]), "User ID must be a number")
     validate_(inputs[2].size() == 8, "User password must have 8 alphanumerical characters")
     validate_(isAlphaNumeric(inputs[2]), "User password must have only alphanumerical characters")
-    validate_(!this->getUser()->getLoggedStatus(), "Login error")
+    validate_(!this->getUser()->getLoggedStatus(), "User not logged in")
 
     /* Transforms user input into a valid command to be sent to the server */
     req = "LOG " + inputs[1] + " " + inputs[2] + "\n";
@@ -183,7 +183,7 @@ void Manager::doLogout(const string& input) {
 
     /* Verifies if the user input a valid command and that this command can be issued */
     validate_(inputs.size() == 1, "Too many arguments")
-    validate_(this->getUser()->getLoggedStatus(), "Logout error")
+    validate_(this->getUser()->getLoggedStatus(), "User must be logged in")
 
     /* Transforms user input into a valid command to be sent to the server */
     req = "OUT " + this->getUser()->getUserID() + " " + this->getUser()->getUserPassword() + "\n";
