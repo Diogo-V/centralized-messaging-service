@@ -155,7 +155,6 @@ string list_groups(unordered_map<string, Group>* groups) {
 string subscribe(unordered_map<string, Group>* groups, unordered_map<string, User>* users, string& uid, string& gid, string& group_name) {
     char new_gid[3];
 
-    //FIXME: @Sofia-Morgado -> visto que isto é um erro de não existirem grupos ou users, o erro é NOK ou E_USR?
     /* Verifies if there are users registered or if there are groups to subscribe. This is for safety measure s*/
     if(users->empty() || (groups->empty() && gid != "00")) {
         return "NOK";

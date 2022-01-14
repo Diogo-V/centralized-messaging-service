@@ -142,7 +142,7 @@ void Manager::doLogin(const string& input) {
     validate_(isNumber(inputs[1]), "User ID must be a number")
     validate_(inputs[2].size() == 8, "User password must have 8 alphanumerical characters")
     validate_(isAlphaNumeric(inputs[2]), "User password must have only alphanumerical characters")
-    validate_(!this->getUser()->getLoggedStatus(), "No user logged in")
+    validate_(!this->getUser()->getLoggedStatus(), "User must logout first before log in")
 
     /* Transforms user input into a valid command to be sent to the server */
     req = "LOG " + inputs[1] + " " + inputs[2] + "\n";
@@ -306,13 +306,16 @@ void Manager::doListGroups(const string& input) {
 
     /* Prints response to the user */
     if (strcmp(outputs[1].c_str(), "0") != 0) {
+
+        int number_groups = atoi(outputs[1].c_str());
+
         cout << "There are " + outputs[1] + " groups:" << endl;
-        for (auto i = outputs.begin() + 2; i != outputs.end() - 1; i+=3){
+        for (auto i = outputs.begin() + 2; number_groups > 0; i++){
             cout << "Group " + *i; ++i;
             cout << ": " + *i; ++i;
-            cout << " | Last MSG: " + *i << endl;
+            cout << " Last MSG: " + *i << endl;
+            number_groups --;
         }
-        cout << *(outputs.end() - 1) << "\n";
     }
     else {
         cout << "No groups found" << endl;
@@ -436,9 +439,20 @@ void Manager::doMyGroups(const string& input) {
 
     /* Analyses response and shows it to the user */
     if (strcmp(outputs[1].c_str(), "0") != 0) {
-        for (auto i = outputs.begin() + 2; i != outputs.end() - 1; ++i) cout << *i << " ";
-        cout << *(outputs.end() - 1) << "\n";
+        int number_groups = atoi(outputs[1].c_str());
+
+        cout << "User " << this->getUser()->getUserID() << " is member of the following group :" << endl;
+        for (auto i = outputs.begin() + 2; number_groups > 0; i++){
+            cout << "Group " + *i; ++i;
+            cout << ": " + *i; ++i;
+            cout << " Last MSG: " + *i << endl;
+            number_groups --;
+        }
     }
+    else {
+        cout << "User " << this->getUser()->getUserID() << " isn't member of any group" << endl;
+    }
+
 
 }
 
@@ -529,8 +543,9 @@ void Manager::doUserList(const string& input) {
     /* Analyses response and informs the user of the result */
     if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Group does not exist." << endl;
     else if (strcmp(outputs[1].c_str(), "OK") == 0) {
-        for (auto i = outputs.begin() + 2; i != outputs.end() - 1; ++i) cout << *i << " ";
-        cout << *(outputs.end() - 1) << endl;
+        cout << "User list for group " << outputs[2] << " : "<< endl;
+        for (auto i = outputs.begin() + 3; i != outputs.end(); ++i) cout << *i << endl;
+        cout << "End of users list" << endl;
     } else cerr << "Invalid status" << endl;
 
 }
@@ -614,7 +629,7 @@ void Manager::doPost(const string& input) {
     split(response, outputs);  /* Splits msg by the spaces and returns an array with everything */
 
     /* Analyses response and informs the user of the result */
-    if (outputs[1] == "NOK") cerr << "Post error" << endl;
+    if (outputs[1] == "NOK") cerr << "Failed. Message couldn't be posted" << endl;
     else if (isNumber(outputs[1])) cout << outputs[1] << endl;
     else cerr << "Invalid status" << endl;
 
@@ -649,7 +664,7 @@ void Manager::doRetrieve(const string& input) {
     split(response, outputs);
 
     /* Analyses response and informs user of the result */
-    if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Retrieve error" << endl;
+    if (strcmp(outputs[1].c_str(), "NOK") == 0) cerr << "Failed. Message couldn't be retrieved" << endl;
     else if (strcmp(outputs[1].c_str(), "EOF") == 0) cout << "No messages available" << endl;
     else {
         cout << response;
