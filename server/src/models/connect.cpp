@@ -262,8 +262,10 @@ string Connect::receiveByTCP() {
     /* Keeps on reading until everything has been read from the client */
     do {
         ssize_t nr = read(this->_tmp_fd_tcp, buffer, MAX_REQUEST_SIZE);
+        cout << buffer << endl;
         assert_(nr != -1, "Failed to read from temporary socket")
-        if (nr == 0) return "CONNECTION CLOSED";  /* If a client closes a socket, we need to ignore */
+        //TODO: descomentar isTO!!!!!!!!!!!!
+        //if (nr == 0) return "CONNECTION CLOSED";  /* If a client closes a socket, we need to ignore */
         request.append(buffer, strlen(buffer));
     } while (buffer[strlen(buffer) - 1] != '\n');
 
