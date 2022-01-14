@@ -268,7 +268,7 @@ string Connect::receiveByTCP() {
     char* ptr=&buffer[0];
     do {
         ssize_t nr = read(this->_tmp_fd_tcp, ptr, MAX_REQUEST_SIZE);
-        assert_(nr != -1, "Failed to read from temporary socket")
+        assert_(nr != -1, "Failed to read from temporary socket lalal")
         if (nr == 0) return "CONNECTION CLOSED";  /* If a client closes a socket, we need to ignore */
         request.append(buffer, strlen(buffer));
         ptr += nr;
@@ -353,10 +353,11 @@ void Connect::receiveByTCPWithFile(const string& file_name, const int& file_size
     ofstream file(string(new_file_path), ofstream::out | ofstream::binary);
 
     /* Keeps reading the file data*/
+    char* ptr=&buffer[0];
     do {
 
         /* Reads from socket and puts in buffer */
-        received = read(this->getSocketTmpTCP(), buffer, MAX_REQUEST_SIZE);
+        received = read(this->getSocketTmpTCP(), ptr, MAX_REQUEST_SIZE);
         assert_(received != -1, "Failed to read from temporary socket")
 
         /* Writes from buffer to file */
@@ -367,6 +368,7 @@ void Connect::receiveByTCPWithFile(const string& file_name, const int& file_size
 
         if (received == 0) break;  /* If a client closes a socket, we need to ignore */
         remaining += received;
+        ptr += received;
 
     } while (remaining < file_size);  /* Does this until we got the whole file */
 
