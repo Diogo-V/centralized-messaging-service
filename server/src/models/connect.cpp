@@ -265,9 +265,8 @@ string Connect::receiveByTCP() {
     string request{'\0'};
 
     /* Creates temporary socket to connect to client. Keeps main channel active */
-    int tmp_fd = accept(this->getSocketTCP(),(struct sockaddr*) this->getAddr(), this->getAddrLen());
-    assert_(tmp_fd != -1, "Could not create temporary tcp socket")
-    this->setSocketTmpTCP(tmp_fd);
+    this->_tmp_fd_tcp = accept(this->getSocketTCP(),(struct sockaddr*) this->getAddr(), this->getAddrLen());
+    assert_(this->_tmp_fd_tcp != -1, "Could not create temporary tcp socket")
 
     /* Keeps on reading until everything has been read from the client */
     do {

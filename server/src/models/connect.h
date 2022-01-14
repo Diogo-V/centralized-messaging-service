@@ -15,7 +15,6 @@
 #include <fstream>
 
 #define MAX_REQUEST_SIZE 300
-#define MAX_RECEIVED_FILE_DATA 300
 #define TEXT_MAX_SIZE 240
 #define FILENAME_MAX_SIZE 24
 #define TCP_N_CONNECTIONS 5

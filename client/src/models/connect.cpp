@@ -158,7 +158,6 @@ void Connect::sendByUDP(const string& request) {
  */
 void Connect::sendByTCP(const string& request) {
 
-    uint16_t nw;  /* Used to keep track of how many bytes we have sent to the server */
     auto remaining = (ssize_t) request.length();  /* Gets request size */
     int sent;
 
